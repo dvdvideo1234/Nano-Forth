@@ -1,0 +1,241 @@
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          1  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว         Function Keys            ว
+  ว                                  ว
+  ว  F1  --  Help Menu               ว
+  ว  F2  --  Saves current file      ว
+  ว  F3  --  Saves and quits file    ว
+  ว  F4  --  Quits current file      ว
+  ว  F5  --  Erases contents of line ว
+  ว  F6  --  Erases to end of line   ว
+  ว  F7  --  Prints current file     ว
+  ว  F8  --  Switches active files   ว
+  ว  F9  --  Inserts line            ว
+  ว  F10 --  Inserts line and indentsว
+  ว                                  ว
+  ว         s  =  Shift key          ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว     s-F1 =        F4 = Exit     ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          2  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว    Exiting Personal Editor II    ว
+  ว                                  ว
+  ว ฺฤฤฯ                             ว
+  ว ำF3ำ FILE saves file on disk and ว
+  ว ภฤฤู removes from memory         ว
+  ว ฺฤฤฯ                             ว
+  ว ำF4ำ QUIT removes file from      ว
+  ว ภฤฤู memory without saving       ว
+  ว                                  ว
+  ว   If you made changes to a file  ว
+  ว   and have not saved them, when  ว
+  ว   you press F4 (Quit), you see:  ว
+  ว   "Do you really want to quit?   ว
+  ว   Type y or n".  If you type y,  ว
+  ว   all unsaved changes are lost.  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          3  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว       Cursor Movement Keys       ว
+  ว   ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฯ ว
+  ว   ำHome     Cursor Up      PgUpำ ว
+  ว   ำ                            ำ ว
+  ว   ำCursor Left     Cursor Rightำ ว
+  ว   ำ                            ำ ว
+  ว   ำEnd     Cursor Down     PgDnำ ว
+  ว   ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู ว
+  ว                                  ว
+  ว Cursor Up    --  Up one line     ว
+  ว Cursor Down  --  Down one line   ว
+  ว                                  ว
+  ว Cursor Left  --  Left one space  ว
+  ว Cursor Right --  Right one space ว
+  ว                                  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          4  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว        Moving the Cursor         ว
+  ว                                  ว
+  ว                                  ว
+  ว Home      -- First column        ว
+  ว End       -- After last characterว
+  ว PgUp      -- Previous page       ว
+  ว PgDn      -- Next page           ว
+  ว                                  ว
+  ว Ctrl-Home -- Top of file         ว
+  ว Ctrl-End  -- Bottom of file      ว
+  ว Ctrl-PgUp -- Top of screen       ว
+  ว Ctrl-PgDn -- Bottom of screen    ว
+  ว Ctrl-Left -- Left 40 spaces      ว
+  ว Ctrl-Right-- Right 40 spaces     ว
+  ว                                  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          5  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว          Marking Text            ว
+  ว                     a = Alt key  ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Bำ --  Block mark for         ว
+  ว ภฤฤฤู     rectangles, vertical,  ว
+  ว ฺฤฤฤฯ     and horizontal lines   ว
+  ว ำa-Cำ --  Character mark for     ว
+  ว ภฤฤฤู     characters, words, and ว
+  ว ฺฤฤฤฯ     sentences.             ว
+  ว ำa-Lำ --  Line mark for one      ว
+  ว ภฤฤฤู     line or paragraph      ว
+  ว                                  ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Uำ --  Unmarks all marks      ว
+  ว ภฤฤฤู                            ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          6  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว        Using Marked Text         ว
+  ว                    a = Alt key   ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Zำ --  Copies marked text,    ว
+  ว ภฤฤฤู     leaving original text  ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Mำ --  Moves marked text,     ว
+  ว ภฤฤฤู     deleting original text ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Oำ --  Overlays marked text,  ว
+  ว ภฤฤฤู     leaving original text  ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Dำ --  Deletes marked text    ว
+  ว ภฤฤฤู                            ว
+  ว                                  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          7  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว          Erasing Text            ว
+  ว                   s = Shift key  ว
+  ว                                  ว
+  ว ฺฤฤฤฤฯ                           ว
+  ว ำ F5 ำ --  Erases entire line    ว
+  ว ภฤฤฤฤู     of text               ว
+  ว ฺฤฤฤฤฯ                           ว
+  ว ำ F6 ำ --  Erases text at and to ว
+  ว ภฤฤฤฤู     right of cursor       ว
+  ว ฺฤฤฤฤฯ                           ว
+  ว ำs-F6ำ --  Erases text at and to ว
+  ว ภฤฤฤฤู     left of cursor,       ว
+  ว            shifting rest of text ว
+  ว            to beginning of line  ว
+  ว                                  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          8  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว         Restoring Text           ว
+  ว                   s = Shift key  ว
+  ว                                  ว
+  ว ฺฤฤฤฤฯ                           ว
+  ว ำs-F4ำ -- Restores the current   ว
+  ว ภฤฤฤฤู    line to the way it was ว
+  ว           when the cursor first  ว
+  ว           moved onto it, if the  ว
+  ว           cursor has not left it ว
+  ว                                  ว
+  ว  ฺฤฤฤฯ                           ว
+  ว  ำc-Uำ -- Displays the .UNNAMED  ว
+  ว  ภฤฤฤู    file which contains    ว
+  ว           the last five changes  ว
+  ว                                  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu          9  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว        Formatting Text           ว
+  ว                    a = Alt key   ว
+  ว                    c = Ctrl key  ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Sำ --  Splits line at cursor  ว
+  ว ภฤฤฤู                            ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Jำ --  Joins line at cursor   ว
+  ว ภฤฤฤู                            ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำa-Pำ --  Reflows paragraph from ว
+  ว ภฤฤฤู     cursor to blank line   ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำc-Cำ --  Centers text on        ว
+  ว ภฤฤฤู     current line           ว
+  ว                                  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu         10  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว                                  ว
+  ว      Splitting the Screen        ว
+  ว                        c = Ctrl  ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำc-Sำ -- Splits the screen into  ว
+  ว ภฤฤฤู    2 or 4 windows          ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำc-Vำ -- Moves cursor to the nextว
+  ว ภฤฤฤู    window of the same file ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำc-Wำ -- Moves cursor to the     ว
+  ว ภฤฤฤู    next window             ว
+  ว ฺฤฤฤฯ                            ว
+  ว ำc-Zำ -- Zooms in current window ว
+  ว ภฤฤฤู    to fill the screen      ว
+  ว                                  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว  s-F1 =    s-F2 =   F4 = Exit  ว
+  ศออออออออออออออออออออออออออออออออออุ
+  ษออออออออออออออออออออออออออออออออออื
+  ว           Help  Menu         11  ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว    Locating and Changing Text    ว
+  ว                                  ว
+  ว     /text/ -- Locates first      ว
+  ว               occurrence         ว
+  ว                                  ว
+  ว c/old/new/ -- Locates first      ว
+  ว               occurrence and asksว
+  ว               for confirmation ofว
+  ว               change             ว
+  ว     ฺฤฤฤฤฯ                       ว
+  ว     ำs-F5ำ -- Confirms change    ว
+  ว     ภฤฤฤฤู                       ว
+  ว  ฺฤฤฤฤฤฤฤฯ                       ว
+  ว  ำc-Enterำ -- Executes command   ว
+  ว  ภฤฤฤฤฤฤฤู    from the text area ว
+  ฬออออออออออออออออออออออออออออออออออว
+  ว     s-F2 =        F4 = Exit     ว
+  ศออออออออออออออออออออออออออออออออออุ
+

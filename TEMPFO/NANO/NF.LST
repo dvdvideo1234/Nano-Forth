@@ -1,0 +1,102 @@
+$44C4  Word  (?BR       \ 0BR
+$44D8  Word  0;         \ 0EX
+$43FA  Word  0SWAP      \ 0SWAP
+$4426  Word  1-         \ 1M
+$442A  Word  1+         \ 1P
+$445A  Word  ?DUP       \ ?DUP
+$44C2  Word  @XPE       \ @XPE
+$4135  Word  ACCEPT     \ ACCEPT
+$4393  Word  (ACPT      \ ACPT
+$442E  Word  AND        \ AND
+$4131  Word  BL         \ BL
+$44C8  Word  (BR        \ BR
+$43CF  Word  C@+        \ CFETCHP
+$44AE  Word  CLIT       \ CLIT
+$415F  Word  CNTC       \ CNTC
+$448E  Word  CODE,      \ CODECOM
+$447A  Word  :`         \ COLCOMP
+$4474  Word  :          \ COLON
+$4480  Word  ,          \ COMMA
+$43D2  Word  COUNT      \ COUNT
+$43C6  Word  C!         \ CSTORE
+$43C9  Word  C!+        \ CSTOREP
+$4446  Word  DEC        \ DEC
+$43A5  Word  DEMIT      \ DEMIT
+$43FF  Word  DIG        \ DIG
+$440D  Word  UM/MOD     \ DIV
+$43AE  Word  DKEY       \ DKEY
+$42BD  Word  #DOES      \ DOES
+$4452  Word  DROP       \ DROP
+$44D6  Word  DROP;      \ DROPX
+$4458  Word  DUP        \ DUP
+$4147  Word  EMIT       \ EMIT
+$41F1  Word  ENTRY      \ ENTRY
+$441A  Word  0=         \ EQZ
+$4139  Word  ERR        \ ERR
+$4159  Word  ETB        \ ETB
+$419C  Word  EVAL       \ EVAL
+$44B6  Word  EX         \ EX
+$44CE  Word  EXEC       \ EXEC
+$44D4  Word  EXIT       \ EXIT
+$43B9  Word  @+         \ FETCHP
+$43D6  Word  FIND       \ FIND
+$412D  Word  FLAG       \ FLAG
+$44C6  Word  (FOR       \ FOR
+$416B  Word  HERE       \ HERE
+$4462  Word  I          \ I
+$4468  Word  J          \ J
+$4141  Word  KEY        \ KEY
+$4173  Word  LAST       \ LAST
+$44DA  Word  [`         \ LBRAK
+$4422  Word  (#         \ LIT
+$4488  Word  (#,        \ LITCOM
+$4153  Word  LTB        \ LTB
+$4440  Word  -          \ MINUS
+$436E  Word  S!         \ MOVSTR
+$4414  Word  UM*        \ MUL
+$44CA  Word  (NXT       \ NEXT
+$4510  Word  NUM        \ NUM
+$4209  Word  NUMBER     \ NUMBER
+$413D  Word  OKV        \ OKV
+$4121  Word  1          \ ONE
+$445C  Word  OVER       \ OVER
+$4265  Word  PARSE      \ PARS
+$44D0  Word  @EXEC      \ PERFORM
+$443B  Word  +          \ PLUS
+$4454  Word  POP        \ POP
+$452E  Word  C.         \ PRTC
+$453A  Word  ?.         \ PRTQ
+$4456  Word  PUSH       \ PUSH
+$451C  Word  QUIT       \ QUIT
+$44EC  Word  ]          \ RBRAK
+$44D2  Word  RDROP      \ RDROP
+$414D  Word  SEARCH     \ SEARCH
+$446E  Word  ;`         \ SEMICOLON
+$44CC  Word  SKIP       \ SKIP
+$4113  Word  STATES     \ STATES
+$4378  Word  C!-        \ STDB
+$4360  Word  S!-        \ STDSTR
+$437D  Word  !-         \ STDW
+$43BF  Word  !+         \ STOREP
+$43B6  Word  STR        \ STR
+$4354  Word  S+C!       \ STRPC
+$4384  Word  !.         \ STW
+$445F  Word  SWAP       \ SWAP
+$4165  Word  TIB        \ TIB
+$444B  Word  TOEVAL     \ TOEVAL
+$41D7  Word  TOKEN      \ TOKEN
+$4129  Word  3          \ TRE
+$4125  Word  2          \ TWO
+$4433  Word  UMIN       \ UMIN
+$44BC  Word  XCHG       \ XCHG
+$451E  Word  =?         \ Z?
+$411D  Word  0          \ ZER
+
+$C033 ,  \ 1035 4541  33 C0                  _BKEY:  XOR AX,AX
+$16CD ,  \ 1036 4543  CD 16                          INT 016H
+$C00A ,  \ 1037 4545  0A C0                          OR  AL,AL
+$0274 ,  \ 1038 4547  74 02                          JE  @@1
+$E432 ,  \ 1039 4549  32 E4                          XOR AH,AH
+  $C3 ,  \ 1040 454B  C3                     @@1:    RET
+
+

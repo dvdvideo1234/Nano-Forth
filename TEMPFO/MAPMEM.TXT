@@ -1,0 +1,37 @@
+' HERE 4 + @ HEADER U0 , 0 ,
+( MEMORY MAP FORTH      )
+\ HIDDEN TO FORTH
+( FORGET MEMORY-MAP    TO FORTH HIDDEN         )
+: >-< CR 2DUP - -ROT 7 U.R 7 U.R 7 U.R 2 SPACES ;
+: MEMORY-MAP CR  2 SPACES
+  ." START   END    SIZE   DESCRIPTION"
+   CR 50 FOR C" - EMIT NEXT
+   0  U0    >-<  ." USER VARIABLES"
+   U0 TIB   >-<  ." TEXT INPUT BUFFER"
+TIB -256    >-<  ." EVAL STACK"
+R0 256 + R0 >-<  ." TRANSLATION TABLE"
+   R0 S0    >-<  ." RETURN STACK"
+   S0 LIMIT >-<  ." DATA STACK"
+LIMIT FIRST >-<  ." BUFFER PULL"
+FIRST MH    >-<  ." FREE SPACE- MACRO"
+ MH MPTR    >-<  ." MACROSES"
+ MPTR  MTOP >-<  ." PROGRAM POOL"
+ MTOP SPTR  >-<  ." STRING STACK"
+  SPTR PAD  >-<  ." FREE SPACE- STRING STACK"
+   PAD HERE >-<  ." PAD BUFFER"
+   HERE 256 >-<  ." CODE & HEAP"
+AT ON; @ 92 >-<  ." USER STACK &  FILE INPUT BUFFER"
+;  MEMORY-MAP
+
+TO CLOSE
+
+LIKE < >   0 C,  0 C, -1 C,
+LIKE < <=  -1 C, -1 C, 0 C,
+: U/ U/MOD NIP ; : UMOD U/MOD DROP ;
+
+: EQU >IN >R -FIND 0= IF
+     R> TO >IN CREATE , [ HERE 2+ TO CSP ] DOES> @ EXIT
+     ELSE AT DROP  AT , [ CSP , ]
+   OVER @ - A" !=EQU" 2+ ! THEN ;
+
+

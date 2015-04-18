@@ -1,0 +1,52 @@
+80 FB 20 73 02 B3 2E C3
+        _XT XT_CTRL_OUT,@NOP            ;= BL<.
+
+33 C0 C3
+        _xt xt_0swap,@nup               ;= 0SWAP
+
+80 FB 0A 7C 03 80 C3 07 80 C3 30 C3
+        _XT XT_DIG,@nop                 ;= DIG
+
+F7 F3 8B DA C3
+        _XT XT_DIV,@Dinu                ;= UM/MOD
+
+F7 E3 EB F7
+        _XT XT_MUL,@ninu                ;= UM*
+
+87 5E 00 C3
+        _XT XT_XCHG,@NOP                ;= XCHG
+
+87 76 00 C3
+        _XT XT_EX,@NOP                  ;= EX
+
+F7 DB C3
+        _xt   xt_neg,@nop             ;= neg
+
+CC C3
+        _XT XT_BP,@NOP                  ;= BRP.
+
+FF E6
+        _PRIM  XT_ASM                   ;= >4TH
+
+8B 46 00 C3
+        _xt XT_I,@pusha                 ;= I
+
+8B 46 02 C3
+        _xt  XT_j,@pusha                ;= J
+
+89 07 C3
+        _XT  XT_STORE,@2DROP            ;= !
+
+88 07 C3
+        _xt  XT_CSTORE,@2DROP           ;= C!
+
+93 2B D8 C3
+        _XT  XT_sub,@NIP                ;= -
+
+03 D8 C3
+        _XT  XT_PLUS,@NIP               ;= +
+
+8B FB 87 CF
+        _XT  XT_MOVE,@3DROP  __MOVE?    ;= MOVE
+
+

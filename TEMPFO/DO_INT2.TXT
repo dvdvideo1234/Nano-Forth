@@ -1,0 +1,115 @@
+( DO A CALL  CALL A DOS FUNCTION   PERFORM INTERRUPT  #  )
+
+F83   MARKER  -REGS
+
+CLASS: REGS:      F: _SP ;F 2Z,
+ 0 F: _DS ;F  , 0 F: _ES ;F   ,
+   F: _BP ;F 2Z,  F: _DI ;F 2Z,
+   F: _SI ;F 2Z,  F: _DX ;F 2Z,
+   F: _CX ;F 2Z,  F: _BX ;F 2Z,
+   F: _AX ;F 2Z,  F: _FL ;F 2Z,
+;CLASS
+
+<%
+: LABEL: HERE <% CONSTANT %> ;
+: SUBF' ' HEADER STR , @ + , COMPILE EXIT ;
+%>
+
+METHOD: REGS:
+ 1 SUBF' _AX _AH     1 SUBF' _BX _BH
+ 1 SUBF' _CX  _CH    1 SUBF' _DX _DH
+
+ 2 ALIGNED 0 C,
+
+LABEL: JMPA  $ EA C, 4 ALLOT
+LABEL: OSTK 4 ALLOT
+LABEL: STO_OR
+  ASM  BP DI MOV,   AX POP,  SI PUSH,
+         DI PUSH,  DX PUSH,    PUSHF,
+           OSTK /// DI LES,  ES PUSH,
+         DI PUSH,  DS PUSH,  BX PUSH,
+           SP OSTK /// MOV,
+       SS OSTK 2+ ///  MOV,
+       BX SI MOV,   AX JMP,       END-CODE
+
+LABEL: LOD_NR      ASM    10 #, CX MOV,
+  BEGIN,  LODSW,  AX PUSH,   CXNZ, NOT,  UNTIL,
+  DS POP, ES POP, BP POP,  DI POP,
+  SI POP, DX POP, CX POP,
+  BX POP, AX POP,   POPF,     RET, END-CODE
+
+LABEL: STO_R  ASM           CS: OSTK 4 - /// POP,
+  CS: OSTK 2+ /// SS MOV,   CS: OSTK /// SP XCHG,
+       CS: OSTK /// PUSH,    DS PUSH,    ES PUSH,
+       BP PUSH,  DI PUSH,    SI PUSH,    DX PUSH,
+       CX PUSH,  BX PUSH,    AX PUSH,      PUSHF,  CLD,
+  11 #, CX MOV,  SP BP MOV,        22 /BP DI LES,
+  BEGIN,  AX POP,   STOSW,  CXNZ, NOT, UNTIL,
+       AX CX MOV,  BX POP,     DS POP,
+       CS AX MOV,   OSTK 2- #, DI MOV,
+           STOSW,   AX POP,   STOSW, AX POP, STOSW,
+            POPF,   DX POP,  DI POP, SI POP,
+        JMPA JMP,  END-CODE
+
+
+ASM    <% : SWITCH, SP BP XCHG, ; %>   END-CODE
+
+
+| CODE _CALL  AX POP,  AH AH OR, 0=,
+       IF,  AL -1 ///  MOV,      HERE 2- TO ON;
+       STO_OR #, CALL,
+       LOD_NR #, CALL,  0 INT,   HERE 1- ON; !
+        STO_R #, CALL,           ( FIXING .)
+LABEL: X_CALL  DI BP MOV,  BX POP,  NEXT,  THEN,
+       AH -1 /// MOV,  HERE 2- TO ON;
+       AX POP,  AX JMPA 3 + /// MOV,
+       AX POP,  AX JMPA 1+ ///  MOV,  BP DI MOV,
+       SWITCH,
+       STO_OR 2+ #, CALL,
+       SWITCH,
+       LOD_NR #, CALL,
+       CS PUSH,  HERE 1- ON; ! ( FIXING ..)
+         JMPA #, CALL,
+        STO_R #, CALL,
+       SWITCH,   CX SP MOV,  X_CALL JMP,  END-CODE
+
+: FCALL $ 0E00 SELF _CALL ;
+: NCALL ?CS: $ 9000 SELF _CALL ;
+: ICALL  $ FF AND  SELF _CALL ;
+: SHOW CR SELF 11 FOR STR U. NEXT DROP ;
+\ CREATE PROBA ASM 10 #, AX MOV, RET, END-CODE
+;METHOD    PRUNE
+
+
+
+MARKER -MVO          \  MINI VECTORS  OBJECT
+
+CLASS: MVO:  |  0  F: VT ;F ,  |  0 F: VC ;F ,
+             |  0  F: VG ;F ,  |  0 F: VA ;F ,
+;CLASS
+
+METHOD: MVO:
+
+  0 0 0 1 MVO: 1A   1 0 0 0 MVO: 1T
+  0 1 0 0 MVO: 1C   0 0 1 0 MVO: 1G
+
+  : V@  VT @  VC @  VG @  VA @ ;
+  : V!  VA !  VG !  VT !  VC ! ;
+  : V+ DUP PUSH * VA +!  R@ * VG +!
+             R@ * VC +! POP * VT +!
+             V@ MIN MIN MIN ?DUP
+       IF DUP 2DUP -1 RECURCE THEN ;
+
+| : 1V+ CREATE ,
+          DOES> SWAP PUSH PERFORM
+          TO SEND V@  POP  V+ ;
+
+  ' 1T 4 + 1V+ T     ' 1C 4 + 1V+ C
+  ' 1G 4 + 1V+ G     ' 1A 4 + 1V+ A
+
+  : SHOW VT ? VC ? VG ? VA ? ;
+
+;METHOD      PRUNE
+
+
+

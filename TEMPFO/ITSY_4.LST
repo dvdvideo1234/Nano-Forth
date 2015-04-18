@@ -1,0 +1,1301 @@
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 1
+itsy_4.asm
+
+
+
+      1				     locals  @@
+      2	      =	dword ptr	     pd	 equ dword ptr
+      3	      =	word  ptr	     pw	 equ word  ptr
+      4	      =	byte  ptr	     pb	 equ byte  ptr
+      5
+      6	      =0002		     _TO =   2
+      7	      =0004		     _AT =   4
+      8	      =0006		     _VAL =  6
+      9
+     10				     PushReg  MACRO
+     11					     jmp  _PushAx
+     12					   ENDM
+     13				     SWAPREG MACRO
+     14					      JMP _SWAPAX
+     15					     ENDM
+     16				     DROPREG MACRO
+     17					      JMP XDROP
+     18					     ENDM
+     19				     next  MACRO
+     20					     jmp  _nop
+     21					   ENDM
+     22				     X	   MACRO
+     23					     xchg sp,bp
+     24					   ENDM
+     25
+     26	      =0000		     qqqqq = 0
+     27	      =0000		     ppppp = qqqqq
+     28
+     29				     _nam    macro   msg
+     30				       local endstr
+     31				       db    endstr-$-1
+     32				       db    msg
+     33				     endstr  label   byte
+     34					     endm
+     35
+     36				     _VAR    macro   LBL
+     37				     LBL     DW	     DOVAR
+     38					     ENDM
+     39
+     40				     _PRIM   macro   LBL
+     41				     LBL     DW	     $+2
+     42					     ENDM
+     43
+     44				     _XT     macro   LBL,token
+     45				     LBL     DW	     TOKEN
+     46					     ENDM
+     47
+     48				     _ln     macro   token
+     49				     ppppp = $
+     50				       _nam  token
+     51				       dw    qqqqq
+     52				     qqqqq = ppppp
+     53					     endm
+     54
+     55				     head    macro  nam, lbl, val1
+     56					     _ln    nam
+     57					     _XT    LBL,VAL1
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 2
+itsy_4.asm
+
+
+
+     58					     endm
+     59
+     60				     primitive macro nam,lbl
+     61					     _ln    nam
+     62					     _PRIM  lbl
+     63					     endm
+     64
+     65				     primitiv macro nam,lbl,dat
+     66					     _ln    nam
+     67					     _XT    lbl,dat
+     68					     endm
+     69
+     70				     _colon2 macro  lbl
+     71				     LBL     DW	    DOCOLON-1
+     72					     endm
+     73
+     74				     _colon  macro  lbl
+     75				     LBL     DW	    DOCOLON
+     76					     endm
+     77
+     78				     colon   macro  nam,lbl
+     79					     _ln    nam
+     80					     _COLON lbl
+     81					     endm
+     82
+     83				     _value  macro  lbl,dat
+     84				     lbl     DW	    docons2,setvar,dat
+     85					     endm
+     86
+     87				     value   macro  nam,lbl,dat
+     88					     _ln    nam
+     89					     _value lbl,dat
+     90					     endm
+     91
+     92				     _vecto  macro  lbl,dat
+     93				     lbl     DW	    deferO,setvar,dat
+     94					     endm
+     95
+     96				     _vector macro  lbl,dat
+     97				     lbl     DW	    defer2,setvar,dat
+     98					     endm
+     99
+    100				     _point  macro  lbl,dat
+    101				     lbl     DW	    dopoint,setpoint,dat
+    102					     endm
+    103
+    104				     _QUAN   MACRO  LBL,DAT
+    105					     _XT    lbl,docons3
+    106					     DW	    setvar2,@XPE,dat
+    107					     ENDM
+    108
+    109				     quan    macro  nam,lbl,dat
+    110					     _ln    nam
+    111					     _QUAN  LBL,DAT
+    112					     endm
+    113
+    114				     _const  macro lbl,dat
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 3
+itsy_4.asm
+
+
+
+    115				     lbl     DW	   doconst,DAT
+    116					     endm
+    117
+    118				     _entry  macro nam,dat
+    119					     DW	   DAT
+    120					     db	   0
+    121					     _nam  nam
+    122					     endm
+    123
+    124	0000			     MyCseg  segment para  use16
+    125					     assume cs:	MyCseg,	 ds: MyCseg, ss: MyCseg
+    126
+    127
+    128					     org 100h
+    129	0100			     Start   Label byte
+    130	0100  E9 4000			     JMP SELF0
+    131
+    132					     ORG 4103H
+    133
+    134	4103  E8 0083		     SELF0:  CALL SELF2
+    135	4106			     SELF1:
+    136					_entry	 '.',XT_p10
+1   137	4106  4521r			     DW	   XT_p10
+1   138	4108  00			     db	   0
+1   139					     _nam  '.'
+2   140	4109  01		       db    ??0000-$-1
+2   141	410A  2E		       db    '.'
+2   142	410B			     ??0000  label   byte
+    143					_entry	 'ENTRY',XT_ENTRY
+1   144	410B  4217r			     DW	   XT_ENTRY
+1   145	410D  00			     db	   0
+1   146					     _nam  'ENTRY'
+2   147	410E  05		       db    ??0001-$-1
+2   148	410F  45 4E 54 52 59	       db    'ENTRY'
+2   149	4114			     ??0001  label   byte
+    150					_entry	 0,0
+1   151	4114  0000			     DW	   0
+1   152	4116  00			     db	   0
+1   153					     _nam  0
+2   154	4117  01		       db    ??0002-$-1
+2   155	4118  00		       db    0
+2   156	4119			     ??0002  label   byte
+    157	4119  0000			DW 0  ;	LAST WORD
+    158	411B  00 00			DB 0,0
+    159
+    160	411D  42D3r 4477r 44EDr	  +  xt_states dw _arw,xt_clit,xt_num,xt_comma,xt_exec
+    161	      444Br 4485r
+    162
+    163				     ; -----------------------
+    164				     ; Constants
+    165				     ; -----------------------
+    166
+    167					     _CONST  xt_zer,0
+1   168	4127  42F7r 0000	     xt_zer	DW    doconst,0
+    169					     _CONST  xt_oNE,1
+1   170	412B  42F7r 0001	     xt_oNE	DW    doconst,1
+    171					     _CONST  xt_TWO,2
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 4
+itsy_4.asm
+
+
+
+1   172	412F  42F7r 0002	     xt_TWO	DW    doconst,2
+    173					     _CONST  xt_TRE,3
+1   174	4133  42F7r 0003	     xt_TRE	DW    doconst,3
+    175					     _CONST  xt_FLAG,'`'
+1   176	4137  42F7r 0060	     xt_FLAG	 DW    doconst,'`'
+    177					     _CONST  xt_BL,' '
+1   178	413B  42F7r 0020	     xt_BL     DW    doconst,' '
+    179					     _CONST  xt_QM,'?'
+1   180	413F  42F7r 003F	     xt_QM     DW    doconst,'?'
+    181
+    182				     ; -------------------
+    183				     ; Variables
+    184				     ; -------------------
+    185
+    186					     _vectoR xt_ACCEPT,XT_ACPT
+1   187	4143  42C5r 431Dr 439Ar	     xt_ACCEPT	   DW	  defer2,setvar,XT_ACPT
+    188					     _vectoR xt_OK,0
+1   189	4149  42C5r 431Dr 0000	     xt_OK     DW     defer2,setvar,0
+    190					     _vectoR xt_key,xt_dkey
+1   191	414F  42C5r 431Dr 43B5r	     xt_key	DW     defer2,setvar,xt_dkey
+    192					     _vecto  xt_emit,xt_demit
+1   193	4155  42C1r 431Dr 43ACr	     xt_emit	 DW	deferO,setvar,xt_demit
+    194					     _POINT  xt_SEARCH,0
+1   195	415B  42D9r 42F1r 0000	     xt_SEARCH	   DW	  dopoint,setpoint,0
+    196					     _value  xt_ltb,0
+1   197	4161  42F6r 431Dr 0000	     xt_ltb	DW     docons2,setvar,0
+    198					     _value  xt_etb,0
+1   199	4167  42F6r 431Dr 0000	     xt_etb	DW     docons2,setvar,0
+    200					     _value  xt_cntc,0
+1   201	416D  42F6r 431Dr 0000	     xt_cntc	 DW	docons2,setvar,0
+    202					     _VALUE  xt_tib,128
+1   203	4173  42F6r 431Dr 0080	     xt_tib	DW     docons2,setvar,128
+    204				     ;	     _QUAN   XT_IOB,0
+    205					     _QUAN   XT_here,freemem
+1   206					     _XT    XT_here,docons3
+2   207	4179  42F5r		     XT_here	 DW	 docons3
+1   208	417B  431Cr 4353r 454Fr		     DW	    setvar2,@XPE,freemem
+    209					     _QUAN   xt_last,SELF1
+1   210					     _XT    xt_last,docons3
+2   211	4181  42F5r		     xt_last	 DW	 docons3
+1   212	4183  431Cr 4353r 4106r		     DW	    setvar2,@XPE,SELF1
+    213
+    214				     ; -------------------
+    215
+    216	4189  E8 0048		     SELF2:  CALL MOVER
+    217
+    218				     ; -------------------
+    219				     ; Initialisation  and main	loop
+    220				     ; -------------------
+    221
+    222	418C  FC		     _restart:cld
+    223	418D  BD FF00			     MOV  bp,-256
+    224	4190  BC FE00			     mov  sp,-512
+    225	4193  E8 003A			     call _forth
+    226	4196  44A1r 4173r 43DCr		     dw	  xt_lbrak,xt_tib,xt_count
+    227	419C  41ACr 4149r 4173r	  +  xsyslp  dw	  xt_eval,xt_OK,xt_tib,xt_FLAG,xt_accept,xt_br,xsyslp
+    228	      4137r 4143r 4481r	  +
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 5
+itsy_4.asm
+
+
+
+    229	      419Cr
+    230
+    231					     _XT xt_nop,_nop
+1   232	41AA  4304r		     xt_nop	DW	_nop
+    233
+    234					     _COLON xt_eval
+1   235	41AC  42EEr		     xt_eval	 DW	DOCOLON
+    236	41AE  4424r 4163r 4169r		     dw	xt_TOEVAL,XT_ltb+_TO,Xt_etb+_TO
+    237	41B4  41F7r 448Fr 4179r	  +  _int:   dw	XT_TOKEN,XT_0EX,XT_HERE,xt_SEARCH
+    238	      415Br
+    239	41BC  411Dr 4487r 4481r	  +	     dw	xt_states,xt_perform,xt_br,_int
+    240	      41B4r
+    241
+    242					     _XT XT_QUIT,_RESTART
+1   243	41C4  418Cr		     XT_QUIT	 DW	 _RESTART
+    244
+    245					     _COLON XT_ABORT
+1   246	41C6  42EEr		     XT_ABORT	  DW	 DOCOLON
+    247	41C8  4127r 4173r 43C9r	  +	     DW	XT_ZER,XT_TIB,XT_STOREP,XT_QUIT
+    248	      41C4r
+    249
+    250	41D0  5E		     _forth: pop si
+    251					     next
+1   252	41D1  E9 0130			     jmp  _nop
+    253
+    254	41D4  BB 1000		     MOVER:  mov  bx,1000h     ; only 64k allocate
+    255	41D7  B4 4A			     mov  ah,4ah
+    256	41D9  CD 21			     int  21h
+    257	41DB  5B			     POP  BX
+    258	41DC  8B 7F FB			     MOV  DI,[BX-5]    ; CELL +	[CAL]
+    259	41DF  8B 4F F3			     MOV  CX,[BX-13]   ; 5 CELLS + [CAL]
+    260	41E2  2B CF			     SUB  CX,DI
+    261	41E4  58			     POP  AX
+    262	41E5  2B D8			     SUB  BX,AX
+    263	41E7  03 DF			     ADD  BX,DI
+    264	41E9  53		     CMOVEU0:PUSH BX
+    265	41EA  03 F9		     CMOVEU: ADD  DI,CX
+    266	41EC  4F		     CPUSHU: DEC  DI
+    267	41ED  03 C1			     ADD  AX,CX
+    268	41EF  48			     DEC  AX
+    269	41F0  FD			     STD
+    270	41F1  96		     CMOVE:  XCHG AX,SI
+    271	41F2  F3> A4			     REP  MOVSB
+    272	41F4  96			     XCHG AX,SI
+    273	41F5  FC			     CLD
+    274	41F6  C3			     RET
+    275
+    276				     ; ------------------------
+    277				     ; ENRTY LIST
+    278				     ; ------------------------
+    279
+    280					     _COLON XT_TOKEN
+1   281	41F7  42EEr		     XT_TOKEN	  DW	 DOCOLON
+    282	41F9  4161r 442Br 448Fr	  +	     dw	XT_LTB,XT_DUP,XT_0EX,XT_DROP,XT_BL,XT_PARSE
+    283	      4433r 413Br 428Ar
+    284	4205  413Br 4412r 4179r	  +	     DW	XT_BL,XT_UMIN,XT_HERE,XT_MOVSTR,XT_CFETCHP,XT_DROPX
+    285	      4215r 43D9r 448Dr
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 6
+itsy_4.asm
+
+
+
+    286
+    287					     _XT XT_@XPE,_@XPE
+1   288	4211  435Er		     XT_@XPE	 DW	 _@XPE
+    289					     _XT XT_STDSTR,_STDSTR
+1   290	4213  436Ar		     XT_STDSTR	   DW	   _STDSTR
+    291					     _XT XT_MOVSTR,_MOVSTR
+1   292	4215  436Er		     XT_MOVSTR	   DW	   _MOVSTR
+    293
+    294					     _COLON XT_ENTRY
+1   295	4217  42EEr		     XT_ENTRY	  DW	 DOCOLON
+    296	4219  4127r 41F7r 44D5r	  +	     DW	XT_ZER,XT_TOKEN,XT_NZ?,XT_HERE,XT_COUNT
+    297	      4179r 43DCr
+    298	4223  4185r 4213r 43BDr	  +	     DW	XT_LAST+_AT,XT_STDSTR,XT_STDB,XT_STDW,XT_EXIT
+    299	      43BFr 448Br
+    300
+    301				     ; ------------------------
+    302				     ; parsing
+    303				     ; ------------------------
+    304
+    305					     _XT  XT_number,PADA
+1   306	422D  430Cr		     XT_number	   DW	   PADA
+    307	422F  55			     push BP
+    308	4230  33 C9			     XOR  CX,CX	 ; ACCUMULATOR
+    309	4232  97			     xchg ax,Di	 ; ENDBUF
+    310	4233  E8 000C			     CALL _NUM
+    311	4236  5D			     POP  BP
+    312	4237  91			     XCHG CX,AX
+    313	4238  C3			     RET
+    314
+    315	4239  0B DB		     _CNUM:  OR	  BX,BX
+    316	423B  74 4B			     JE	  _EXNUM
+    317	423D  32 E4			     XOR  AH,AH
+    318	423F  8A 01			     MOV  AL,[BX+DI]
+    319	4241  C3			     RET
+    320
+    321	4242  E8 FFF4		     _NUM:   CALL _CNUM
+    322	4245  BD 000A			     MOV  BP,10
+    323	4248  E8 0009			     CALL _SGN
+    324	424B  43		     _NUMZ:  INC  BX
+    325	424C  E8 FFEA			     CALL _CNUM
+    326	424F  E8 000C			     CALL _N1
+    327	4252  EB F7			     JMP  SHORT	 _NUMZ
+    328
+    329	4254  3C 2D		     _SGN:   CMP  AL,'-'
+    330	4256  75 06			     JNE  _N1
+    331	4258  58			     POP  AX
+    332	4259  FF D0			     CALL AX
+    333	425B  F7 D9			     NEG  CX
+    334	425D  C3			     RET
+    335
+    336	425E  3C 24		     _n1:    cmp  al,'$'
+    337	4260  75 04			     JNE  _N2
+    338	4262  BD 0010			     MOV  BP,16
+    339	4265  C3			     RET
+    340	4266  3C 23		     _N2:    cmp  al,'#'
+    341	4268  75 05			     JNE  _N3
+    342	426A  8B E9			     MOV  BP,CX
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 7
+itsy_4.asm
+
+
+
+    343	426C  33 C9			     XOR  CX,CX
+    344	426E  C3			     RET
+    345	426F  3C 3A		     _N3:    cmp  al,'9'+1
+    346	4271  72 08			     jc	  to_n2
+    347	4273  24 DF			     AND  AL,0DFH
+    348	4275  3C 41			     cmp  al,'A'      ;	no case	sensivity
+    349	4277  72 0F			     jc	  _EXNUM
+    350	4279  2C 07			     sub  al,7
+    351	427B  2C 30		     to_n2:  sub  al,'0'
+    352	427D  3B C5			     cmp  ax,BP
+    353	427F  73 07			     jnc  _EXNUM
+    354	4281  91			     xchg ax,cx
+    355	4282  F7 E5			     mul  BP
+    356	4284  91			     xchg ax,cx
+    357	4285  03 C8			     add  cx,ax
+    358	4287  C3			     RET
+    359	4288  58		     _EXNUM: POP  AX
+    360	4289  C3			     ret
+    361
+    362					     _PRIM XT_PARSE
+1   363	428A  428Cr		     XT_PARSE	  DW	  $+2
+    364	428C  8A C3		     _PARS:  mov  aL,bl
+    365	428E  8B 1E 4165r		     mov  Bx,PW	[XT_ltb+_AT]
+    366	4292  8B 3E 416Br		     mov  DI,PW	[XT_Etb+_AT]
+    367	4296  3C 20			     CMP  AL,' '
+    368	4298  75 0A			     JNE  _SKIPEX
+    369	429A  4B			     DEC  BX
+    370	429B  43		     _WSKP:  INC  BX
+    371	429C  74 06			     JE	  _SKIPEX
+    372	429E  8A 21			     MOV  AH,[BX+DI]
+    373	42A0  3A C4			     CMP  AL,AH
+    374	42A2  74 F7			     JE	  _WSKP
+    375	42A4  8D 09		     _SKIPEX:LEA  CX,[BX+DI]
+    376	42A6  51			     PUSH CX
+    377	42A7  4B			     DEC  BX
+    378	42A8  43		     _WSCZ:  INC  BX
+    379	42A9  74 06			     JE	  _WEX
+    380	42AB  8A 21			     MOV  AH,[BX+DI]
+    381	42AD  3A C4			     CMP  AL,AH
+    382	42AF  75 F7			     JNE  _WSCZ
+    383	42B1  2B F9		     _WEX:   SUB  DI,CX
+    384	42B3  8B CB			     MOV  CX,BX
+    385	42B5  03 DF			     ADD  BX,DI
+    386	42B7  E3 01			     JCXZ WORDE
+    387	42B9  41			     INC  CX
+    388	42BA  89 0E 4165r	     worde:  mov  PW [XT_ltb+_AT],cx
+    389					     NEXT
+1   390	42BE  EB 44 90			     jmp  _nop
+    391
+    392				     ; -------------------
+    393				     ; Inner Interpreter
+    394				     ; -------------------
+    395
+    396	42C1  FF 06 4171r	     DEFERO: INC   PW [XT_CNTC+_AT]
+    397	42C5  AF		     defer2: scasw
+    398	42C6  53		     DEFER:  push  bx
+    399	42C7  8B DF			     MOV   bx,di
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 8
+itsy_4.asm
+
+
+
+    400	42C9  8B 1F		     _perform:mov  bx,[bx]
+    401	42CB  58		     _exec:  pop   ax
+    402	42CC  93			     xchg  ax,bx
+    403	42CD  0B C0			     OR	   AX,AX
+    404	42CF  74 06			     JE	   _0
+    405	42D1  EB 32			     jmp   SHORT _ex
+    406
+    407	42D3  8D 39		     _arw:   LEA   DI,[bx+di] ;	array of words
+    408	42D5  8D 19		     _arb:   lea   bx,[bx+di] ;	array of bytes
+    409	42D7  EB 2B		     _0:     JMP   SHORT _nOP
+    410	42D9  8B 45 02		     dopoint:mov   AX,[di+2]
+    411	42DC  EB 06			     JMP   SHORT PCPUSH
+    412	42DE  AF			     scasw
+    413	42DF  AF			     scasw
+    414	42E0  58		     _does:  pop   ax
+    415	42E1  53			     push  bx
+    416	42E2  8B DF			     MOV   bx,di
+    417	42E4  96		     pcpush: XCHG  AX,SI
+    418	42E5  4D		     _rpush: dec   bp
+    419	42E6  4D			     dec   bp
+    420	42E7  89 46 00			     mov   [bp],AX
+    421	42EA  EB 18			     JMP   SHORT _nOP
+    422	42EC  AF			     scasw
+    423	42ED  AF			     scasw
+    424	42EE  97		     docolon:xchg  ax,di
+    425	42EF  EB F3			     jmp   SHORT pcpush
+    426	42F1  89 35		     setpoint:mov  [di],si
+    427	42F3  EB 34			     jmp   SHORT _exit
+    428	42F5  AF		     docons3:scasw
+    429	42F6  AF		     docons2:scasw
+    430	42F7  8B 05		     doconst:mov   ax,[di]
+    431	42F9  EB 07			     jmp   SHORT _pushw
+    432	42FB  8B C7		     dovar:  MOV   ax,di
+    433	42FD  EB 03			     jmp   SHORT _pushw
+    434
+    435	42FF  58		     PSDA:   POP   AX
+    436	4300  FF D7		     PS:     CALL  DI
+    437	4302  53		     _pushw: push  bx
+    438	4303  93		     _swapw: xchg  ax,bx
+    439
+    440	4304  AD		     _nop:   lodsw
+    441	4305  97		     _ex:    xchg  di,ax
+    442	4306  8D 7D 02			     LEA   DI,[DI+2]	; !!!
+    443	4309  FF 65 FE			     jmp   Pw [di-2]	; !!!
+    444	430C  58		     PADA:   POP   AX
+    445	430D  FF D7		     PA:     CALL  DI
+    446	430F  50		     _PHA:   PUSH  AX
+    447					     NEXT
+1   448	4310  EB F2			     jmp  _nop
+    449	4312  8A 07		     _LDB:   MOV   AL,[BX]
+    450	4314  B4 00			     MOV   AH,0
+    451	4316  EB F7			     JMP   _PHA
+    452	4318  FF 37		     _LDW:   PUSH  [BX]	     ;	!.
+    453					     NEXT
+1   454	431A  EB E8			     jmp  _nop
+    455	431C  AF		     setvar2:scasw
+    456	431D  89 1D		     setvar: mov   [di],bx
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 9
+itsy_4.asm
+
+
+
+    457	431F  EB 12			     jmp   SHORT _drop
+    458	4321  0B DB		     _0ex:   or	   bx,bx
+    459	4323  75 0E			     jNe   _DROP
+    460	4325  5B		     _DROPX: pop   bx
+    461	4326  B9			     db	   0B9h
+    462	4327  43		     _2PX:   INC   BX
+    463	4328  43		     _1PX:   INC   BX
+    464	4329  8B 76 00		     _exit:  mov   si,Pw [bp]
+    465	432C  45		     _rdrop: inc   bp
+    466	432D  45			     inc   bp
+    467					     next
+1   468	432E  EB D4			     jmp  _nop
+    469	4330  58		     DDP:    POP   AX
+    470	4331  FF D7		     DRP:    CALL  DI
+    471	4333  5B		     _drop:  pop   bx
+    472					     next
+1   473	4334  EB CE			     jmp  _nop
+    474	4336  83 EB 01		     _0br:   SUB   bx,1
+    475	4339  5B			     pop   bx
+    476	433A  72 03			     jC	   _jump
+    477	433C  AD		     _skip:  lodsw
+    478					     next
+1   479	433D  EB C5			     jmp  _nop
+    480	433F  8B 34		     _jump:  mov   si,[si]
+    481					     next
+1   482	4341  EB C1			     jmp  _nop
+    483	4343  58		     _push:  pop   ax
+    484	4344  93			     xchg  ax,bx
+    485	4345  EB 9E			     jmp   _rpush
+    486	4347  53		     _pop:   push  bx
+    487	4348  8B 5E 00			     mov   bx,[bp]
+    488	434B  EB DF			     jmp   _rdrop
+    489	434D  58		     DA:     POP   AX
+    490	434E  AF		     __:     SCASW
+    491	434F  FF D7			     CALL  DI
+    492					     NEXT
+1   493	4351  EB B1			     jmp  _nop
+    494
+    495				     ; ;HERE @.	XCHG PUSH EX POP ! ;
+    496				     ; ;HERE_DOES @.XPE	POP ! ;
+    497	4353  E8 FF8A		     @XPE:   CALL  _DOES
+    498	4356  4211r 4435r 43C1r	  +	     DW	 XT_@XPE,XT_POP,XT_STW,XT_DROPX
+    499	      448Dr
+    500
+    501	435E  FF 37		     _@XPE:  PUSH  [BX]
+    502	4360			     _XPE:   X
+1   503	4360  87 E5			     xchg sp,bp
+    504	4362  58			     POP   AX
+    505	4363  53			     PUSH  BX
+    506	4364  56			     PUSH  SI
+    507					     X
+1   508	4365  87 E5			     xchg sp,bp
+    509	4367  96			     XCHG  AX,SI
+    510	4368  EB C9			     JMP   _DROP
+    511
+    512	436A  59		     _STDSTR:POP   CX
+    513	436B  2B D9			     SUB   BX,CX
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 10
+itsy_4.asm
+
+
+
+    514	436D  B9			     db	   0B9h
+    515	436E  43		     _MOVSTR:INC   BX
+    516	436F  59			     POP   CX
+    517	4370  58			     POP   AX
+    518	4371  51			     PUSH  CX
+    519	4372  8B FB			     MOV   DI,BX
+    520	4374  E8 FE73			     CALL  CMOVEU
+    521	4377  4B		     _STDB:  DEC   BX	     ;	C!-
+    522	4378  58		     _STB:   POP   AX	     ;	C!.
+    523	4379  88 07			     MOV   [BX],AL
+    524					     NEXT
+1   525	437B  EB 87			     jmp  _nop
+    526	437D  4B		     _STDW:  DEC   BX	     ;	!-
+    527	437E  4B			     DEC   BX
+    528	437F  8F 07		     _STW:   POP   [BX]	     ;	!.
+    529					     NEXT
+1   530	4381  EB 81			     jmp  _nop
+    531				     ;
+    532				     ; -------------------
+    533				     ; Inner Interpreter
+    534				     ; -------------------
+    535
+    536				     ;	      SCASW
+    537				     ;_ard:   add   bx,bx
+    538				     ;_call:  lodsw
+    539				     ;	      jmp   pcpush
+    540				     ;_toforth:pop  ax
+    541				     ;	      jmp   pcpush
+    542				     ;_J:     MOV   DI,2
+    543				     ;	      db    0B9h
+    544				     ;_I:     XOR   DI,DI
+    545				     ;	      MOV   AX,[BP+DI]
+    546				     ;	      JMP   SHORT _PUSHW
+    547				     ;	      _XT   XT_DOES,DOVAR-1
+    548				     ;	      scasw
+    549				     ;	      scasw
+    550				     ;_SWPSTO:POP   DI
+    551				     ;	      DB    0B9H
+    552				     ;_BRP:   PUSH  BX
+    553				     ;	      SHL   BX,1
+    554				     ;	      CMC
+    555				     ;	      JMP   SHORT _BR_DR
+    556				     ;_next:  SUB   Pw [bp],1
+    557				     ;	      jNC   _jump
+    558				     ;	      jmp   _SKIP
+    559				     ;_LIT:   LODSW
+    560				     ;	      JMP   SHORT _PUSHW
+    561				     ;_BLIT:  LODSB
+    562				     ;	      JMP   SHORT _PUSHB
+    563				     ;_CO:    xchg  si,[bp]
+    564				     ;	      NEXT
+    565				     ;_XCHG:  XCHG  BX,[BP]
+    566				     ;	      NEXT
+    567				     ;_NEG:   DEC   BX
+    568				     ;_NOT:   MOV   AX,0FFFFH
+    569				     ;	      DB    0B9H
+    570				     ;_XOR:   POP   AX
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 11
+itsy_4.asm
+
+
+
+    571				     ;	      XOR   BX,AX
+    572
+    573	4383  83 FB 01		     _EQZ:   CMP    BX,1
+    574	4386  1B DB			     SBB    BX,BX
+    575					     NEXT
+1   576	4388  E9 FF79			     jmp  _nop
+    577
+    578				     ; -------------------
+    579				     ; String
+    580				     ; -------------------
+    581
+    582					     _XT  XT_strpc,DA
+1   583	438B  434Dr		     XT_strpc	  DW	  DA
+    584	438D  91			     XCHG  AX,CX
+    585	438E  E8 0015			     CALL  _COUNT
+    586	4391  97			     XCHG  AX,DI
+    587	4392  88 09			     MOV   [BX+DI],CL
+    588	4394  4B			     DEC   BX
+    589	4395  FF 07		     _inc:   inc   Pw [bx]
+    590	4397  C3			     RET
+    591
+    592					     _XT  XT_SETSTR,_MOVSTR
+1   593	4398  436Er		     XT_SETSTR	   DW	   _MOVSTR
+    594
+    595				     ; -----------------------
+    596				     ; Terminal	Input /	Output
+    597				     ; -----------------------
+    598
+    599					     _XT  XT_acpt,PSDA
+1   600	439A  42FFr		     XT_acpt	 DW	 PSDA
+    601	439C  93			     XCHG   AX,BX
+    602	439D  89 07			     MOV    [BX],AX
+    603	439F  8B D3			     MOV    DX,BX
+    604	43A1  B4 0A			     MOV    AH,10
+    605	43A3  CD 21			     INT    21H
+    606	43A5  43			     INC    BX
+    607	43A6  8A 07		     _COUNT: MOV    AL,[BX]
+    608	43A8  43			     INC    BX
+    609	43A9  B4 00		     _LOBYTE:MOV    AH,0
+    610	43AB  C3			     RET
+    611
+    612					     _XT  XT_demit,DRP
+1   613	43AC  4331r		     XT_demit	  DW	  DRP
+    614	43AE  87 DA		     _DEMIT:  xchg Bx,dx
+    615	43B0  B4 02			     mov  ah,2
+    616	43B2  CD 21			     int  021h
+    617	43B4  C3			     RET
+    618
+    619					     _XT  XT_dkey,PS
+1   620	43B5  4300r		     XT_dkey	 DW	 PS
+    621	43B7  B4 07		     _DKEY:  mov  ah,7
+    622	43B9  CD 21			     int  021h
+    623	43BB  EB EC			     JMP  _LOBYTE
+    624
+    625				     ; -------------------
+    626				     ; Peek and	Poke
+    627				     ; -------------------
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 12
+itsy_4.asm
+
+
+
+    628
+    629					     _XT XT_STDB,_STDB
+1   630	43BD  4377r		     XT_STDB	 DW	 _STDB
+    631					     _XT XT_STDW,_STDW
+1   632	43BF  437Dr		     XT_STDW	 DW	 _STDW
+    633
+    634				     ;	      _XT XT_STB,_STB
+    635					     _XT XT_STW,_STW
+1   636	43C1  437Fr		     XT_STW	DW	_STW
+    637
+    638				     ;	     _XT  XT_STR,PS
+    639				     ;	     DB	   0B9H
+    640					     _XT  XT_fetchp,PA
+1   641	43C3  430Dr		     XT_fetchp	   DW	   PA
+    642	43C5  8B 07			     MOV   AX,[BX]
+    643	43C7  EB 04			     JMP   SHORT _2
+    644
+    645				     ;	     _XT  XT_STORE,DDP
+    646				     ;	     DB	   0B9H
+    647					     _xt  XT_storep,DA
+1   648	43C9  434Dr		     XT_storep	   DW	   DA
+    649	43CB  89 07		     _storep:MOV   PW [BX],AX
+    650	43CD  43		     _2:     INC   BX
+    651	43CE  43		     _1:     INC   BX
+    652	43CF  C3			     RET
+    653
+    654					     _XT  XT_CSTORE,DDP
+1   655	43D0  4330r		     XT_CSTORE	   DW	   DDP
+    656	43D2  B9			     DB	   0B9H
+    657					     _xt  XT_cstorep,DA
+1   658	43D3  434Dr		     XT_cstorep	    DW	    DA
+    659	43D5  88 07			     MOV   [BX],AL
+    660	43D7  EB F5			     JMP  _1
+    661
+    662					     _XT  XT_Cfetchp,pA
+1   663	43D9  430Dr		     XT_Cfetchp	    DW	    pA
+    664	43DB  B9			      DB    0B9H
+    665					     _XT  XT_count,PS
+1   666	43DC  4300r		     XT_count	  DW	  PS
+    667	43DE  EB C6			     JMP  _COUNT
+    668
+    669				     ; -----------------------
+    670				     ; searching
+    671				     ; -----------------------
+    672
+    673					     _XT XT_find,PS
+1   674	43E0  4300r		     XT_find	 DW	 PS
+    675	43E2  56			     push  si
+    676	43E3  8B 36 4185r		     mov   SI,[XT_last+_AT]
+    677	43E7  33 C9			     XOR   cX,CX
+    678	43E9  EB 02			     JMP   SHORT FINDN
+    679	43EB  03 F1		     FND:    add   si,cx
+    680	43ED  8B FB		     findN:  mov   di,bx
+    681	43EF  8B D6			     MOV   DX,SI
+    682	43F1  8D 74 03			     LEA   SI,[SI+3]
+    683	43F4  8A 4C 01			     mov   cl,byte[si]
+    684	43F7  E3 0B			     jcxz  not_fnd
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 13
+itsy_4.asm
+
+
+
+    685	43F9  41			     inc   cx
+    686	43FA  F3> A6			     repe  cmpsb
+    687	43FC  75 ED			     jNZ   fnd
+    688	43FE  8B DA			     MOV   BX,DX     ;fnd_ok:
+    689	4400  8B CB			     MOV   CX,BX
+    690	4402  8B 1F			     MOV   BX,[BX]
+    691	4404  91		     not_fnd:xchg  ax,CX
+    692	4405  5E			     pop   si
+    693	4406  C3			     RET
+    694
+    695				     ; -------------------
+    696				     ; Maths / Logic / registers
+    697				     ; -------------------
+    698
+    699					     _XT  XT_EQZ,_EQZ
+1   700	4407  4383r		     XT_EQZ	DW	_EQZ
+    701
+    702					     _xt XT_lit,PS
+1   703	4409  4300r		     XT_lit	DW	PS
+    704	440B  AD			     LODSW
+    705	440C  C3			     RET
+    706
+    707				     ;	      _XT  XT_1M,__
+    708				     ;	      DEC  BX
+    709				     ;	      RET
+    710
+    711					     _xt XT_and,DA
+1   712	440D  434Dr		     XT_and	DW	DA
+    713	440F  23 D8			     AND   BX,AX
+    714	4411  C3			     RET
+    715
+    716					     _XT XT_UMIN,DA
+1   717	4412  434Dr		     XT_UMIN	 DW	 DA
+    718	4414  3B C3			     CMP   AX,BX
+    719	4416  73 01			     JNC   @@1
+    720	4418  93			     XCHG  AX,BX
+    721	4419  C3		     @@1:    RET
+    722
+    723					     _xt XT_plus,DA
+1   724	441A  434Dr		     XT_plus	 DW	 DA
+    725	441C  03 D8			     ADD   BX,AX
+    726	441E  C3			     RET
+    727
+    728					     _xt XT_dec,__
+1   729	441F  434Er		     XT_dec	DW	__
+    730	4421  FF 0F			     DEC   PW [BX]
+    731	4423  C3			     RET
+    732
+    733					     _XT  XT_TOEVAL,PADA
+1   734	4424  430Cr		     XT_TOEVAL	   DW	   PADA
+    735	4426  03 C3			     ADD   AX,BX
+    736	4428  F7 DB		     _NEG:   NEG   BX
+    737	442A  C3			     RET
+    738
+    739				     ; -------------------
+    740				     ; Stack
+    741				     ; -------------------
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 14
+itsy_4.asm
+
+
+
+    742
+    743					     _xt XT_dup,PS
+1   744	442B  4300r		     XT_dup	DW	PS
+    745	442D  8B C3			     MOV AX,BX
+    746	442F  C3			     RET
+    747
+    748					     _xt XT_swap,PSDA
+1   749	4430  42FFr		     XT_swap	 DW	 PSDA
+    750	4432  C3			     RET
+    751
+    752					     _XT XT_drop,_DROP
+1   753	4433  4333r		     XT_drop	 DW	 _DROP
+    754					     _xt XT_pop,_pop
+1   755	4435  4347r		     XT_pop	DW	_pop
+    756					     _xt XT_push,_push
+1   757	4437  4343r		     XT_push	 DW	 _push
+    758
+    759				     ;	      _XT XT_J,_J
+    760				     ;	      _XT XT_I,_I
+    761				     ;	      _XT XT_XCHG,_XCHG
+    762				     ;	      _XT XT_EX,_CO
+    763
+    764				     ;	      _COLON XT_TIMES
+    765				     ;	      DW XT_1M,XT_BRM,_TMS2,XT_PUSH
+    766				     ;_TMS:   DW XT_J,XT_EXECUTE,XT_NEXT,_TMS,XT_POP
+    767				     ;_TMS2:  DW XT_RDROP,XT_DROPX
+    768
+    769				     ; -----------------------
+    770				     ; Colon Definition
+    771				     ; -----------------------
+    772
+    773					     _XT XT_semicolon,_does0 ; ;`
+1   774	4439  4457r		     XT_semicolon     DW      _does0
+    775	443B  448Br 44A1r		     dw	xt_exit,xt_lbrak
+    776
+    777					     _XT XT_colon,_does1     ; :
+1   778	443F  4460r		     XT_colon	  DW	  _does1
+    779	4441  42EEr 44B3r		     dw	docolon,xt_rbrak
+    780
+    781					     _XT XT_colCoMP,_does0   ; :`
+1   782	4445  4457r		     XT_colCoMP	    DW	    _does0
+    783	4447  4483r 443Fr		     dw	XT_SKIP,xt_COLON
+    784
+    785				     ; -------------------
+    786				     ; Compilation
+    787				     ; -------------------
+    788
+    789					     _XT  XT_COMMA,XT_HERE+_AT
+1   790	444B  417Dr		     XT_COMMA	  DW	  XT_HERE+_AT
+    791	444D  43C9r 448Br		     DW	XT_STOREP,XT_EXIT
+    792
+    793					     _xt XT_litcom,_does0
+1   794	4451  4457r		     XT_litcom	   DW	   _does0
+    795	4453  4409r 444Br		       dw xt_lit,xt_comma
+    796
+    797	4457  E8 FE86		     _does0: call _does	 ; like	;
+    798	445A  446Dr 4487r 448Br		     dw	xt_wcomma,xt_perform,xt_exit
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 15
+itsy_4.asm
+
+
+
+    799
+    800	4460  E8 FE7D		     _does1: call _does	 ; like	:
+    801	4463  4179r 4217r 446Dr	  +	     dw	XT_HERE,XT_ENTRY,xt_wcomma,xt_perform,xt_exit
+    802	      4487r 448Br
+    803
+    804					     _COLON XT_wcomma
+1   805	446D  42EEr		     XT_wcomma	   DW	  DOCOLON
+    806	446F  43C3r 4430r 444Br	  +	     dw	xt_fetchp,xt_swap,xt_comma,xt_exit  ; 'w,',wcomma
+    807	      448Br
+    808
+    809					     _COLON xt_clit
+1   810	4477  42EEr		     xt_clit	 DW	DOCOLON
+    811	4479  44EDr 4451r 448Br		     dw	xt_num,xt_litcom,xt_exit
+    812
+    813				     ; -------------------
+    814				     ; Flow Control
+    815				     ; -------------------
+    816
+    817					     _XT XT_0BR,_0BR
+1   818	447F  4336r		     XT_0BR	DW	_0BR
+    819					     _XT XT_br,_jump
+1   820	4481  433Fr		     XT_br     DW      _jump
+    821					     _xt XT_skip,_skip
+1   822	4483  433Cr		     XT_skip	 DW	 _skip
+    823					     _xt XT_exec,_exec
+1   824	4485  42CBr		     XT_exec	 DW	 _exec
+    825					     _xt XT_perform,_perform
+1   826	4487  42C9r		     XT_perform	    DW	    _perform
+    827					     _XT XT_RDROP,_RDROP
+1   828	4489  432Cr		     XT_RDROP	  DW	  _RDROP
+    829					     _XT XT_exit,_exit
+1   830	448B  4329r		     XT_exit	 DW	 _exit
+    831					     _XT XT_DROPx,_DROPX
+1   832	448D  4325r		     XT_DROPx	  DW	  _DROPX
+    833					     _xt XT_0ex,_0ex
+1   834	448F  4321r		     XT_0ex	DW	_0ex
+    835				     ;	      _xt XT_1Px,_1Px
+    836				     ;	      _xt XT_2Px,_2Px
+    837
+    838				     ;	      _xt XT_call,_call
+    839				     ;	      _xt XT_for,_for
+    840				     ;	      _xt XT_next,_next
+    841
+    842				     ; -----------------------
+    843
+    844				     ; Dictionary Search
+    845				     ; -----------------------
+    846
+    847					     _COLON XT_tick
+1   848	4491  42EEr		     XT_tick	 DW	DOCOLON
+    849	4493  41F7r 44D5r 415Br	  +	     DW	XT_TOKEN,XT_NZ?,xt_SEARCH,xt_TWO,xt_and,xt_NZ?,xt_exit
+    850	      412Fr 440Dr 44D5r	  +
+    851	      448Br
+    852
+    853					     _COLON XT_lbrak	     ; interpreter search
+1   854	44A1  42EEr		     XT_lbrak	  DW	 DOCOLON
+    855	44A3  415Dr 43E0r 447Fr	  +	     dw	Xt_SEARCH+_TO,xt_find,xt_0br,num_chk,XT_TRE,xt_EXIT
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 16
+itsy_4.asm
+
+
+
+    856	      44AFr 4133r 448Br
+    857	44AF  412Br 448Br	     num_chk:dw	XT_ONE,xt_EXIT
+    858
+    859					     _COLON XT_rbrak	     ; compiler	search
+1   860	44B3  42EEr		     XT_rbrak	  DW	 DOCOLON
+    861	44B5  415Dr 4137r 438Br		     dw	Xt_SEARCH+_TO,XT_FLAG,xt_strpc
+    862	44BB  43E0r 447Fr 44C5r	  +	     dw	xt_find,xt_0br,comp_it,XT_TRE,xt_EXIT
+    863	      4133r 448Br
+    864	44C5  441Fr		     comp_it dw	 xt_dec
+    865	44C7  43E0r 447Fr 44D1r	  +	     dw	 xt_find,xt_0br,comp_num,XT_TWO,xt_EXIT
+    866	      412Fr 448Br
+    867	44D1  4127r 448Br	     comp_num dw XT_ZER,xt_EXIT
+    868
+    869					     _COLON2 XT_NZ?
+1   870	44D5  42EDr		     XT_NZ?	DW     DOCOLON-1
+    871					     _COLON2 XT_Z?
+1   872	44D7  42EDr		     XT_Z?     DW     DOCOLON-1
+    873	44D9  4407r 448Fr 413Fr	  +	     DW	XT_EQZ,xt_0ex,xt_qm,XT_EMIT
+    874	      4155r
+    875	44E1  4409r 3039 4521r		     DW	XT_LIT,12345,XT_P10    ; !!!
+    876	44E7  4127r 4163r		     DW	XT_ZER,XT_LTB+_TO      ; !!!
+    877	44EB  41C6r			     DW	xt_abort
+    878
+    879					     _COLON xt_num
+1   880	44ED  42EEr		     xt_num	DW     DOCOLON
+    881	44EF  43DCr 4424r 422Dr	  +	     dw	xt_count,XT_TOEVAL,xt_number,XT_Z?,XT_EXIT
+    882	      44D7r 448Br
+    883
+    884				     ; -----------------------
+    885				     ; Outer Interpreter
+    886				     ; -----------------------
+    887
+    888					     _COLON XT_P
+1   889	44F9  42EEr		     XT_P     DW     DOCOLON
+    890	44FB  414Fr 4433r 448Br		     DW	XT_KEY,XT_DROP,XT_EXIT
+    891
+    892					     _COLON  XT_DD  ; BEGIN 10 /MOD >DIG SWAP DUP 0; AGAIN
+1   893	4501  42EEr		     XT_DD     DW     DOCOLON
+    894	4503  4409r 000A 4531r	  +  _DD     DW	XT_LIT,10,XT_DIV,XT_DIG,XT_SWAP,XT_DUP,XT_0EX,XT_BR,_DD
+    895	      4541r 4430r 442Br	  +
+    896	      448Fr 4481r 4503r
+    897
+    898					     _COLON  XT_PN  ;  BEGIN DUP 0; EMIT AGAIN
+1   899	4515  42EEr		     XT_PN     DW     DOCOLON
+    900	4517  442Br 448Fr 4155r	  +  _PD     DW	XT_DUP,XT_0EX,XT_EMIT,XT_BR,_PD
+    901	      4481r 4517r
+    902
+    903					     _COLON  XT_P10 ; 0	SWAP #D	DROP #D. DROP ;
+1   904	4521  42EEr		     XT_P10	DW     DOCOLON
+    905	4523  4127r 4430r 4501r	  +	     DW	XT_ZER,XT_SWAP,XT_DD,XT_DROP,XT_PN,XT_P,XT_DROPX
+    906	      4433r 4515r 44F9r	  +
+    907	      448Dr
+    908
+    909					     _XT XT_DIV,PADA
+1   910	4531  430Cr		     XT_DIV	DW	PADA
+    911	4533  33 D2			     XOR DX,DX
+    912	4535  F7 F3			     DIV BX
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 17
+itsy_4.asm
+
+
+
+    913	4537  8B DA			     MOV BX,DX
+    914	4539  C3			     RET
+    915
+    916					     _XT XT_MUL,PADA
+1   917	453A  430Cr		     XT_MUL	DW	PADA
+    918	453C  F7 E3			     MUL BX
+    919	453E  8B DA			     MOV BX,DX
+    920	4540  C3			     RET
+    921
+    922					     _XT XT_DIG,__
+1   923	4541  434Er		     XT_DIG	DW	__
+    924	4543  80 FB 0A			     CMP BL,10
+    925	4546  7C 03			     JL	 _PPP1
+    926	4548  80 C3 07			     ADD BL,7
+    927	454B  80 C3 30		     _PPP1:  ADD BL,'0'
+    928	454E  C3			     RET
+    929
+    930	454F			     freemem:
+    931
+    932	      =0000		     lastw = ppppp
+    933
+    934	454F			     MyCseg  ends
+    935					     end  Start
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 18
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??0000			Byte   MYCSEG:410B		   140	#142
+??0001			Byte   MYCSEG:4114		   147	#149
+??0002			Byte   MYCSEG:4119		   154	#156
+??DATE			Text   "11/30/14"
+??FILENAME		Text   "itsy_4	"
+??TIME			Text   "08:28:57"
+??VERSION		Number 0314
+@@1			Near   MYCSEG:4419		   719	#721
+@CPU			Text   0101H
+@CURSEG			Text   MYCSEG			   #124
+@FILENAME		Text   ITSY_4
+@WORDSIZE		Text   2			   #124
+@XPE			Near   MYCSEG:4353		   208	212  #497
+CMOVE			Near   MYCSEG:41F1		   #270
+CMOVEU			Near   MYCSEG:41EA		   #265	 520
+CMOVEU0			Near   MYCSEG:41E9		   #264
+COMP_IT			Word   MYCSEG:44C5		   862	#864
+COMP_NUM		Word   MYCSEG:44D1		   865	#867
+CPUSHU			Near   MYCSEG:41EC		   #266
+DA			Near   MYCSEG:434D		   #489	 583  648  658	712  717  724
+DDP			Near   MYCSEG:4330		   #469	 655
+DEFER			Near   MYCSEG:42C6		   #398
+DEFER2			Near   MYCSEG:42C5		   187	189  191  #397
+DEFERO			Near   MYCSEG:42C1		   193	#396
+DOCOLON			Near   MYCSEG:42EE		   235	246  281  295  #424  779  805  810  848	 854  860  870	872  880  +
+							   889	893  899  904
+DOCONS2			Near   MYCSEG:42F6		   197	199  201  203  #429
+DOCONS3			Near   MYCSEG:42F5		   207	211  #428
+DOCONST			Near   MYCSEG:42F7		   168	170  172  174  176  178	 180  #430
+DOPOINT			Near   MYCSEG:42D9		   195	#410
+DOVAR			Near   MYCSEG:42FB		   #432
+DRP			Near   MYCSEG:4331		   #470	 613
+FINDN			Near   MYCSEG:43ED		   678	#680
+FND			Near   MYCSEG:43EB		   #679	 687
+FREEMEM			Near   MYCSEG:454F		   208	#930
+LASTW			Number 0000			   #932
+MOVER			Near   MYCSEG:41D4		   216	#254
+NOT_FND			Near   MYCSEG:4404		   684	#691
+NUM_CHK			Near   MYCSEG:44AF		   855	#857
+PA			Near   MYCSEG:430D		   #445	 641  663
+PADA			Near   MYCSEG:430C		   306	#444  734  910	917
+PB			Text   byte  ptr		   #4
+PCPUSH			Near   MYCSEG:42E4		   411	#417  425
+PD			Text   dword ptr		   #2
+PPPPP			Number 0000			   #27	932
+PS			Near   MYCSEG:4300		   #436	 620  666  674	703  744
+PSDA			Near   MYCSEG:42FF		   #435	 600  749
+PW			Text   word  ptr		   #3  365  366	 388  396  443	464  589  649  730
+QQQQQ			Number 0000			   #26	27
+SELF0			Near   MYCSEG:4103		   130	#134
+SELF1			Near   MYCSEG:4106		   #135	 212
+SELF2			Near   MYCSEG:4189		   134	#216
+SETPOINT		Near   MYCSEG:42F1		   195	#426
+SETVAR			Near   MYCSEG:431D		   187	189  191  193  197  199	 201  203  #456
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 19
+Symbol Table
+
+
+
+SETVAR2			Near   MYCSEG:431C		   208	212  #455
+START			Byte   MYCSEG:0100		   #129	 935
+TO_N2			Near   MYCSEG:427B		   346	#351
+WORDE			Near   MYCSEG:42BA		   386	#388
+XSYSLP			Word   MYCSEG:419C		   227	#227
+XT_0BR			Word   MYCSEG:447F		   #818	 855  862  865
+XT_0EX			Word   MYCSEG:448F		   237	282  #834  873	894  900
+XT_@XPE			Word   MYCSEG:4211		   #288	 498
+XT_ABORT		Word   MYCSEG:41C6		   #246	 877
+XT_ACCEPT		Word   MYCSEG:4143		   #187	 227
+XT_ACPT			Word   MYCSEG:439A		   187	#600
+XT_AND			Word   MYCSEG:440D		   #712	 849
+XT_BL			Word   MYCSEG:413B		   #178	 282  284
+XT_BR			Word   MYCSEG:4481		   227	239  #820  894	900
+XT_CFETCHP		Word   MYCSEG:43D9		   284	#663
+XT_CLIT			Word   MYCSEG:4477		   160	#810
+XT_CNTC			Word   MYCSEG:416D		   #201	 396
+XT_COLCOMP		Word   MYCSEG:4445		   #782
+XT_COLON		Word   MYCSEG:443F		   #778	 783
+XT_COMMA		Word   MYCSEG:444B		   160	#790  795  806
+XT_COUNT		Word   MYCSEG:43DC		   226	296  #666  881
+XT_CSTORE		Word   MYCSEG:43D0		   #655
+XT_CSTOREP		Word   MYCSEG:43D3		   #658
+XT_DD			Word   MYCSEG:4501		   #893	 905
+XT_DEC			Word   MYCSEG:441F		   #729	 864
+XT_DEMIT		Word   MYCSEG:43AC		   193	#613
+XT_DIG			Word   MYCSEG:4541		   894	#923
+XT_DIV			Word   MYCSEG:4531		   894	#910
+XT_DKEY			Word   MYCSEG:43B5		   191	#620
+XT_DROP			Word   MYCSEG:4433		   282	#753  890  905
+XT_DROPX		Word   MYCSEG:448D		   284	498  #832  905
+XT_DUP			Word   MYCSEG:442B		   282	#744  894  900
+XT_EMIT			Word   MYCSEG:4155		   #193	 873  900
+XT_ENTRY		Word   MYCSEG:4217		   144	#295  801
+XT_EQZ			Word   MYCSEG:4407		   #700	 873
+XT_ETB			Word   MYCSEG:4167		   #199	 236  366
+XT_EVAL			Word   MYCSEG:41AC		   227	#235
+XT_EXEC			Word   MYCSEG:4485		   160	#824
+XT_EXIT			Word   MYCSEG:448B		   298	775  791  798  801  806	 811  #830  849	 855  857  862	865  867  +
+							   881	890
+XT_FETCHP		Word   MYCSEG:43C3		   #641	 806
+XT_FIND			Word   MYCSEG:43E0		   #674	 855  862  865
+XT_FLAG			Word   MYCSEG:4137		   #176	 227  861
+XT_HERE			Word   MYCSEG:4179		   #207	 237  284  296	790  801
+XT_KEY			Word   MYCSEG:414F		   #191	 890
+XT_LAST			Word   MYCSEG:4181		   #211	 298  676
+XT_LBRAK		Word   MYCSEG:44A1		   226	775  #854
+XT_LIT			Word   MYCSEG:4409		   #703	 795  875  894
+XT_LITCOM		Word   MYCSEG:4451		   #794	 811
+XT_LTB			Word   MYCSEG:4161		   #197	 236  282  365	388  876
+XT_MOVSTR		Word   MYCSEG:4215		   284	#292
+XT_MUL			Word   MYCSEG:453A		   #917
+XT_NOP			Word   MYCSEG:41AA		   #232
+XT_NUM			Word   MYCSEG:44ED		   160	811  #880
+XT_NUMBER		Word   MYCSEG:422D		   #306	 881
+XT_NZ?			Word   MYCSEG:44D5		   296	849  849  #870
+XT_OK			Word   MYCSEG:4149		   #189	 227
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 20
+Symbol Table
+
+
+
+XT_ONE			Word   MYCSEG:412B		   #170	 857
+XT_P			Word   MYCSEG:44F9		   #889	 905
+XT_P10			Word   MYCSEG:4521		   137	875  #904
+XT_PARSE		Word   MYCSEG:428A		   282	#363
+XT_PERFORM		Word   MYCSEG:4487		   239	798  801  #826
+XT_PLUS			Word   MYCSEG:441A		   #724
+XT_PN			Word   MYCSEG:4515		   #899	 905
+XT_POP			Word   MYCSEG:4435		   498	#755
+XT_PUSH			Word   MYCSEG:4437		   #757
+XT_QM			Word   MYCSEG:413F		   #180	 873
+XT_QUIT			Word   MYCSEG:41C4		   #243	 247
+XT_RBRAK		Word   MYCSEG:44B3		   779	#860
+XT_RDROP		Word   MYCSEG:4489		   #828
+XT_SEARCH		Word   MYCSEG:415B		   #195	 237  849  855	861
+XT_SEMICOLON		Word   MYCSEG:4439		   #774
+XT_SETSTR		Word   MYCSEG:4398		   #593
+XT_SKIP			Word   MYCSEG:4483		   783	#822
+XT_STATES		Word   MYCSEG:411D		   #160	 239
+XT_STDB			Word   MYCSEG:43BD		   298	#630
+XT_STDSTR		Word   MYCSEG:4213		   #290	 298
+XT_STDW			Word   MYCSEG:43BF		   298	#632
+XT_STOREP		Word   MYCSEG:43C9		   247	#648  791
+XT_STRPC		Word   MYCSEG:438B		   #583	 861
+XT_STW			Word   MYCSEG:43C1		   498	#636
+XT_SWAP			Word   MYCSEG:4430		   #749	 806  894  905
+XT_TIB			Word   MYCSEG:4173		   #203	 226  227  247
+XT_TICK			Word   MYCSEG:4491		   #848
+XT_TOEVAL		Word   MYCSEG:4424		   236	#734  881
+XT_TOKEN		Word   MYCSEG:41F7		   237	#281  296  849
+XT_TRE			Word   MYCSEG:4133		   #174	 855  862
+XT_TWO			Word   MYCSEG:412F		   #172	 849  865
+XT_UMIN			Word   MYCSEG:4412		   284	#717
+XT_WCOMMA		Word   MYCSEG:446D		   798	801  #805
+XT_Z?			Word   MYCSEG:44D7		   #872	 881
+XT_ZER			Word   MYCSEG:4127		   #168	 247  296  867	876  905
+_0			Near   MYCSEG:42D7		   404	#409
+_0BR			Near   MYCSEG:4336		   #474	 818
+_0EX			Near   MYCSEG:4321		   #458	 834
+_1			Near   MYCSEG:43CE		   #651	 660
+_1PX			Near   MYCSEG:4328		   #463
+_2			Near   MYCSEG:43CD		   643	#650
+_2PX			Near   MYCSEG:4327		   #462
+_@XPE			Near   MYCSEG:435E		   288	#501
+_ARB			Near   MYCSEG:42D5		   #408
+_ARW			Near   MYCSEG:42D3		   160	#407
+_AT			Number 0004			   #7  298  365	 366  388  396	676  790
+_CNUM			Near   MYCSEG:4239		   #315	 321  325
+_COUNT			Near   MYCSEG:43A6		   585	#607  667
+_DD			Word   MYCSEG:4503		   894	#894
+_DEMIT			Near   MYCSEG:43AE		   #614
+_DKEY			Near   MYCSEG:43B7		   #621
+_DOES			Near   MYCSEG:42E0		   #414	 497  797  800
+_DOES0			Near   MYCSEG:4457		   774	782  794  #797
+_DOES1			Near   MYCSEG:4460		   778	#800
+_DROP			Near   MYCSEG:4333		   457	459  #471  510	753
+_DROPX			Near   MYCSEG:4325		   #460	 832
+_EQZ			Near   MYCSEG:4383		   #573	 700
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 21
+Symbol Table
+
+
+
+_EX			Near   MYCSEG:4305		   405	#441
+_EXEC			Near   MYCSEG:42CB		   #401	 824
+_EXIT			Near   MYCSEG:4329		   427	#464  830
+_EXNUM			Near   MYCSEG:4288		   316	349  353  #359
+_FORTH			Near   MYCSEG:41D0		   225	#250
+_INC			Near   MYCSEG:4395		   #589
+_INT			Near   MYCSEG:41B4		   #237	 239
+_JUMP			Near   MYCSEG:433F		   476	#480  820
+_LDB			Near   MYCSEG:4312		   #449
+_LDW			Near   MYCSEG:4318		   #452
+_LOBYTE			Near   MYCSEG:43A9		   #609	 623
+_MOVSTR			Near   MYCSEG:436E		   292	#515  593
+_N1			Near   MYCSEG:425E		   326	330  #336
+_N2			Near   MYCSEG:4266		   337	#340
+_N3			Near   MYCSEG:426F		   341	#345
+_NEG			Near   MYCSEG:4428		   #736
+_NOP			Near   MYCSEG:4304		   232	252  390  409  421  #440  448  454  468	 473  479  482	493  525  +
+							   530	576
+_NUM			Near   MYCSEG:4242		   310	#321
+_NUMZ			Near   MYCSEG:424B		   #324	 327
+_PARS			Near   MYCSEG:428C		   #364
+_PD			Word   MYCSEG:4517		   900	#900
+_PERFORM		Near   MYCSEG:42C9		   #400	 826
+_PHA			Near   MYCSEG:430F		   #446	 451
+_POP			Near   MYCSEG:4347		   #486	 755
+_PPP1			Near   MYCSEG:454B		   925	#927
+_PUSH			Near   MYCSEG:4343		   #483	 757
+_PUSHW			Near   MYCSEG:4302		   431	433  #437
+_RDROP			Near   MYCSEG:432C		   #465	 488  828
+_RESTART		Near   MYCSEG:418C		   #222	 243
+_RPUSH			Near   MYCSEG:42E5		   #418	 485
+_SGN			Near   MYCSEG:4254		   323	#329
+_SKIP			Near   MYCSEG:433C		   #477	 822
+_SKIPEX			Near   MYCSEG:42A4		   368	371  #375
+_STB			Near   MYCSEG:4378		   #522
+_STDB			Near   MYCSEG:4377		   #521	 630
+_STDSTR			Near   MYCSEG:436A		   290	#512
+_STDW			Near   MYCSEG:437D		   #526	 632
+_STOREP			Near   MYCSEG:43CB		   #649
+_STW			Near   MYCSEG:437F		   #528	 636
+_SWAPW			Near   MYCSEG:4303		   #438
+_TO			Number 0002			   #6  236  236	 855  861  876
+_VAL			Number 0006			   #8
+_WEX			Near   MYCSEG:42B1		   379	#383
+_WSCZ			Near   MYCSEG:42A8		   #378	 382
+_WSKP			Near   MYCSEG:429B		   #370	 374
+_XPE			Near   MYCSEG:4360		   #502
+__			Near   MYCSEG:434E		   #490	 729  923
+
+Macro Name						   Cref	(defined at #)
+
+COLON							   #78
+DROPREG							   #16
+HEAD							   #55
+NEXT							   #19	251  389  447  453  467	 472  478  481	492  524  529  575
+PRIMITIV						   #65
+PRIMITIVE						   #60
+Turbo Assembler	 Version 3.2	    11/30/14 08:28:57	    Page 22
+Symbol Table
+
+
+
+PUSHREG							   #10
+QUAN							   #109
+SWAPREG							   #13
+VALUE							   #87
+X							   #22	502  507
+_COLON							   #74	234  245  280  294  804	 809  847  853	859  879  888  892  898	  +
+							   903
+_COLON2							   #70	869  871
+_CONST							   #114	 167  169  171	173  175  177  179
+_ENTRY							   #118	 136  143  150
+_LN							   #48
+_NAM							   #29	139  146  153
+_POINT							   #100	 194
+_PRIM							   #40	362
+_QUAN							   #104	 205  209
+_VALUE							   #83	196  198  200  202
+_VAR							   #36
+_VECTO							   #92	192
+_VECTOR							   #96	186  188  190
+_XT							   #44	206  210  231  242  287	 289  291  305	582  592  599  612  619	  +
+							   629	631  635  640  647  654	 657  662  665	673  699  702  711  716	  +
+							   723	728  733  743  748  752	 754  756  773	777  781  789  793  817	  +
+							   819	821  823  825  827  829	 831  833  909	916  922
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+MYCSEG			16  454F Para	none		   #124	 125  125  125
+

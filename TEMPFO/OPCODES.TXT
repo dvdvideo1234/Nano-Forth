@@ -1,0 +1,33 @@
+ ADD    | ADD    | ADD    | ADD    | ADDA   | ADDA   | PHS    | PPS    | OR     | OR     | OR     | OR     | ORA    | ORA    | PHS    | Prtc   |
+ ADC    | ADC    | ADC    | ADC    | ADCA   | ADCA   | PHS    | PPS    | SBB    | SBB    | SBB    | SBB    | SBBA   | SBBA   | PHS    | PPSEG  |
+ AND    | AND    | AND    | AND    | ANDA   | ANDA   | SEG    | DAA    | SUB    | SUB    | SUB    | SUB    | SUBA   | SUBA   | SEG    | DAS    |
+ XOR    | XOR    | XOR    | XOR    | XORA   | XORA   | SEG    | AAA    | CMP    | CMP    | CMP    | CMP    | CMPA   | CMPA   | SEG    | AAS    |
+ INC    | INC    | INC    | INC    | INC    | INC    | INC    | INC    | DEC    | DEC    | DEC    | DEC    | DEC    | DEC    | DEC    | DEC    |
+ PUSH   | PUSH   | PUSH   | PUSH   | PUSH   | PUSH   | PUSH   | PUSH   | POP    | POP    | POP    | POP    | POP    | POP    | POP    | POP    |
+ PUSHA  | POPA   | BOUND  | --     | --     | --     | --     | --     | PUSH   | IMUL   | PUSH   | IMUL   | INSB   | INSW   | OUTSB  | OUTSW  |
+ JO     | JNO    | JB     | JNB    | JE     | JNE    | JBE    | JNBE   | JS     | JNS    | JP     | JNP    | JL     | JNL    | JLE    | JNLE   |
+ ArOp1  | ArOp1  | ArOp2  | ArOp2  | TEST   | TEST   | XCHG   | XCHG   | MOV    | MOV    | MOV    | MOV    | MOV    | LEA    | MOV    | POP    |
+ NOP    | XCHG   | XCHG   | XCHG   | XCHG   | XCHG   | XCHG   | XCHG   | CBW    | CWD    | CALL   | WAIT   | PUSHF  | POPF   | SAHF   | LAHF   |
+ LDA    | LDA    | STA    | STA    | MOVSB  | MOVSW  | CMPSB  | CMPSW  | TESTA  | TESTA  | STOSB  | STOSW  | LODSB  | LODSW  | SCASB  | SCASW  |
+ MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    | MOV    |
+ ShOp   | ShOp   | RET+   | RET    | LES    | LDS    | MOV    | MOV    | ENTER  | LEAVE  | RETf+  | RETf   | INT3   | INT    | INTO   | IRET   |
+ ShOp   | ShOp   | ShftOp | ShftOp | AAM    | AAD    | --     | XLAT   | ESC0   | ESC1   | ESC2   | ESC3   | ESC4   | ESC5   | ESC6   | ESC7   |
+ LOOPNE | LOOPE  | LOOP   | JCXZ   | INP    | INP    | OUTP   | OUTP   | NCALL  | NJMP   | FJMP   | SJMP   | IND    | IND    | OUTD   | OUTD   |
+ LOCK   | --     | REP    | REPZ   | HALT   | CMC    | Grp1   | Grp1   | CLC    | STC    | CLI    | STI    | CLD    | STD    | Grp2   | Grp3   |
+
+
+      \|md000r/m|md001r/m|md010r/m|md011r/m|md100r/m|md101r/m|md110r/m|md111r/m|
+-------|--------|--------|--------|--------|--------|--------|--------|--------|
+ArOp1  | ADD    | OR     | ADC    | SBB    | AND    | SUB    | XOR    | CMP    |
+-------|--------|--------|--------|--------|--------|--------|--------|--------|
+ArOp2  | ADD    | --     | ADC    | SBB    | --     | SUB    | --     | CMP    |
+-------|--------|--------|--------|--------|--------|--------|--------|--------|
+ShftOp | ROL    | ROR    | RCL    | RCR    | SHL    | SHR    | --     | RAR    |
+-------|--------|--------|--------|--------|--------|--------|--------|--------|
+Grp1   | TEST   | --     | NOT    | NEG    | MUL    | IMUL   | DIV    | IDIV   |
+-------|--------|--------|--------|--------|--------|--------|--------|--------|
+Grp2   | INC    | DEC    | CALLnr | CALLfr | JMPnr  | JMPfr  | PUSH   | --     |
+-------|--------|--------|--------|--------|--------|--------|--------|--------|
+Grp3   | INC    | DEC    | --     | --     | --     | --     | --     | --     |
+
+

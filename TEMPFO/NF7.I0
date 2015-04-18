@@ -1,0 +1,194 @@
+locals  @@
+
+pd  equ dword ptr
+pw  equ word  ptr
+pb  equ byte  ptr
+
+TO_     =  2
+AT_     =  4
+VAL_    =  6
+
+JMPS    MACRO LBL
+          jmp  SHORT LBL
+        ENDM
+
+SKIPA   MACRO
+        DB    03DH
+        ENDM
+
+SKIPB   MACRO
+        DB    03CH
+        ENDM
+
+;SKIPr   MACRO reg
+;        mov   reg,0
+;        org   $-2
+;        ENDM
+
+
+X       MACRO
+  xchg Rsp,DSP
+        ENDM
+
+TO_R    MACRO  REG
+  PUSH   REG
+        ENDM
+
+R_TO    MACRO  REG
+  POP    REG
+        ENDM
+
+TO_D    MACRO  REG
+  X
+  PUSH   REG
+  X
+        ENDM
+
+D_TO    MACRO  REG
+  X
+  POP    REG
+  X
+        ENDM
+
+dpop    macro
+  to_D  top
+  r_to  top
+        endm
+
+dpush   macro
+  to_r  top
+  d_to  top
+        endm
+
+w2      macro
+  scasw
+        endm
+
+;ldip    macro  reg
+;  rchg  reg
+;  lodsw
+;  rchg  reg
+;        endm
+
+wip2    macro
+  cmpsw
+        endm
+
+cf_to   macro  reg
+  sbb   reg,reg
+        endm
+
+rchg    macro   reg
+  xchg  ax,reg
+        endm
+
+qqqqq = 0
+ppppp = qqqqq
+
+__nam    macro   msg
+  local endstr
+  db    endstr-$-1
+  db    msg
+endstr  label   byte
+        endm
+
+__ln     macro   token
+ppppp = $
+  __nam  token
+  dw    qqqqq
+qqqqq = ppppp
+        endm
+
+__ALIGN  MACRO  FLAG
+        IF ($-START+FLAG) AND 1
+        NOP
+        ENDIF
+        ENDM
+
+;        _ALIGN 0
+;HLBL    =      ($-START+100H) SHR 1
+__XALIGN MACRO  HLBL
+HLBL    =      $
+        ENDM
+
+;LBL     =      (($-START+100H) SHR 1)+08000H
+__colGO  macro  lbl
+        __XALIGN LBL
+        DW  @XNEST,@LBL
+        endm
+
+__col    macro  lbl
+        __XALIGN LBL
+        DW  @NEST
+        endm
+
+__LBL    macro  lbl
+        __XALIGN LBL
+        DW  @LBL
+        endm
+
+__VAR    macro   LBL,DAT
+        __XALIGN LBL
+        DW      @_VAR,DAT
+        ENDM
+
+__XT     macro   LBL,ADR
+        __XALIGN LBL
+        DW      ADR
+        ENDM
+
+__value  macro   lbl,dat
+        __XALIGN LBL
+        DW     @_cons2,@_setvar,dat
+        endm
+
+__DEFERO macro   lbl,dat
+        __XALIGN LBL
+        DW     @_deferO,dat
+        endm
+
+__DEFER  macro   lbl,dat
+        __XALIGN LBL
+        DW     @_defer,dat
+        endm
+
+__vector macro   lbl,dat
+        __XALIGN LBL
+        DW     @_defer2,@_setvar,dat
+        endm
+
+__point  macro   lbl,dat
+        __XALIGN LBL
+        DW     @_point,@_setpnt,dat
+        endm
+
+__QUAN   MACRO   LBL,DAT
+        __XALIGN lbl
+        DW     @_CONS3,@_setvar2,@_VAR,dat
+        ENDM
+
+__VOC    MACRO   LBL,DAT
+        __XALIGN lbl
+        DW     @_SET_VOC,@_SRCH_VOC,dat
+        ENDM
+
+__const  macro   lbl,dat
+        __XALIGN LBL
+        DW    @_cons,DAT
+        endm
+
+__MCONS  macro   lbl,dat
+        __XALIGN LBL
+        DW    DOConst-1
+        DW    _DOES5
+        DW    DAT
+        endm
+
+__entry  macro ADR,DAT,nam
+        DW    ADR
+        DW    DAT
+        db    0
+        __nam  nam
+        endm
+
+

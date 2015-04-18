@@ -1,0 +1,336 @@
+L : BIOS-KEY ;
+L
+L  ' ><               ALIAS FLIP
+L  ' ><      2+       ALIAS @XCHG
+L  ' ><      4 +      ALIAS REVERCE
+L  ' MAX     2+       ALIAS 0MAX
+L  ' COUNT   2+       ALIAS WCOUNT
+L  ' ABS     2+       ALIAS DABS
+L  ' SCLST   2+       ALIAS SCIND
+L  ' SCAN    2+       ALIAS SCANW
+L  ' NBLK    2+       ALIAS WBLK
+L  '  NBLK   4 +      ALIAS VBLK
+L  ' FOPEN   2+       ALIAS OPEN
+L  ' CLOSE   2+       ALIAS FCLOSE
+L  ' EXEC    2+       ALIAS ?EXEC
+L  '  EXEC   4 +      ALIAS PERFORM
+L  ' WORD    2+       ALIAS BLWORD
+L  ' D,      2+       ALIAS DCOMPILE
+L  '  D,     4 +      ALIAS DLIT
+L  ' ,       2+       ALIAS COMPILE
+L  '  ,      4 +      ALIAS LIT
+L  ' C,      2+       ALIAS BCOMPILE
+L  '  C,     4 +      ALIAS BLIT
+L  ' RP      2+       ALIAS RP!
+L  '  (DO    4 +      ALIAS CNTDO
+L  ' LEAVE   2+       ALIAS 4TH>
+L  ' OVER    2+       ALIAS 2OVER
+L  ' CMOVE   2+       ALIAS CMOVE>
+L  '  CMOVE  4 +      ALIAS MOVE
+L  ' NEGATE  2+       ALIAS DNEGATE
+L  '  DUP    4 +      ALIAS TUCK
+L  ' +       2+       ALIAS D+
+L  '  +      4 +      ALIAS +!
+L  ' ROT     2+       ALIAS -ROT
+L  '  ROT    4 +      ALIAS ROLL
+L  ' DROP    2+       ALIAS 2DROP
+L  '  DROP   4 +      ALIAS RDROP
+L  ' DUP     2+       ALIAS 2DUP
+L  ' SWAP    2+       ALIAS 2SWAP
+L  ' 1-      2+       ALIAS 1-!
+L  '  1-     4 +      ALIAS 1-!@
+L  ' 2-      2+       ALIAS 2-!
+L  '  2-     4 +      ALIAS 2-!@
+L  ' 1+      2+       ALIAS 1+!
+L  '  1+     4 +      ALIAS @1+!
+L  ' 2+      2+       ALIAS 2+!
+L  '  2+     4 +      ALIAS @2+!
+L  ' !       2+       ALIAS 2!
+L  ' @       2+       ALIAS 2@
+L  ' ALLOT   4 +      ALIAS RECOVER
+L  ' >MARK   2+       ALIAS >RESOLVE
+L  ' MIN     2+       ALIAS 0MIN
+L  ' UNPACK  2+       ALIAS PACK
+L  ' -       2+       ALIAS D-
+L  ' 2-               ALIAS V>LINK
+L ' EXIT     4 +      ALIAS BYE
+L ' >MARK    4 +      ALIAS 2Z,
+L ' ("       4 +      ALIAS ".
+L ' XOR      2+       ALIAS XOR!
+L ' IMMEDIATE 4 +     ALIAS SMUDGE
+L
+L : EXECUTE PUSH ;
+L : N>LINK N>C 2- ;
+L : OFF 0 SWAP! ;  : ON -1 SWAP! ;
+L : ALIGN 1- SWAP 1- OR 1+ ;
+L : ?HEADERS! TO HEADER ;
+L : HEADERS 0 ?HEADERS! ;
+L : -HEADERS -1 ?HEADERS! ;
+L : -HEAD AT HERE SPTR 8000 - AT VSWAP 2!  HEADERS ;
+L : TRACE CR ' TR EXEC -TR ; IMMEDIATE
+L : WW DUP H. DUP @ DUP H. ?ID. 2+ ;
+L
+L : 1Z, 0 C, ;
+L : NM: NEGATE HERE SWAP [TO] DOES> HERE 2- AT + ] ;
+L : M: HERE AT , [ ' WORD @ 1+ DUP @ + 2+ , ] [AT] DOES> ] ;
+L : JM: M: 5 HERE 2- +! ;
+L : LBL: HEADER COMPILE [ ' INTERPRET 2+ @ , ] ] ;
+L
+L : ( C" ) WORD DROP ; IMMEDIATE     ( nf '("'      ; (" (". ". )
+L ' (" 2+ 'C ."    ' (" 'C "   ' ABORT 2+ 'C A"
+L : 'STR, DUP C, STR, ;
+L : ," TO WORD ", ;
+L : .( C" ) WORD ". ; IMMEDIATE
+L : 0" HERE 2+ [',] " 1Z, TO 1+ ; IMMEDIATE
+L  : CTRL BLWORD 1+ C@ 31 AND [',] LITERAL ; IMMEDIATE
+L
+L ' IOV @ ' SCRH TO @ 1- SWAP 1- SWAP 3 MAKER QUAN ,
+L ' IOV @ 1 NM: AT 2+ ! ;M 2 NM: AT 2- @ ;M 3 MAKER STACK> ,
+L ' IOV @ 1 NM: AT 2- ! ;M 2 NM: AT 2+ @ ;M 3 MAKER <STACK ,
+L AT FORTH 2- DUP @ SWAP 2- DUP @ SWAP 2- @ 3 MAKER MAKEVOC 2Z,
+L : VOCABULARY TO FORTH MAKEVOC VOCLINK LINK+  ;
+L
+L ' IOV @ 1 MAKER VARIABLE 2Z,
+L ' bl @ 1 MAKER CONSTANT ,
+L ' SCRH TO @ 2 MAKER VALUE ,
+L ' INITW TO @ 2 MAKER VECTOR ,
+L
+L  : RESCAN       >IN -FIND ROT TO >IN  NIP 0;
+L       CR HERE ". ."   EXIST ! "  BLK 1- 0>= 0;
+L      ." IN BLK " BLK H. ;
+L
+L ' RESCAN TO ?SAME
+L
+L 1024  CONSTANT 1K
+L 1028  CONSTANT B/BUF
+L 16    CONSTANT 1H
+L 31    CONSTANT #LEN
+L 64    CONSTANT 1L
+L
+L MAKEVOC MACROS 2Z,
+L VOCABULARY HIDDEN
+L VOCABULARY ASSEMBLER
+L
+L 256 DUP <STACK ON; , ( "," FOR FAST COMPARING BELOW)
+L
+L ( FLOAD CONTROL.TX)
+L : CS! AT ON; @  TO ON; ;
+L : ?CS ON; AT ON; @  - A" CS CHG!"  ;
+L : CSP! CSP SP TO CSP ;
+L ' CSP! ALIAS CASE IMMEDIATE
+L
+L : ?CSP SP CSP - A" SP CHG!" TO CSP ;
+L : .MARK >MARK  CSP! ;     ( FOR IFS , SKIPS, WHILES)
+L : ,.MARK ?CSP >RESOLVE ;
+L
+L : >LOOP >MARK HERE CSP! ;
+L : ,>LOOP ?CSP , >RESOLVE ;
+L : ,<MARK ?CS ON; , ;
+L : <MARK HERE TO ON; CS! ;
+L
+L ' .MARK       ' (BR (( SKIP
+L ' .MARK    ' (BR 2+ (( IF
+L ' .MARK ' (BR 2+ 2+ (( ~IF
+L ' .MARK        ' (OF (( OF
+L ' .MARK       ' (FOR (( FOR      ( IN THIS VERSION!!!)
+L ' ,.MARK   ' (FOR 2+ (( NEXT     ( IN THIS VERSION!!)
+L ' ,.MARK  ALIAS THEN IMMEDIATE
+L
+L : ELSE ?CSP PUSH  [',] SKIP   SWAP POP -ROT
+L        PUSH  [',] THEN   POP CSP! ; IMMEDIATE
+L ' ELSE ALIAS ENDOF IMMEDIATE
+L ' <MARK ALIAS BEGIN IMMEDIATE
+L
+L ' ,<MARK       ' (BR (( AGAIN
+L ' ,<MARK    ' (BR 2+ (( UNTIL
+L ' ,<MARK ' (BR 2+ 2+ (( ~UNTIL
+L
+L ' ~IF ALIAS ~WHILE IMMEDIATE
+L ' IF ALIAS WHILE IMMEDIATE
+L : REPEAT [',] AGAIN [',] THEN ; IMMEDIATE
+L
+L ' >LOOP        ' (DO (( DO
+L ' >LOOP     ' (DO 2+ (( ?DO
+L ' ,>LOOP       ' (LP (( LOOP
+L ' ,>LOOP    ' (LP 2+ (( +LOOP
+L
+L : ENDCASE COMPILE DROP BEGIN SP CSP -
+L WHILE [',] THEN REPEAT TO CSP ; IMMEDIATE
+L
+L  : ?EMIT DUP bl < IF DROP C" . THEN EMIT ;
+L  : ?TYPE FOR COUNT ?EMIT NEXT DROP ;
+L  : DUMPLINE CR DUP H. 1H  2DUP 2/ FOR WCOUNT SPACE FLIP H.
+L         NEXT DROP SPACE C" [ EMIT ?TYPE C" ] EMIT ;
+L  : DUMP 1H ALIGN 1H / FOR DUP DUMPLINE 1H + NEXT DROP ;
+L  : WDS FOR CR WW NEXT ;
+L  : SEE ' 2+ 1H WDS ;
+L
+L
+L BIOS-KEY
+L
+L
+L BIOS-KEY
+L
+L BIOS-KEY
+L
+L : PREVIOUS AT ORDER# TO CONTEXT ;
+L : ALSO CONTEXT TO ORDER# ;
+L : DEFINITIONS CONTEXT TO CURRENT ;
+L : ONLY ORDER# OFF TO FORTH ALSO MACROS ALSO HIDDEN ALSO ;
+L : SPACES 0MAX FOR SPACE NEXT ;
+L  : HOME 0 0 GOTOXY ;
+L  : PAGE (CLSC HOME ;
+L  : .LINE ( 3 .R) H. SPACE 1L ?TYPE ;
+L  : .BLOCK CR SCR H. 16 0 DO DUP I CR .LINE 1L + LOOP DROP ;
+L
+L ONLY
+L
+L
+L  0 VALUE FENCE
+L  : forget DUP FENCE  U< A" fence !" PUSH ( Žƒ€ˆ—ˆ’…‹ - R@ )
+L  BEGIN VOCLINK       ( ‘š„š†€ €„…‘€ € €„…‘€ € €‰-Ž‘‹…„ˆŸ ‘ˆ‘šŠ)
+L   @ ?DUP R@ U<        ( ’Ž‰ Ž-Œ€‹šŠ ‹ˆ … Ž’ ‡€„€„…ˆŸ ?)
+L  ~WHILE @ VOCLINK !  ( „ŽŠ€’Ž … … - …Œ€•ˆ ƒŽ ˆ …Œˆˆ ŠšŒ …„ˆ˜…)
+L  REPEAT
+L  VOCLINK             ( ‘‹…„ Š€’Ž ‘€ …Œ€•€’ˆ ‚‘ˆ—Šˆ Ž-ƒŽˆ ‘ˆ‘š–ˆ)
+L  BEGIN DUP 2-        ( „€ ‘… €€‚ˆ ‘š™Ž’Ž ˆ ‘ „“Œˆ’… Ž’ Ž‘’€€‹ˆ’…)
+L    BEGIN @ DUP       ( - €Œˆ€ ‘… €„…‘€ € €‰-ƒŽ€’€’€ „“Œ€ Ž’ ‘ˆ‘šŠ€)
+L      R@ U<           ( - ’Ž‰ Ž-Œ€‹šŠ ‹ˆ … Ž’ ‡€„€„…ˆŸ ?)
+L    ~WHILE N>C 2-     ( - „ŽŠ€’Ž … … - …Œˆˆ ŠšŒ …„ˆ˜…)
+L    REPEAT            ( - €ŠŽ … €Œ…… -v €„Ž‹“)
+L    OVER 2- !         ( …ƒˆ‘’ˆ€… € €„…‘€ )
+L    @ ?DUP            ( ’Ž‚€ Ž‘‹…„ˆŸ ‘ˆ‘šŠ ‹ˆ … ?)
+L  ~UNTIL FORTH        ( FORTH -> CONTEXT)
+L  TO FORTH POP        ( FORTH -> CURRENT)
+L  TO HERE             ( R> -> HERE )
+L  DROP ;              ( VOCLINK @ )
+L  : FORGET ' C>N DROP forget ;
+L
+L  HERE TO FENCE
+L
+L : WORDS CR 10 TO CSP CONTEXT -1 0 DO @ ?DUP
+L  IF DUP
+L     C@ 31 AND 6 + OUTC + 80 <
+L     ~IF CR CSP ?DUP
+L         IF 1- TO CSP
+L         ELSE 10 TO CSP KEY B>W 27 =
+L             IF DROP I " LISTED" LEAVE THEN
+L         THEN
+L     THEN DUP H. DUP ID.
+L     1H OUTC OVER MOD ?DUP
+L     ~IF DUP THEN - DUP 13 < ~IF DROP 1 THEN
+L     OUTC 64 < ~IF 1- THEN SPACES
+L     N>C 2-
+L  ELSE CR I " TOTAL" LEAVE THEN
+L  LOOP ". ."  WORDS = " H. ;
+L  F83
+L
+L : PRUNE VOCLINK
+L  BEGIN DUP PUSH  ( „ŽŠ€’Ž ˆŒ€ Ž™… ‘ˆ‘š–ˆ               )
+L         V>LINK   ( Ž‡ˆ–ˆŽˆ€… ‚š•“ ‘ˆ‘šŠ           )
+L    BEGIN @ DUP   ( „ŽŠ€’Ž ‚ ‘ˆ‘šŠ€ ˆŒ€ Ž™… „“Œˆ        )
+L      HERE U<     ( €ŠŽ €„…‘€ … >= HERE                 )
+L  ~WHILE N>LINK REPEAT  ( ˆƒŽ’‚ˆ ‡€ ˆ‡’ˆ‚€…          )
+L  DUP R@ V>LINK !
+L        ( ‡€ŽŒˆ ‚š‚ ‚š‡‚€’ˆŸ ‘’…Š ‹ˆŠ € „“Œ€ < HERE)
+L        ( ˆ‡’ˆ‰ Š€’Ž Ž‹‡“‚€˜ ŠŽ…€ € ‘’…Š€           )
+L  ?DUP IF DUP PUSH      ( €ŠŽ ‘ˆ‘šŠ€ … €‡… - ‘‹…„‚€™ )
+L  BEGIN N>LINK          ( ‘‹…„‚€™€ „“Œ€                  )
+L  @ ?DUP                ( ˆŒ€ ‹ˆ                         )
+L  WHILE DUP HERE U<     ( „ŽŠ€’Ž „“Œˆ’… ‘€ ‘ €„…‘ < HERE)
+L  IF DUP POP            ( ‘… €‚š‡‚€’ ‚ ‘ˆ‘šŠ        )
+L  N>LINK                ( Ž‘’€€‹ˆ’… ‘… Ž“‘Š€’     )
+L  ! DUP PUSH            (                              )
+L  THEN                  (                             )
+L  REPEAT                (                              )
+L  0 POP N>LINK !        ( …ƒˆ‘’ˆ€ ‘… Š€Ÿ € ‘ˆ‘šŠ€)
+L  THEN
+L  POP @ ?DUP ~UNTIL     ( ‘‹…„‚€™ ‘ˆ‘šŠ)
+L  -HEAD
+L  ;
+L
+L  0 NM: C@ PREV C! ;M DUP           ( TO HIDDEN )
+L  HEADER DISCARD , 0 C,             ( TO FORTH  )
+L  HEADER UPDATE , -1 C,
+L                                    ( TO HIDDEN )
+L  : EMPTY-BUFFERS FIRST LIMIT OVER - ERASE
+L  LIMIT FIRST DO -1 I 1+ ! B/BUF +LOOP ;
+L  EMPTY-BUFFERS
+L  : +BUF B/BUF + DUP LIMIT = IF DROP FIRST THEN DUP PREV - ;
+L  : BUFFER USE DUP PUSH BEGIN +BUF UNTIL TO USE R@ COUNT
+L  IF DUP WCOUNT WBLK 0 R@ C! THEN R@ TO PREV ! POP 3+ ;
+L  : SAVE-BUFFERS LIMIT FIRST ?DO I C@ IF I COUNT I TO XOR
+L  WCOUNT WBLK THEN B/BUF +LOOP ;
+L  : -USE SCRH 1+ IF SCRH CLOSE DROP -1 TO SCRH THEN ;
+L  TO FORTH
+L  : FLUSH SAVE-BUFFERS EMPTY-BUFFERS ;
+L  : USING FLUSH -USE FOPEN TO SCRH ;
+L  : BLOCK PUSH PREV DUP 1+ @ R@ - IF
+L  BEGIN +BUF 0= IF DROP R@ BUFFER DUP R@ NBLK 2- 1- THEN
+L  DUP 1+ @ R@ =
+L  UNTIL DUP TO PREV THEN
+L  RDROP 3+ DERR ?DUP
+L  IF CR DISCARD ." I/O ERROR " . 0 TO DERR ABORT THEN ;
+L  ' BLOCK ' NBLK 10 + !
+L
+L  : LIST DUP TO SCR BLOCK .BLOCK ;
+L  : ?LD BLK 0= A" LOADING?" ;
+L  : --> ?LD 0 TO >IN BLK 1+ TO BLK ; IMMEDIATE
+L  : COPY SWAP BLOCK SWAP BLOCK 1K CMOVE UPDATE FLUSH ;
+L 0 NM: BLK PUSH >IN PUSH EXECUTE POP TO >IN POP TO BLK ;M
+L  DUP
+L HEADER LOAD , ] 0 TO >IN  TO BLK ?LD TO INTERPRET [
+L HEADER EVAL , ] 0 TO BLK TIB - TO >IN  TO INTERPRET [
+L  : THRU 1+ SWAP DO I LOAD LOOP ;
+L  : +THRU BLK DUP D+ THRU ;
+L
+L
+L ( 4 TO HEADER)
+L 0 VALUE MH
+L : SWAPH HERE MH TO HERE TO MH ;
+L  ( PLACE FOR "C"-STYLE STRING "LENGTH" PROCEDURE )
+L M: DUP BEGIN COUNT ~UNTIL 1- OVER - ;M
+L M: TO MH AT MACROS ! ;M
+L M: AT MACROS @ MH ;M
+L HEADER MAC , , ,              C" ; STACK> MAC:
+L ( 1 TO HEADER)
+L : MAC> CREATE AT MAC: @ WORD COUNT STR, 1Z, IMMEDIATE
+L        DOES>  EVAL ;
+L : >MAC SWAPH CURRENT PUSH TO MACROS EXEC POP TO CURRENT SWAPH ;
+L           M: ['] MAC> >MAC ;M
+L
+L ' MAC: !
+L : ?MAC ' 2+ AT MAC TYPE ;
+L M: AT MAC: @ [',] C" AT MAC: ! MAC: AT MAC: ! ;M
+L ' MAC: 2+ !
+L : -MAC  0 MPTR TO MAC ;     -MAC
+L
+L ( WITH-ADDR ROOTLINK_ADR WITH-ADDR - )
+L M: ( FIXLINX) BEGIN OVER @XCHG ?DUP ~UNTIL DROP ;M TO ON;
+L 0 NM: AT CURRENT N>C OVER ( FIXLINX) [ >MARK TO ON; ] OFF ;M
+L 1 NM: LINK+ ;M
+L 2 MAKER RECUR ,
+L ( TO FORTH ( AT RECURCE - FIXLINX)
+L 0 RECUR RECURCE HERE ON; ! ON; , IMMEDIATE
+L M: ON; PUSH ;M ( THIS IS "AT CO")
+L M: POP TO ON; AT , [ >MARK TO ON; ] TO ON; ;M
+L ' RP 4 + @ ( v-- --v "DO" ">RELEASE" TRICKY WAY)
+L ( TO HIDDEN)
+L HEADER CO , , ,  HERE 2- ON; !
+L ( TO FORTH)
+L
+L
+L ' :  ( !!! VERY SPECIAL )
+L : : 0 TO ON; CS! CSP! : TO CO ?CS ;
+L
+L ( EXEC = LAST : )
+L EXEC ; ?CSP [',] ; [TO] RECURCE
+L BEGIN ON; ?DUP WHILE EXEC REPEAT ; IMMEDIATE
+L
+L : FAC DUP 2 < IF DROP 1 EXIT THEN DUP 1-  RECURCE * ;
+L
+L USING P.SCR
+L 32 LOAD
+L 25 30 THRU
+L
+

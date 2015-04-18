@@ -1,0 +1,20 @@
+
+XUMSLS: POP  CX
+        XOR  AX,AX
+        CMP  CX,BX
+        JNB  @@1
+        pop  AX
+        XCHG DX,CX
+        DIV  BX
+        PUSH DX
+        XCHG DX,CX
+@@1:    swapreg
+xTary:  shl  bx,1
+x5ary:  ADD  DI,bx
+xqary:  shl  bx,1
+XWARY:  shl  BX,1
+XBARY:  ADD  BX,DI
+XTWOPL: INC  BX
+XONEPL: INC  BX
+        next
+

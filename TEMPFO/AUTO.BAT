@@ -1,0 +1,2 @@
+NF6 <NF6.NF    >NF6.OUT
+

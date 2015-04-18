@@ -1,0 +1,76 @@
+
+_SCANER:POP  AX
+        XCHG AX,BX
+        POP  CX
+        POP  DI
+        push cs
+        pop  es
+        MOV  DX,CX
+        CALL BX
+        JE   @@1
+        MOV  CX,DX
+@@1:    INC  CX
+        SUB  DX,CX
+        XCHG AX,DX
+        SWAPREG
+
+XSCANW: CALL _SCANER
+        REPNE SCASW
+        RET
+
+XSCANB: CALL _SCANER
+        REPNE SCASB
+        RET
+
+XSCANL: CALL _SCANER
+        PUSH SI
+        OR   BX,BX
+        XCHG AX,BX
+        MOV  SI,DI
+        JCXZ @@3
+@@2:    MOV  DI,BX
+        PUSH CX
+        CALL _STREQU
+        POP  CX
+        LOOPNE  @@2
+@@3:    POP  SI
+        RET
+
+XSCANI: POP  AX
+        XCHG AX,SI
+        XOR  CX,CX
+        XCHG CX,BX
+        JCXZ @@1
+@@2:    MOV  BL,[SI]
+        LEA  SI,[SI+BX+1]
+        LOOP @@2
+@@1:    XCHG AX,SI
+        SWAPREG
+
+XWBLK:  MOV   CH,40H
+        DB    0B8H
+XRBLK:  MOV   CH,3FH
+        MOV   AX,1024
+        PUSH  AX
+        PUSH  CX
+        MUL   BX
+        XCHG  AX,DX
+        XCHG  AX,CX
+        MOV   AX,4200H
+        MOV   BX,SCRH
+        INT   21H
+_XDOS:  POP   DI
+        POP   CX
+        POP   DX
+        JC    @@4
+        mov   AX,DI
+        INT   21H
+@@4:    JNC   _SETREG
+        MOV   DERR,AX
+_SETREG:MOV   DERR+2,AX
+        MOV   DERR+4,BX
+        MOV   DERR+6,CX
+        MOV   DERR+8,DX
+        DROPREG
+
+

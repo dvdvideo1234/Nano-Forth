@@ -1,0 +1,126 @@
+locals  @@
+
+pd  equ dword ptr
+pw  equ word  ptr
+pb  equ byte  ptr
+
+_TO =   2
+_AT =   4
+_VAL =  6
+
+PushR   MACRO
+         jmp  _PushW
+        ENDM
+SWAPR   MACRO
+         JMP _swapw
+        ENDM
+DROPR   MACRO
+         JMP _DROP
+        ENDM
+TOnext  MACRO
+         jmp  SHORT _nop
+        ENDM
+next    MACRO
+         jmp  _nop
+        ENDM
+X       MACRO
+         xchg sp,bp
+        ENDM
+
+qqqqq = 0
+ppppp = qqqqq
+
+_nam    macro   msg
+  local endstr
+  db    endstr-$-1
+  db    msg
+endstr  label   byte
+        endm
+
+_VAR    macro   LBL
+LBL     DW      DOVAR
+        ENDM
+
+_PRIM   macro   LBL
+LBL     DW      $+2
+        ENDM
+
+_XT     macro   LBL,token
+LBL     DW      TOKEN
+        ENDM
+
+_ln     macro   token
+ppppp = $
+  _nam  token
+  dw    qqqqq
+qqqqq = ppppp
+        endm
+
+_colon2 macro  lbl
+LBL     DW     DOCOLON-1
+        endm
+
+_colon  macro  lbl
+LBL     DW     DOCOLON
+        endm
+
+_colonP macro  lbl
+        DW     XT_SKIP
+        _COLON LBL
+        endm
+
+_value  macro  lbl,dat
+lbl     DW     docons2,setvar,dat
+        endm
+
+_DEFERO macro  lbl,dat
+lbl     DW     deferO,dat
+        endm
+
+_DEFER  macro  lbl,dat
+lbl     DW     defer,dat
+        endm
+
+_vector macro  lbl,dat
+lbl     DW     defer2,setvar,dat
+        endm
+
+_point  macro  lbl,dat
+lbl     DW     dopoint,setpoint,dat
+        endm
+
+_QUAN   MACRO  LBL,DAT
+        _XT    lbl,docons3
+        DW     setvar2,DOVAR,dat
+        ENDM
+
+_LABEL  MACRO lbl
+lbl     DW    doLBL,DAT
+        endm
+
+_const  macro lbl,dat
+lbl     DW    doconst,DAT
+        endm
+
+_Bconst macro lbl,dat
+lbl     DW    Bconst
+        DB    DAT
+        endm
+
+_BVECT  macro lbl,dat
+lbl     DW    Bconst-1
+        DW    _DOES5
+        DB    DAT
+        endm
+
+_entry  macro nam,dat
+        DW    DAT
+        db    0
+        _nam  nam
+        endm
+
+MyCseg  segment para  use16
+        assume cs: MyCseg,  ds: MyCseg, ss: MyCseg
+
+
+

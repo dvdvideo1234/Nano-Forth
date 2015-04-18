@@ -1,0 +1,467 @@
+public static final int OP_ADD_DOUBLE
+Constant Value: 171 (0x000000ab)
+public static final int OP_ADD_DOUBLE_2ADDR
+Constant Value: 203 (0x000000cb)
+public static final int OP_ADD_FLOAT
+Constant Value: 166 (0x000000a6)
+public static final int OP_ADD_FLOAT_2ADDR
+Constant Value: 198 (0x000000c6)
+public static final int OP_ADD_INT
+Constant Value: 144 (0x00000090)
+public static final int OP_ADD_INT_2ADDR
+Constant Value: 176 (0x000000b0)
+public static final int OP_ADD_INT_LIT16
+Constant Value: 208 (0x000000d0)
+public static final int OP_ADD_INT_LIT8
+Constant Value: 216 (0x000000d8)
+public static final int OP_ADD_LONG
+Constant Value: 155 (0x0000009b)
+public static final int OP_ADD_LONG_2ADDR
+Constant Value: 187 (0x000000bb)
+public static final int OP_AGET
+Constant Value: 68 (0x00000044)
+public static final int OP_AGET_BOOLEAN
+Constant Value: 71 (0x00000047)
+public static final int OP_AGET_BYTE
+Constant Value: 72 (0x00000048)
+public static final int OP_AGET_CHAR
+Constant Value: 73 (0x00000049)
+public static final int OP_AGET_OBJECT
+Constant Value: 70 (0x00000046)
+public static final int OP_AGET_SHORT
+Constant Value: 74 (0x0000004a)
+public static final int OP_AGET_WIDE
+Constant Value: 69 (0x00000045)
+public static final int OP_AND_INT
+Constant Value: 149 (0x00000095)
+public static final int OP_AND_INT_2ADDR
+Constant Value: 181 (0x000000b5)
+public static final int OP_AND_INT_LIT16
+Constant Value: 213 (0x000000d5)
+public static final int OP_AND_INT_LIT8
+Constant Value: 221 (0x000000dd)
+public static final int OP_AND_LONG
+Constant Value: 160 (0x000000a0)
+public static final int OP_AND_LONG_2ADDR
+Constant Value: 192 (0x000000c0)
+public static final int OP_APUT
+Constant Value: 75 (0x0000004b)
+public static final int OP_APUT_BOOLEAN
+Constant Value: 78 (0x0000004e)
+public static final int OP_APUT_BYTE
+Constant Value: 79 (0x0000004f)
+public static final int OP_APUT_CHAR
+Constant Value: 80 (0x00000050)
+public static final int OP_APUT_OBJECT
+Constant Value: 77 (0x0000004d)
+public static final int OP_APUT_SHORT
+Constant Value: 81 (0x00000051)
+public static final int OP_APUT_WIDE
+Constant Value: 76 (0x0000004c)
+public static final int OP_ARRAY_LENGTH
+Constant Value: 33 (0x00000021)
+public static final int OP_BREAKPOINT
+Constant Value: 236 (0x000000ec)
+public static final int OP_CHECK_CAST
+Constant Value: 31 (0x0000001f)
+public static final int OP_CMPG_DOUBLE
+Constant Value: 48 (0x00000030)
+public static final int OP_CMPG_FLOAT
+Constant Value: 46 (0x0000002e)
+public static final int OP_CMPL_DOUBLE
+Constant Value: 47 (0x0000002f)
+public static final int OP_CMPL_FLOAT
+Constant Value: 45 (0x0000002d)
+public static final int OP_CMP_LONG
+Constant Value: 49 (0x00000031)
+public static final int OP_CONST
+Constant Value: 20 (0x00000014)
+public static final int OP_CONST_16
+Constant Value: 19 (0x00000013)
+public static final int OP_CONST_4
+Constant Value: 18 (0x00000012)
+public static final int OP_CONST_CLASS
+Constant Value: 28 (0x0000001c)
+public static final int OP_CONST_HIGH16
+Constant Value: 21 (0x00000015)
+public static final int OP_CONST_STRING
+Constant Value: 26 (0x0000001a)
+public static final int OP_CONST_STRING_JUMBO
+Constant Value: 27 (0x0000001b)
+public static final int OP_CONST_WIDE
+Constant Value: 24 (0x00000018)
+public static final int OP_CONST_WIDE_16
+Constant Value: 22 (0x00000016)
+public static final int OP_CONST_WIDE_32
+Constant Value: 23 (0x00000017)
+public static final int OP_CONST_WIDE_HIGH16
+Constant Value: 25 (0x00000019)
+public static final int OP_DIV_DOUBLE
+Constant Value: 174 (0x000000ae)
+public static final int OP_DIV_DOUBLE_2ADDR
+Constant Value: 206 (0x000000ce)
+public static final int OP_DIV_FLOAT
+Constant Value: 169 (0x000000a9)
+public static final int OP_DIV_FLOAT_2ADDR
+Constant Value: 201 (0x000000c9)
+public static final int OP_DIV_INT
+Constant Value: 147 (0x00000093)
+public static final int OP_DIV_INT_2ADDR
+Constant Value: 179 (0x000000b3)
+public static final int OP_DIV_INT_LIT16
+Constant Value: 211 (0x000000d3)
+public static final int OP_DIV_INT_LIT8
+Constant Value: 219 (0x000000db)
+public static final int OP_DIV_LONG
+Constant Value: 158 (0x0000009e)
+public static final int OP_DIV_LONG_2ADDR
+Constant Value: 190 (0x000000be)
+public static final int OP_DOUBLE_TO_FLOAT
+Constant Value: 140 (0x0000008c)
+public static final int OP_DOUBLE_TO_INT
+Constant Value: 138 (0x0000008a)
+public static final int OP_DOUBLE_TO_LONG
+Constant Value: 139 (0x0000008b)
+public static final int OP_EXECUTE_INLINE
+Constant Value: 238 (0x000000ee)
+public static final int OP_EXECUTE_INLINE_RANGE
+Constant Value: 239 (0x000000ef)
+public static final int OP_FILLED_NEW_ARRAY
+Constant Value: 36 (0x00000024)
+public static final int OP_FILLED_NEW_ARRAY_RANGE
+Constant Value: 37 (0x00000025)
+public static final int OP_FILL_ARRAY_DATA
+Constant Value: 38 (0x00000026)
+public static final int OP_FLOAT_TO_DOUBLE
+Constant Value: 137 (0x00000089)
+public static final int OP_FLOAT_TO_INT
+Constant Value: 135 (0x00000087)
+public static final int OP_FLOAT_TO_LONG
+Constant Value: 136 (0x00000088)
+public static final int OP_GOTO
+Constant Value: 40 (0x00000028)
+public static final int OP_GOTO_16
+Constant Value: 41 (0x00000029)
+public static final int OP_GOTO_32
+Constant Value: 42 (0x0000002a)
+public static final int OP_IF_EQ
+Constant Value: 50 (0x00000032)
+public static final int OP_IF_EQZ
+Constant Value: 56 (0x00000038)
+public static final int OP_IF_GE
+Constant Value: 53 (0x00000035)
+public static final int OP_IF_GEZ
+Constant Value: 59 (0x0000003b)
+public static final int OP_IF_GT
+Constant Value: 54 (0x00000036)
+public static final int OP_IF_GTZ
+Constant Value: 60 (0x0000003c)
+public static final int OP_IF_LE
+Constant Value: 55 (0x00000037)
+public static final int OP_IF_LEZ
+Constant Value: 61 (0x0000003d)
+public static final int OP_IF_LT
+Constant Value: 52 (0x00000034)
+public static final int OP_IF_LTZ
+Constant Value: 58 (0x0000003a)
+public static final int OP_IF_NE
+Constant Value: 51 (0x00000033)
+public static final int OP_IF_NEZ
+Constant Value: 57 (0x00000039)
+public static final int OP_IGET
+Constant Value: 82 (0x00000052)
+public static final int OP_IGET_BOOLEAN
+Constant Value: 85 (0x00000055)
+public static final int OP_IGET_BYTE
+Constant Value: 86 (0x00000056)
+public static final int OP_IGET_CHAR
+Constant Value: 87 (0x00000057)
+public static final int OP_IGET_OBJECT
+Constant Value: 84 (0x00000054)
+public static final int OP_IGET_OBJECT_QUICK
+Constant Value: 244 (0x000000f4)
+public static final int OP_IGET_QUICK
+Constant Value: 242 (0x000000f2)
+public static final int OP_IGET_SHORT
+Constant Value: 88 (0x00000058)
+public static final int OP_IGET_WIDE
+Constant Value: 83 (0x00000053)
+public static final int OP_IGET_WIDE_QUICK
+Constant Value: 243 (0x000000f3)
+public static final int OP_INSTANCE_OF
+Constant Value: 32 (0x00000020)
+public static final int OP_INT_TO_BYTE
+Constant Value: 141 (0x0000008d)
+public static final int OP_INT_TO_CHAR
+Constant Value: 142 (0x0000008e)
+public static final int OP_INT_TO_DOUBLE
+Constant Value: 131 (0x00000083)
+public static final int OP_INT_TO_FLOAT
+Constant Value: 130 (0x00000082)
+public static final int OP_INT_TO_LONG
+Constant Value: 129 (0x00000081)
+public static final int OP_INT_TO_SHORT
+Constant Value: 143 (0x0000008f)
+public static final int OP_INVOKE_DIRECT
+Constant Value: 112 (0x00000070)
+public static final int OP_INVOKE_DIRECT_EMPTY
+Constant Value: 240 (0x000000f0)
+public static final int OP_INVOKE_DIRECT_RANGE
+Constant Value: 118 (0x00000076)
+public static final int OP_INVOKE_INTERFACE
+Constant Value: 114 (0x00000072)
+public static final int OP_INVOKE_INTERFACE_RANGE
+Constant Value: 120 (0x00000078)
+public static final int OP_INVOKE_STATIC
+Constant Value: 113 (0x00000071)
+public static final int OP_INVOKE_STATIC_RANGE
+Constant Value: 119 (0x00000077)
+public static final int OP_INVOKE_SUPER
+Constant Value: 111 (0x0000006f)
+public static final int OP_INVOKE_SUPER_QUICK
+Constant Value: 250 (0x000000fa)
+public static final int OP_INVOKE_SUPER_QUICK_RANGE
+Constant Value: 251 (0x000000fb)
+public static final int OP_INVOKE_SUPER_RANGE
+Constant Value: 117 (0x00000075)
+public static final int OP_INVOKE_VIRTUAL
+Constant Value: 110 (0x0000006e)
+public static final int OP_INVOKE_VIRTUAL_QUICK
+Constant Value: 248 (0x000000f8)
+public static final int OP_INVOKE_VIRTUAL_QUICK_RANGE
+Constant Value: 249 (0x000000f9)
+public static final int OP_INVOKE_VIRTUAL_RANGE
+Constant Value: 116 (0x00000074)
+public static final int OP_IPUT
+Constant Value: 89 (0x00000059)
+public static final int OP_IPUT_BOOLEAN
+Constant Value: 92 (0x0000005c)
+public static final int OP_IPUT_BYTE
+Constant Value: 93 (0x0000005d)
+public static final int OP_IPUT_CHAR
+Constant Value: 94 (0x0000005e)
+public static final int OP_IPUT_OBJECT
+Constant Value: 91 (0x0000005b)
+public static final int OP_IPUT_OBJECT_QUICK
+Constant Value: 247 (0x000000f7)
+public static final int OP_IPUT_QUICK
+Constant Value: 245 (0x000000f5)
+public static final int OP_IPUT_SHORT
+Constant Value: 95 (0x0000005f)
+public static final int OP_IPUT_WIDE
+Constant Value: 90 (0x0000005a)
+public static final int OP_IPUT_WIDE_QUICK
+Constant Value: 246 (0x000000f6)
+public static final int OP_LONG_TO_DOUBLE
+Constant Value: 134 (0x00000086)
+public static final int OP_LONG_TO_FLOAT
+Constant Value: 133 (0x00000085)
+public static final int OP_LONG_TO_INT
+Constant Value: 132 (0x00000084)
+public static final int OP_MONITOR_ENTER
+Constant Value: 29 (0x0000001d)
+public static final int OP_MONITOR_EXIT
+Constant Value: 30 (0x0000001e)
+public static final int OP_MOVE
+Constant Value: 1 (0x00000001)
+public static final int OP_MOVE_16
+Constant Value: 3 (0x00000003)
+public static final int OP_MOVE_EXCEPTION
+Constant Value: 13 (0x0000000d)
+public static final int OP_MOVE_FROM16
+Constant Value: 2 (0x00000002)
+public static final int OP_MOVE_OBJECT
+Constant Value: 7 (0x00000007)
+public static final int OP_MOVE_OBJECT_16
+Constant Value: 9 (0x00000009)
+public static final int OP_MOVE_OBJECT_FROM16
+Constant Value: 8 (0x00000008)
+public static final int OP_MOVE_RESULT
+Constant Value: 10 (0x0000000a)
+public static final int OP_MOVE_RESULT_OBJECT
+Constant Value: 12 (0x0000000c)
+public static final int OP_MOVE_RESULT_WIDE
+Constant Value: 11 (0x0000000b)
+public static final int OP_MOVE_WIDE
+Constant Value: 4 (0x00000004)
+public static final int OP_MOVE_WIDE_16
+Constant Value: 6 (0x00000006)
+public static final int OP_MOVE_WIDE_FROM16
+Constant Value: 5 (0x00000005)
+public static final int OP_MUL_DOUBLE
+Constant Value: 173 (0x000000ad)
+public static final int OP_MUL_DOUBLE_2ADDR
+Constant Value: 205 (0x000000cd)
+public static final int OP_MUL_FLOAT
+Constant Value: 168 (0x000000a8)
+public static final int OP_MUL_FLOAT_2ADDR
+Constant Value: 200 (0x000000c8)
+public static final int OP_MUL_INT
+Constant Value: 146 (0x00000092)
+public static final int OP_MUL_INT_2ADDR
+Constant Value: 178 (0x000000b2)
+public static final int OP_MUL_INT_LIT16
+Constant Value: 210 (0x000000d2)
+public static final int OP_MUL_INT_LIT8
+Constant Value: 218 (0x000000da)
+public static final int OP_MUL_LONG
+Constant Value: 157 (0x0000009d)
+public static final int OP_MUL_LONG_2ADDR
+Constant Value: 189 (0x000000bd)
+public static final int OP_NEG_DOUBLE
+Constant Value: 128 (0x00000080)
+public static final int OP_NEG_FLOAT
+Constant Value: 127 (0x0000007f)
+public static final int OP_NEG_INT
+Constant Value: 123 (0x0000007b)
+public static final int OP_NEG_LONG
+Constant Value: 125 (0x0000007d)
+public static final int OP_NEW_ARRAY
+Constant Value: 35 (0x00000023)
+public static final int OP_NEW_INSTANCE
+Constant Value: 34 (0x00000022)
+public static final int OP_NOP
+Constant Value: 0 (0x00000000)
+public static final int OP_NOT_INT
+Constant Value: 124 (0x0000007c)
+public static final int OP_NOT_LONG
+Constant Value: 126 (0x0000007e)
+public static final int OP_OR_INT
+Constant Value: 150 (0x00000096)
+public static final int OP_OR_INT_2ADDR
+Constant Value: 182 (0x000000b6)
+public static final int OP_OR_INT_LIT16
+Constant Value: 214 (0x000000d6)
+public static final int OP_OR_INT_LIT8
+Constant Value: 222 (0x000000de)
+public static final int OP_OR_LONG
+Constant Value: 161 (0x000000a1)
+public static final int OP_OR_LONG_2ADDR
+Constant Value: 193 (0x000000c1)
+public static final int OP_PACKED_SWITCH
+Constant Value: 43 (0x0000002b)
+public static final int OP_REM_DOUBLE
+Constant Value: 175 (0x000000af)
+public static final int OP_REM_DOUBLE_2ADDR
+Constant Value: 207 (0x000000cf)
+public static final int OP_REM_FLOAT
+Constant Value: 170 (0x000000aa)
+public static final int OP_REM_FLOAT_2ADDR
+Constant Value: 202 (0x000000ca)
+public static final int OP_REM_INT
+Constant Value: 148 (0x00000094)
+public static final int OP_REM_INT_2ADDR
+Constant Value: 180 (0x000000b4)
+public static final int OP_REM_INT_LIT16
+Constant Value: 212 (0x000000d4)
+public static final int OP_REM_INT_LIT8
+Constant Value: 220 (0x000000dc)
+public static final int OP_REM_LONG
+Constant Value: 159 (0x0000009f)
+public static final int OP_REM_LONG_2ADDR
+Constant Value: 191 (0x000000bf)
+public static final int OP_RETURN
+Constant Value: 15 (0x0000000f)
+public static final int OP_RETURN_OBJECT
+Constant Value: 17 (0x00000011)
+public static final int OP_RETURN_VOID
+Constant Value: 14 (0x0000000e)
+public static final int OP_RETURN_WIDE
+Constant Value: 16 (0x00000010)
+public static final int OP_RSUB_INT
+Constant Value: 209 (0x000000d1)
+public static final int OP_RSUB_INT_LIT8
+Constant Value: 217 (0x000000d9)
+public static final int OP_SGET
+Constant Value: 96 (0x00000060)
+public static final int OP_SGET_BOOLEAN
+Constant Value: 99 (0x00000063)
+public static final int OP_SGET_BYTE
+Constant Value: 100 (0x00000064)
+public static final int OP_SGET_CHAR
+Constant Value: 101 (0x00000065)
+public static final int OP_SGET_OBJECT
+Constant Value: 98 (0x00000062)
+public static final int OP_SGET_SHORT
+Constant Value: 102 (0x00000066)
+public static final int OP_SGET_WIDE
+Constant Value: 97 (0x00000061)
+public static final int OP_SHL_INT
+Constant Value: 152 (0x00000098)
+public static final int OP_SHL_INT_2ADDR
+Constant Value: 184 (0x000000b8)
+public static final int OP_SHL_INT_LIT8
+Constant Value: 224 (0x000000e0)
+public static final int OP_SHL_LONG
+Constant Value: 163 (0x000000a3)
+public static final int OP_SHL_LONG_2ADDR
+Constant Value: 195 (0x000000c3)
+public static final int OP_SHR_INT
+Constant Value: 153 (0x00000099)
+public static final int OP_SHR_INT_2ADDR
+Constant Value: 185 (0x000000b9)
+public static final int OP_SHR_INT_LIT8
+Constant Value: 225 (0x000000e1)
+public static final int OP_SHR_LONG
+Constant Value: 164 (0x000000a4)
+public static final int OP_SHR_LONG_2ADDR
+Constant Value: 196 (0x000000c4)
+public static final int OP_SPARSE_SWITCH
+Constant Value: 44 (0x0000002c)
+public static final int OP_SPUT
+Constant Value: 103 (0x00000067)
+public static final int OP_SPUT_BOOLEAN
+Constant Value: 106 (0x0000006a)
+public static final int OP_SPUT_BYTE
+Constant Value: 107 (0x0000006b)
+public static final int OP_SPUT_CHAR
+Constant Value: 108 (0x0000006c)
+public static final int OP_SPUT_OBJECT
+Constant Value: 105 (0x00000069)
+public static final int OP_SPUT_SHORT
+Constant Value: 109 (0x0000006d)
+public static final int OP_SPUT_WIDE
+Constant Value: 104 (0x00000068)
+public static final int OP_SUB_DOUBLE
+Constant Value: 172 (0x000000ac)
+public static final int OP_SUB_DOUBLE_2ADDR
+Constant Value: 204 (0x000000cc)
+public static final int OP_SUB_FLOAT
+Constant Value: 167 (0x000000a7)
+public static final int OP_SUB_FLOAT_2ADDR
+Constant Value: 199 (0x000000c7)
+public static final int OP_SUB_INT
+Constant Value: 145 (0x00000091)
+public static final int OP_SUB_INT_2ADDR
+Constant Value: 177 (0x000000b1)
+public static final int OP_SUB_LONG
+Constant Value: 156 (0x0000009c)
+public static final int OP_SUB_LONG_2ADDR
+Constant Value: 188 (0x000000bc)
+public static final int OP_THROW
+Constant Value: 39 (0x00000027)
+public static final int OP_THROW_VERIFICATION_ERROR
+Constant Value: 237 (0x000000ed)
+public static final int OP_USHR_INT
+Constant Value: 154 (0x0000009a)
+public static final int OP_USHR_INT_2ADDR
+Constant Value: 186 (0x000000ba)
+public static final int OP_USHR_INT_LIT8
+Constant Value: 226 (0x000000e2)
+public static final int OP_USHR_LONG
+Constant Value: 165 (0x000000a5)
+public static final int OP_USHR_LONG_2ADDR
+Constant Value: 197 (0x000000c5)
+public static final int OP_XOR_INT
+Constant Value: 151 (0x00000097)
+public static final int OP_XOR_INT_2ADDR
+Constant Value: 183 (0x000000b7)
+public static final int OP_XOR_INT_LIT16
+Constant Value: 215 (0x000000d7)
+public static final int OP_XOR_INT_LIT8
+Constant Value: 223 (0x000000df)
+public static final int OP_XOR_LONG
+Constant Value: 162 (0x000000a2)
+public static final int OP_XOR_LONG_2ADDR
+Constant Value: 194 (0x000000c2)
+

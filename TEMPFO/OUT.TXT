@@ -1,0 +1,197 @@
+  ' bl @ HEADER EDGE , 48000 ,
+
+: -HEAD EDGE TO NPTR  HEADERS ;
+
+-HEAD
+
+  : U/MOD 0 SWAP UM/MOD ;
+  : >ALIGN 1- OR 1+ ;
+  : ALIGN 1- SWAP >ALIGN ;
+  : PAD HERE 320 + ;
+  : WITHIN OVER - PUSH - POP U< ;
+  : ?BLK BLK 1 -2 WITHIN ;
+
+  : S>D DUP 0< ;
+  : SPACES 0MAX FOR SPACE NEXT ;
+  : COUNT CSTR ;
+  : WCOUNT STR ;
+
+ : HOME 0 0 GOTOXY ;
+ : PAGE (CLSC HOME ;
+: .( C" ) WORD ". ; IMMEDIATE
+: CSTR, DUP C, STR, ;
+: ," BLWORD ", ;
+: 0" HERE 2+ ', " ZC, 1+! ; IMMEDIATE
+
+: PREVIOUS AT ORDER# TO CONTEXT ;
+: ALSO CONTEXT TO ORDER# ;
+: DEFINITIONS CONTEXT TO CURRENT ;
+
+
+
+
+
+' IOV @ ' SCRH 2@ 1- SWAP 1- SWAP 3 MAKER QUAN ,
+' bl   @   1  MAKER CONSTANT ,
+' SCRH  2@ 2  MAKER VALUE ,
+' 'INIT 2@ 2  MAKER VECTOR ,
+' IOV   @  1  MAKER VARIABLE Z,
+
+1024  CONSTANT 1K
+1028  CONSTANT B/BUF
+16    CONSTANT 1H
+31    CONSTANT #LEN
+64    CONSTANT 1L
+
+AT FORTH 2- DUP @ SWAP 2- DUP @ SWAP 2- @ 3 MAKER MAKEVOC Z,
+
+: VOCABULARY TO FORTH MAKEVOC VOCLINK LINK+  ;
+
+VOCABULARY MACROS
+MAKEVOC  HIDDEN Z,
+VOCABULARY ASSEMBLER
+
+
+
+(  SPACES <# #> # #S D# D.R D. .R . U.)
+
+  VARIABLE NUM2 Z,   ( 2VARIABLE)
+: <# NUM2 2! 0 ;
+: #> FOR EMIT NEXT ;
+: HOLD SWAP 1+ ;
+  : M/MOD TUCK U/MOD PUSH  SWAP UM/MOD POP ;
+  : 1# NUM2 2@ BASE M/MOD NUM2 2! ALPHA HOLD  ;
+  : S# BEGIN 1# NUM2 2@ OR 0= UNTIL ;
+  : D# IF DABS <# S# C" - HOLD ;THEN <# S# ;
+  : D.R PUSH D# POP OVER - SPACES #> ;
+: D. S>D 0 D.R SPACE ;
+: . S>D D. ;
+: .R PUSH S>D S>D POP D.R ;
+: U.R  0 0 ROT D.R ;
+: UD. <# 1# S# #> SPACE ;
+: UD.R 0 SWAP D.R ;
+: .DH BASE PUSH HEX UD. POP TO BASE ;
+: .. BASE PUSH DECIMAL 6 U.R POP TO BASE ;
+: .H 0 .DH ;
+
+
+
+
+ : N>LINK N>C 2- ;
+ : V>LINK     2- ;
+ 0 VALUE FENCE
+
+ : forget DUP FENCE  U< A" fence !" PUSH ( Žƒ€ˆ—ˆ’…‹ - R@ )
+ BEGIN VOCLINK       ( ‘š„š†€ €„…‘€ € €„…‘€ € €‰-Ž‘‹…„ˆŸ ‘ˆ‘šŠ)
+  @ ?DUP R@ U<        ( ’Ž‰ Ž-Œ€‹šŠ ‹ˆ … Ž’ ‡€„€„…ˆŸ ?)
+ 0= WHILE @ VOCLINK !  ( „ŽŠ€’Ž … … - …Œ€•ˆ ƒŽ ˆ …Œˆˆ ŠšŒ …„ˆ˜…)
+ REPEAT
+ VOCLINK             ( ‘‹…„ Š€’Ž ‘€ …Œ€•€’ˆ ‚‘ˆ—Šˆ Ž-ƒŽˆ ‘ˆ‘š–ˆ)
+ BEGIN DUP 2-        ( „€ ‘… €€‚ˆ ‘š™Ž’Ž ˆ ‘ „“Œˆ’… Ž’ Ž‘’€€‹ˆ’…)
+   BEGIN @ DUP       ( - €Œˆ€ ‘… €„…‘€ € €‰-ƒŽ€’€’€ „“Œ€ Ž’ ‘ˆ‘šŠ€)
+     R@ U<           ( - ’Ž‰ Ž-Œ€‹šŠ ‹ˆ … Ž’ ‡€„€„…ˆŸ ?)
+   0= WHILE N>LINK     ( - „ŽŠ€’Ž … … - …Œˆˆ ŠšŒ …„ˆ˜…)
+   REPEAT            ( - €ŠŽ … €Œ…… -v €„Ž‹“)
+   OVER 2- !         ( …ƒˆ‘’ˆ€… € €„…‘€ )
+   @ ?DUP            ( ’Ž‚€ Ž‘‹…„ˆŸ ‘ˆ‘šŠ ‹ˆ … ?)
+ 0= UNTIL FORTH        ( FORTH -> CONTEXT)
+ TO FORTH POP        ( FORTH -> CURRENT)
+ TO HERE             ( R> -> HERE )
+ DROP ;              ( VOCLINK @ )
+
+
+ : FORGET ' C>N DROP forget ;
+
+( HERE TO FENCE)
+
+: WORDS CR 10 TO CSP CONTEXT -1 0 DO @ ?DUP
+ IF DUP
+    C@ #LEN AND 6 + OUTC + 80 <
+    0= IF CR CSP ?DUP
+        IF 1- TO CSP
+        ELSE 10 TO CSP KEY LOW 27 =
+            IF DROP I " LISTED" LEAVE THEN
+        THEN
+    THEN DUP H. DUP ID.
+    1H OUTC OVER MOD ?DUP
+    0= IF DUP THEN - DUP 13 < 0= IF DROP 1 THEN
+    OUTC 64 < 0= IF 1- THEN SPACES
+    N>C 2-
+ ELSE CR I " TOTAL" LEAVE THEN
+ LOOP ". ."  WORDS = " . ;
+
+: PRUNE VOCLINK
+ BEGIN DUP PUSH  ( „ŽŠ€’Ž ˆŒ€ Ž™… ‘ˆ‘š–ˆ               )
+        V>LINK   ( Ž‡ˆ–ˆŽˆ€… ‚š•“ ‘ˆ‘šŠ           )
+   BEGIN @ DUP   ( „ŽŠ€’Ž ‚ ‘ˆ‘šŠ€ ˆŒ€ Ž™… „“Œˆ        )
+     HERE U<     ( €ŠŽ €„…‘€ … >= HERE                 )
+ 0= WHILE N>LINK REPEAT  ( ˆƒŽ’‚ˆ ‡€ ˆ‡’ˆ‚€…          )
+ DUP R@ V>LINK !
+       ( ‡€ŽŒˆ ‚š‚ ‚š‡‚€’ˆŸ ‘’…Š ‹ˆŠ € „“Œ€ < HERE)
+       ( ˆ‡’ˆ‰ Š€’Ž Ž‹‡“‚€˜ ŠŽ…€ € ‘’…Š€           )
+ ?DUP IF DUP PUSH      ( €ŠŽ ‘ˆ‘šŠ€ … €‡… - ‘‹…„‚€™ )
+ BEGIN N>LINK          ( ‘‹…„‚€™€ „“Œ€                  )
+ @ ?DUP                ( ˆŒ€ ‹ˆ                         )
+ WHILE DUP HERE U<     ( „ŽŠ€’Ž „“Œˆ’… ‘€ ‘ €„…‘ < HERE)
+ IF DUP POP            ( ‘… €‚š‡‚€’ ‚ ‘ˆ‘šŠ        )
+ N>LINK                ( Ž‘’€€‹ˆ’… ‘… Ž“‘Š€’     )
+ ! DUP PUSH            (                              )
+ THEN                  (                             )
+ REPEAT                (                              )
+ 0 POP N>LINK !        ( …ƒˆ‘’ˆ€ ‘… Š€Ÿ € ‘ˆ‘šŠ€)
+ THEN
+ POP @ ?DUP 0= UNTIL     ( ‘‹…„‚€™ ‘ˆ‘šŠ)
+ -HEAD
+ ;
+
+
+ 0 NM: C@ PREV C! ;M DUP
+ HEADER DISCARD , 0 C,     HEADER UPDATE , -1 C,
+: EMPTY-BUFS  FIRST LIMIT OVER - ERASE  FIRST DUP TO PREV  TO USE
+      LIMIT FIRST DO -1 I 1+ ! B/BUF +LOOP ;
+| : ;ABLK EX PREV 2+ 1+ DERR A" IO-BLK ?" ;
+| : +BUF B/BUF + DUP LIMIT = IF DROP FIRST THEN DUP PREV - ;
+| : ?SAVE BSTR  IF DUP STR WBLK 0 OVER 1- C! THEN ;
+: BUFFER USE DUP  BEGIN +BUF UNTIL TO USE DUP TO PREV ?SAVE !+ ;
+: SAVE-BUFS  LIMIT FIRST ?DO I ?SAVE DROP B/BUF +LOOP ;
+: BLOCK ;ABLK PUSH PREV 1+ @ R@ - IF PREV
+ BEGIN +BUF 0= IF DROP POP BUFFER 2- STR RBLK ;THEN
+   DUP 1+ @ R@ = UNTIL TO PREV THEN RDROP ;
+
+
+
+EMPTY-BUFS
+' BLOCK ' NBLK 6 + !
+
+: ONLY ORDER# OFF FORTH ALSO MACROS ALSO HIDDEN ALSO ;
+: \ ?BLK IF >IN 1L >ALIGN TO >IN
+         ELSE -1 WORD DROP THEN ; IMMEDIATE
+: CTRL BLWORD 1+ C@ #LEN AND [',] LITERAL ; IMMEDIATE
+
+ : FLUSH SAVE-BUFS EMPTY-BUFS ;
+ : -USE SCRH 1+ IF SCRH CLOSE DROP -1 TO SCRH THEN ;
+ : USING FLUSH -USE FOPEN TO SCRH ;
+
+ : .LINE  .. SPACE 1L TYPE ;
+ : .BLOCK CR SCR SPACE C" Õ EMIT ..
+      1H 0 DO CR DUP I .LINE 1L + LOOP DROP ;
+ : LIST DUP TO SCR BLOCK .BLOCK ;
+ : RESCAN       >IN -FIND ROT TO >IN  NIP 0;
+      CR HERE ". ."   EXIST ! "  BLK 1- 0>= 0;
+     ." IN BLK " BLK . ;
+
+: ?DISCARD DERR 0; DISCARD 0 TO DERR ;
+
+' RESCAN    TO 'SAME
+' ?DISCARD  TO 'ERR
+
+2 ATTR C!
+USING NP.SCR
+
+
+  6 LOAD
+
+:  EXIST ! IN BLK 3
+;  EXIST ! IN BLK 3 PRUNE
+
+

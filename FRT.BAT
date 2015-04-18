@@ -1,0 +1,3 @@
+CD TEMPFO
+..\AFD.COM  ASDF.COM
+

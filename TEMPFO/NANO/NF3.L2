@@ -1,0 +1,172 @@
+$41DD ENTRY (REM
+$411D ENTRY 0
+$4411 ENTRY ;`
+$4417 ENTRY :
+    : \ 0 (REM ;
+$442B ENTRY CODE,       \ CODECOM
+
+\ VARIABLES  & CONSTANTS
+$4121 ENTRY BL          \ BL
+$415F ENTRY HERE        \ HERE
+$4167 ENTRY LAST        \ LAST
+$4131 ENTRY OKV         \ OKV
+$4141 ENTRY SEARCH      \ SEARCH
+$4113 ENTRY STATES      \ STATES
+$4153 ENTRY CNTC        \ CNTC
+$4147 ENTRY >IN         \ LTB
+$414D ENTRY TIB<        \ ETB
+$4159 ENTRY TIB         \ TIB
+$412D ENTRY ERR         \ ERR
+$4125 ENTRY HBUF        \ HBUF
+$4135 ENTRY KEY         \ KEY
+
+\ MATH
+$4339 CODE, 1-          \ 1MX
+$433C CODE, 1+          \ 1PX
+$4338 CODE, 2-          \ 2MX
+$433B CODE, 2+          \ 2PX
+$4404 ENTRY >EVAL       \ TOEVAL
+$43F8 ENTRY 0=          \ EQZ
+
+\ CONTROL
+$4461 ENTRY 0;          \ 0EX
+$4455 ENTRY (0BR        \ 0BR
+$4457 ENTRY (BR         \ BR
+$42B9 CODE, (CAL        \ CALL
+$4319 CODE, (FOR        \ FOR
+$4311 CODE, (BRM        \ IFM
+$4326 CODE, (NXT        \ NEXT
+$4309 CODE, (OF         \ OF
+$4306 CODE, (SKP        \ SKIP
+$4453 ENTRY @XPE        \ @XPE
+$4341 CODE, XPE         \ XPE
+$445F ENTRY DROP;       \ DROPX
+$4459 ENTRY EXEC        \ EXEC
+$445D ENTRY ;;          \ EXIT
+$445B ENTRY PERFORM     \ PERFORM
+
+\ PEEK & POKE
+$43A4 ENTRY COUNT       \ COUNT
+$43B3 ENTRY STR         \ STR
+$43A8 ENTRY C@.         \ LDB
+$436C ENTRY S!          \ MOVSTR
+$4498 ENTRY C.          \ PRTC
+$43BA ENTRY !+          \ STOREP
+$434B ENTRY S+C!        \ STRPC
+$43AE ENTRY !.          \ STW
+
+\ STACK
+$440D ENTRY POP         \ POP
+$440F ENTRY PUSH        \ PUSH
+$42DB CODE, ?DUP        \ ?DUP
+$42DF CODE, DUP         \ DUP
+$42D3 CODE, NOP         \ NOP
+$42F6 CODE, RDROP       \ RDROP
+$440B ENTRY DROP        \ DROP
+
+\ IO
+$4129 ENTRY ACCEPT      \ ACCEPT  VECTOR
+$413B ENTRY EMIT        \ EMIT
+$4381 ENTRY (DA         \ ACPT
+$4393 ENTRY (DE         \ DEMIT
+$439C ENTRY (DK         \ DKEY
+
+\ COMPILING
+$441D ENTRY ,           \ COMMA
+$43C0 ENTRY FIND        \ FIND
+$41CF ENTRY TOKEN       \ TOKEN
+$448A ENTRY OK?         \ NZ?
+$42A9 ENTRY #DZ         \ DOES
+
+
+: ' TOKEN OK? FIND OK? ;
+
+' 0= STR CODE, @
+$1F8B , $C3 ,           \ @   DEFINED!
+HERE 1- ' HERE 2+ EXEC  \ : TO ' 2+ EXEC ;
+DROP
+
+: LIKE ' @ ;            \ LIKE
+
+LIKE ;`    CODE, :`     ' (SKP ,  ] : [
+LIKE S+C!  CODE, C!+    $788 , $C343 ,
+
+: C,     [ ' HERE 2+ 2+ , ] C!+ ;
+
+LIKE (DE   CODE, !      $789 ,  $C3 C,
+LIKE S+C!  CODE, +      $D803 , $C3 C,
+LIKE S+C!  CODE, AND    $D823 , $C3 C,
+LIKE S+C!  CODE, XOR    $D833 , $C3 C,
+LIKE S+C!  CODE, OR     $D80B , $C3 C,
+LIKE S+C!  CODE, -      $93 C,  $D82B , $C3 C,
+LIKE S+C!  CODE, U<     $D829 , $DB19 $C3 C,
+
+LIKE :  CODE, CREATE    LIKE BL 4 + , ] NOP [
+LIKE :  CODE, CONSTANT  LIKE BL , ] , [
+
+: IS ' 2+ ! ;
+
+: COMPILE POP STR , PUSH ;
+: code; POP LAST @ ! ;
+: CALL, $E8 C, HERE 2+ - , ;
+: DOES>`  COMPILE code; #DOES CALL, ;
+
+:  `TOAT CREATE , DOES> @ ' + EXEC ;
+2  `TOAT TO      4 `TOAT AT
+: `TOAT, CREATE , DOES> @ ' + , ;
+2 `TOAT, TO`    4 `TOAT, AT`
+: ALLOT AT HERE + ;
+: WITHIN OVER - PUSH - POP U< ;
+CREATE `CSTACK   100 ALLOT
+: CS! CSTACK  2+ CSTACK ! ;  CS!
+: >CS CSTACK @XPE
+
+: `>MARK HERE 0 , ;
+: `>RELEASE HERE SWAP ! ;
+' `>RELEASE  ENTRY THEN`
+
+' HERE  ENTRY BEGIN`
+LIKE ;` CODE, IF`      ] (0BR `>MARK [
+LIKE ;` CODE, ;THEN`   ] ;;   THEN`  [
+LIKE ;` CODE, UNTIL`   ] (0BR ,      [
+LIKE ;` CODE, AHED`    ] (BR  `>MARK [
+LIKE ;` CODE, AGAIN`   ] (BR  ,      [
+LIKE ;` CODE, OF`      ] (OF  `>MARK [
+: ELSE` AHED` SWAP `RELEASE ;
+' ELSE` ENTRY ENDOF`
+
+
+: `BIOS_ACCEPT
+   BEGIN KEY    CASE
+      8   OF
+      13  OF
+                ENDCASE
+   UNTIL
+;
+LIKE (DA  CODE, SWAP  $C3 C,
+
+    : ! !. DROP ;
+    : @ STR SWAP DROP; ;
+
+\ PARSING
+$4194 ENTRY EVAL        \ EVAL
+$4400 ENTRY (#          \ LIT
+$444B ENTRY CLIT,       \ CLIT
+$4425 ENTRY (#,         \ LITCOM
+    : TO` ' 2+ , ;
+    : AT  ' 2+ 2+ EXEC ;
+    : AT` ' 2+ 2+ , ;
+$4481 ENTRY (ERR        \ DO_ERR
+$4463 ENTRY [`          \ LBRAK
+$446B ENTRY ]           \ RBRAK
+$4492 ENTRY 0=?         \ Z?
+$4251 ENTRY PARSE       \ PARS
+$447F ENTRY QUIT        \ QUIT
+$4357 ENTRY (NTRY       \ NTRY
+$4473 ENTRY NUM         \ NUM
+$41F5 ENTRY NUMBER      \ NUMBER
+$43C7 ENTRY FINDC       \ FINDC
+$44A4 ENTRY (NT         \ INITQ
+
+
+

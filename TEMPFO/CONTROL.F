@@ -1,0 +1,23 @@
+
+' CSP! ALIAS CASE IMMEDIATE
+' .MARK       ' (BR (( SKIP
+' .MARK    ' (BR 2+ (( IF
+' .MARK        ' (OF (( OF
+' .MARK       ' (FOR (( FOR      ( IN THIS VERSION!!!)
+' ,.MARK   ' (FOR 2+ (( NEXT     ( IN THIS VERSION!!)
+' ,.MARK  ALIAS THEN IMMEDIATE
+: ELSE  [',] SKIP   SWAP [',] THEN ; IMMEDIATE
+' ELSE ALIAS ENDOF IMMEDIATE
+' <MARK ALIAS BEGIN IMMEDIATE
+' ,<MARK       ' (BR (( AGAIN
+' ,<MARK    ' (BR 2+ (( UNTIL
+: REPEAT [',] AGAIN [',] THEN ; IMMEDIATE
+: ENDCASE COMPILE DROP BEGIN SP CSP -
+WHILE [',] THEN REPEAT TO CSP ; IMMEDIATE
+' IF ALIAS WHILE IMMEDIATE
+' >LOOP        ' (DO (( DO
+' >LOOP     ' (DO 2+ (( ?DO
+' ,>LOOP       ' (LP (( LOOP
+' ,>LOOP    ' (LP 2+ (( +LOOP
+
+

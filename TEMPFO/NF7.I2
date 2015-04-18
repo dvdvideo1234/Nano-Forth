@@ -1,0 +1,79 @@
+
+        _xt  XT_Cstore,@2DROP           ;= C!
+        MOV  [BX],AL
+        RET
+
+        _XT  XT_STORE,@2DROP            ;= !
+        mov   [BX],ax
+        RET
+
+        _XT XT_DIG,@nop                 ;= DIG
+        CMP   BL,10
+        JL    @@1
+        ADD   BL,7
+@@1:    ADD   BL,'0'
+        RET
+
+        _XT XT_CTRL_OUT,@NOP            ;= BL<.
+        CMP   BL,' '
+        Jnb   @@EMIT
+        MOV   BL,'.'
+@@EMIT: RET
+
+        _xt xt_0swap,@nup               ;= 0SWAP
+        xor   ax,ax
+        ret
+
+        _xt   xt_neg,@nop               ;= neg
+        neg   bx
+        ret
+
+        _XT XT_BP,@NOP                  ;= BRP.
+        INT   3
+        RET
+
+        _PRIM  XT_ASM                   ;= >4TH
+        JMP   SI
+
+        _COLON   XT_Hprt                ;= H.
+           DW XT_XSPC
+        _COLONP  XT_PWORD               ;= .W
+           DW XT_1B,XT_DM,XT_PBYTE
+        _COLONP  XT_PBYTE               ;= .B
+           DW XT_1H,XT_DM,XT_PDIG,XT_PDIG,XT_EXIT
+
+        _COLON  XT_XSPC                 ;= ;SPC
+        DW XT_EX,xt_space,xt_exit
+
+        _COLON  XT_DM                   ;= #1
+        ; : #1 10 0SWAP U/MOD >DIG SWAP ;
+        DW XT_0SWAP,XT_DIV,XT_SWAP,XT_EXIT
+
+        _COLON  XT_PDIG                 ;= .DIG
+        DW XT_DIG,XT_EMIT,XT_EXIT
+
+        _COLON  XT_COMMAB               ;= C,
+        DW  XT_HERE,XT_STOREP,XT_1M,XT_HERE+_TO,XT_EXIT
+
+        _COLON XT_P                     ;= keyWait
+        DW XT_KEY,XT_DROP,XT_EXIT
+
+        _colon xt_twice
+        dw xt_i, xt_push,xt_exit
+
+        _BCONST XT_1H,16                ;= 1H
+        _CONST  XT_1B,256               ;= 1B
+        _bvect  xt_LF,10                ;= lf
+
+        _colon xt_cr                    ;= CR
+        dw xt_CCR+_TO,xt_LF+_TO,xt_zer,xt_cntc+_to,xt_exit
+
+        _COLON XT_TEST
+        DW  XT_ROT,XT_DUP,XT_HPRT
+        DW  XT_ROT,XT_DUP,XT_HPRT
+        DW  XT_ROT,XT_DUP,XT_HPRT,XT_P,XT_CR,XT_EXIT
+
+        _COLON XT_ROT
+        DW  XT_PUSH,XT_SWAP,XT_POP,XT_SWAP,XT_EXIT
+
+
