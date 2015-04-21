@@ -20,10 +20,10 @@ SKIPB   MACRO
         DB    03CH
         ENDM
 
-;SKIPr   MACRO reg
-;        mov   reg,0
-;        org   $-2
-;        ENDM
+SKIPr   MACRO reg
+        mov   reg,0
+        org   $-2
+        ENDM
 
 
 X       MACRO
@@ -111,10 +111,25 @@ __XALIGN MACRO  HLBL
 HLBL    =      $
         ENDM
 
-;LBL     =      (($-START+100H) SHR 1)+08000H
-__colGO  macro  lbl
+;;LBL     =      (($-START+100H) SHR 1)+08000H
+;__colGO  macro  lbl
+;        __XALIGN LBL
+;        DW  @XNEST,@LBL
+;        endm
+
+__col4   macro  lbl
         __XALIGN LBL
-        DW  @XNEST,@LBL
+        DW  @NEST4
+        endm
+
+__col3   macro  lbl
+        __XALIGN LBL
+        DW  @NEST3
+        endm
+
+__col2   macro  lbl
+        __XALIGN LBL
+        DW  @NEST2
         endm
 
 __col    macro  lbl
@@ -184,11 +199,9 @@ __MCONS  macro   lbl,dat
         DW    DAT
         endm
 
-__entry  macro ADR,DAT,nam
-        DW    ADR
-        DW    DAT
-        db    0
+__entry  macro nam,ADR
         __nam  nam
+        DW    ADR
         endm
 
 

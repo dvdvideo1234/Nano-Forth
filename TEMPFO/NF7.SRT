@@ -1,101 +1,218 @@
-$4113  ENTRY STATES
-$411D  ENTRY 0
-$4120  ENTRY BL
-$4125  ENTRY HBUF
 
-$4129  ENTRY ACCEPT
-$412D  ENTRY ERR
-$4131  ENTRY OKV
-$4135  ENTRY EMIT
-$4139  ENTRY KEY
-$413D  ENTRY HELPTO
-$413F  ENTRY DOSRCH
-$4145  ENTRY SRCHP
-$414B  ENTRY >IN
-$4151  ENTRY TIB<
-$4157  ENTRY CNTC
-$415D  ENTRY TIB
-$4163  ENTRY LAST
-$4169  ENTRY HERE
-$416F  ENTRY LATEST
+$01C2 =:  ;`
+$01BC =:  :
+$0213 =:  ;HERE
+$04CA =:  +
+: ALLOT ;HERE + ;
 
-$41A7  CODE, (MV?
-$41B8  ENTRY EPUSH
-$41C7  CODE, !-
-$41CA  CODE, 2-
-$41CF  ENTRY S!
-$41D8  ENTRY S+C!
-$41E4  ENTRY TOKEN
-$41F4  ENTRY ENTRY
-$4206  ENTRY (NUM
-$425E  ENTRY PARSE
+$0437 =:  DROP;
+$0264 =:  WORD
+$0118 =:  0
+: \ 0 WORD  DROP; ; -2 ALLOT    \ COMMENT
 
-$42CA  CODE, (CAL
-$42E1  CODE, 1+
-$42F8  CODE, HI>B
-$42FA  CODE, FLIP
-$4326  CODE, RDROP
-$4331  CODE, (OF
-$4339  CODE, ?SKDR
-$433D  CODE, SKDR
-$4341  CODE, (?BR
-$434A  CODE, (MBR
-$4352  CODE, (FOR
-$4360  CODE, (NXT
+\ _CLIT   DW @_COMMA,_LIT,_COMMA  ; #,`
+88888 =:  #,`                    \ [LITERAL]
+$0236 =:  =,
+$01DC =:  ,
+$048E =:  @
+$01BC \ =:  :
+    @ =, CONSTANT
+$0118 \ =:  0
+    @ ,
+$01DC \ =:  ,
+      ,         \ NOW WE HAVE CONSTANT
 
-$4377  ENTRY (DA
-$4381  ENTRY (DE
-$4389  ENTRY (DK
+$0207 =:  `TOKEN?
+$0114 =:  NBUF        \ _TBUF
+: TOKEN? `TOKEN? TBUF ;
 
-$4392  ENTRY CSTR
-$4394  ENTRY C@
-$4396  ENTRY @
-$4398  ENTRY STR
-$43A0  ENTRY C!+
-$43A2  ENTRY !+
-$43A4  ENTRY @+
+    1 CONSTANT 1
+$01AE =:  #??           \ ON ZERO - ERROR
+$01AE =:  FIND
+$04B5 =:  AND
+: ODD 1 AND ;
+: ' TOKEN? FIND ODD #?? ;
+: LIKE ' @ ;
+LIKE \ =: \`
 
-$43A6  ENTRY 0=
-$43AE  ENTRY (#
-$43B0  ENTRY >EVAL
-$43B7  ENTRY 2+
-$43B9  ENTRY 1-
+$043D =,  1+
+$0489 =:  C@
+: C' TOKEN? 1+ C@ ;
+: C'`
 
-$43BB  ENTRY DUP
-$43BD  ENTRY DROP
-$43BF  ENTRY POP
-$43C1  ENTRY PUSH
-$43C3  ENTRY SWAP
+\ ------------------------------------
 
-$43C6  ENTRY ;`
-$43CC  ENTRY :
-$43D2  ENTRY ,
-$43DC  ENTRY #
-$43E2  ENTRY CODE,
-$440B  ENTRY CLIT
 
-$4413  ENTRY (0BR
-$4415  ENTRY (BR
-$4417  ENTRY EXEC
-$4419  ENTRY @EXEC
-$441B  ENTRY ;;
-$441D  ENTRY 0;
-$441F  ENTRY DROP;
-$4421  ENTRY SKIP
-$4423  ENTRY FIND
-$442A  ENTRY FINDC
-$445B  ENTRY [`
-$4469  ENTRY ]
-$4477  ENTRY '
 
-$4483  ENTRY LIKE
-$449C  ENTRY TO
-$449F  ENTRY NUM
-$44AB  ENTRY ABORT
-$44AD  ENTRY .?
-$44B2  ENTRY TOKEN?
-$44B8  ENTRY 0#?
-$44BE  ENTRY 0=?
-$44C8  ENTRY INITQ
-$44D2  ENTRY (EVL
+
+
+
+$04EA =:  EX
+$04D7 =:  DUP
+$01FE =:  ??
+$03C3 =:  STR
+$0474 =:  ]
+: W, STR , ;
+$0236 HEADER ;#? W, W, @ , ]
+  EX 0= ?? ;
+
+
+
+
+
+$04B3 =:  ['
+$0288 =:  C,          \ _BCOMMA
+$0233 =:  ZC,         \ _ZBCOMMA
+$0227 =:  (A"         \ _ABORT?
+$040A =:  NIP;        \ _NIPX
+$03FA =:  @R+         \ _RLDP
+$03E9 =:  (ASTR       \  (ASTR
+
+$038D =:  @EMIT       \ _@EMIT
+$04E6 =:  ABORT       \ _ABORT
+$037A =:  (ACC        \ _(ACC
+$0156 =:  ACCEPT      \ _ACCEPT
+$011C =:  bl          \ _BL
+$0138 =:  CNTC        \ _CNTC
+$0292 =:  (COMMAER    \  (COMMAER
+$01E8 =:  COMP_NUM    \ _COMP_NUM
+$03E2 =:  CSTR        \ _CSTR
+$0132 =:  DICT        \ _DICT
+$0476 =:  (DOES       \  (DOES
+$0256 =:  DPUSH       \ _DPUSH
+$04F0 =:  DROP        \ _DROP
+$014A =:  EMIT        \ _EMIT
+$0238 =:  HEADER      \ _ENTRYH
+$015A =:  ERROR       \ _ERROR
+$0126 =:  ETIB        \ _ETIB
+$0194 =:  EVAL        \ _EVAL
+$04AB =:  EXEC        \ _EXEC
+$04A7 =:  EXECUTE     \ _EXECUTE
+$04E8 =:  EXIT        \ _EXIT
+$0328 =:  (FND        \  (FND
+$044D =:  (FOR        \  (FOR
+$0120 =:  HERE        \ _HERE
+$0456 =:  (IF         \  (IF
+$0144 =:  (INIT       \  (INIT
+$04DA =:  J           \ _J
+$04E2 =:  (JUMP       \  (JUMP
+$01C8 =:  (LIT        \ (LIT
+$012C =:  LTIB        \ _LTIB
+$01D0 =:  LXEP        \ _LXEP
+$0274 =:  S!          \ _MAKESTR
+$035C =:  (MPUSH      \ (MPUSH
+$0369 =:  (MSTR       \ (MSTR
+$04DE =:  (NEXT       \ (NEXT
+$0318 =:  (NUM        \ _NUM
+$01F2 =:  NUMBER      \ _NUMBER
+$0152 =:  (OK         \ _OK
+$0102 =:  OPS[]       \ _OPERATION
+$02F6 =:  (PARS       \  (PARS
+$04AF =:  @EXEC       \ _PERFORM
+$04EE =:  POP         \ _POP
+$0410 =:  PUSH        \ _PUSH
+$04E0 =:  RDROP       \ _RDROP
+$03FE =:  C@R+        \ _RLDBP
+$04E4 =:  SKIP        \ _SKIP
+$014E =:  SOURCE      \ _SOURCE
+$0440 =:  !           \ _ST
+$013E =:  STATE       \ _STAT
+$03D4 =:  C!+         \ _STBP
+$03DA =:  !+          \ _STP
+$021D =:  S,          \ _STRCOMMA
+$04C1 =:  -           \ _SUB
+$03C7 =:  SWAP        \ _SWAP
+$010C =:  TBL         \ _TBL
+$0110 =:  TIB         \ _TIB
+$028A =:  (C,         \ _TOBCOMMA
+$0406 =:  >CODE       \ _TOCODE
+$0262 =:  TOKEN       \ _TOKEN
+$04EC =:  XCHG        \ _XCHG
+$01DE =:  ;,          \ _XCOMMA
+$01CE =:  XEP         \ _XEP
+$04BB =:  XOR         \ _XOR
+$04F2 =:  0=          \ _ZEQ
+$046B =:  0;          \ _ZEX
+
+$0414 =, @IO          \ @IO
+$043A =, @1M          \ @1M
+$0439 =, @2M          \ @2M
+$043C =, @2P          \ @2P
+$04D3 =, @CF          \ @CF
+$0432 =, @DROP        \ @DROP
+$0431 =, @DROPX       \ @DROPX
+$047F =, @EX          \ @EX
+$049B =, @EXEC        \ @EXEC
+$0408 =, @JMP@        \ @JMP@
+$0462 =, @JUMP        \ @JUMP
+$0481 =, @LBL         \ @LBL
+$0483 =, @MAIN        \ @MAIN
+$0176 =, @MAINLP      \ @MAINLP
+$0480 =, @NEST        \ @NEST
+$04A5 =, @NEST2       \ @NEST2
+$04A4 =, @NEST3       \ @NEST3
+$04A3 =, @NEST4       \ @NEST4
+$045D =, @NEXT        \ @NEXT
+$040D =, @NIP         \ @NIP
+$040C =, @NIPX        \ @NIPX
+$02A8 =, @NUM         \ @NUM
+$03B4 =, @OVER        \ @OVER
+$03D1 =, @POP         \ @POP
+$03F7 =, @PUSH        \ @PUSH
+$03F6 =, @PUSH1P      \ @PUSH1P
+$03F5 =, @PUSH2P      \ @PUSH2P
+$0365 =, @PUSHDI      \ @PUSHDI
+$03C9 =, @PUSHW       \ @PUSHW
+$04C9 =, @_BARY       \ @_BARY
+$0281 =, @_BCOMMA     \ @_BCOMMA
+$0449 =, @_CALL       \ @_CALL
+$029C =, @_COMMA      \ @_COMMA
+$03B9 =, @_CONS       \ @_CONS
+$03B8 =, @_CONS2      \ @_CONS2
+$03B7 =, @_CONS3      \ @_CONS3
+$0499 =, @_DEFER      \ @_DEFER
+$0498 =, @_DEFER2     \ @_DEFER2
+$0497 =, @_DEFER3     \ @_DEFER3
+$0492 =, @_DEFERO     \ @_DEFERO
+$03A5 =, @_DROP       \ @_DROP
+$0446 =, @_DUP        \ @_DUP
+$03A2 =, @_FOR        \ @_FOR
+$03AE =, @_IJ         \ @_IJ
+$039C =, @_LD@        \ @_LD@
+$02A1 =, @_MAKER      \ @_MAKER
+$041F =, @_PARAM1     \ @_PARAM1
+$0422 =, @_PARAM2     \ @_PARAM2
+$0425 =, @_PARAM3     \ @_PARAM3
+$0466 =, @_POINT      \ @_POINT
+$03A4 =, @_PUSH       \ @_PUSH
+$0398 =, @_RLD        \ @_RLD
+$0470 =, @_SETPNT     \ @_SETPNT
+$0442 =, @_SETVAR     \ @_SETVAR
+$027A =, @_STATE      \ @_STATE
+$03BB =, @_VAR        \ @_VAR
+$03CF =, @_VAR2       \ @_VAR2
+$03CE =, @_VAR3       \ @_VAR3
+$04C7 =, @_WARY       \ @_WARY
+$0184 =:  @_INI       \ _@_INI
+
+ABORT
+
+$0236 =:  =,          \ _ENTRYC
+$0323 =, @PUSH_DC     \ @PUSH_DC
+$0453 =, @RDROP       \ @RDROP
+$0482 =, @RETURN      \ @RETURN
+$045A =, @SKIP        \ @SKIP
+$03F1 =, @XCHG        \ @XCHG
+$04D0 =, @ZEQ         \ @ZEQ
+$0404 =, @CODE@       \ @CODE@
+$0165 =, @ABORT       \ @ABORT
+$04CC =, @ADD         \ @ADD
+$03BE =, @ADR         \ @ADR
+$03DF =, @ADR1P       \ @ADR1P
+$03DE =, @ADR2P       \ @ADR2P
+$029F =, @COMMAER     \ @COMMAER
+$047A =, @DOES        \ @DOES
+$0479 =, @DOES2       \ @DOES2
+$0478 =, @DOES3       \ @DOES3
+$019E =, @DOEVAL      \ @DOEVAL
 
