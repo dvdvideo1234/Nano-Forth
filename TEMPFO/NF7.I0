@@ -6,7 +6,7 @@ pb  equ byte  ptr
 
 TO_     =  2
 AT_     =  4
-VAL_    =  6
+VL_     =  6
 
 JMPS    MACRO LBL
           jmp  SHORT LBL
@@ -50,25 +50,19 @@ D_TO    MACRO  REG
   X
         ENDM
 
-dpop    macro
-  to_D  top
-  r_to  top
-        endm
-
-dpush   macro
-  to_r  top
-  d_to  top
-        endm
+;dpop    macro
+;  tDUP  top
+;  r_to  top
+;        endm
+;
+;dpush   macro
+;  to_r  top
+;  TDROP top
+;        endm
 
 w2      macro
   scasw
         endm
-
-;ldip    macro  reg
-;  rchg  reg
-;  lodsw
-;  rchg  reg
-;        endm
 
 wip2    macro
   cmpsw
@@ -81,6 +75,20 @@ cf_to   macro  reg
 rchg    macro   reg
   xchg  ax,reg
         endm
+
+DUP2    MACRO   R1,R2
+  X
+  PUSH  R1
+  PUSH  R2
+  X
+        ENDM
+
+DROP2   MACRO   R1,R2
+  X
+  POP   R1
+  POP   R2
+  X
+        ENDM
 
 qqqqq = 0
 ppppp = qqqqq
@@ -112,10 +120,10 @@ HLBL    =      $
         ENDM
 
 ;;LBL     =      (($-START+100H) SHR 1)+08000H
-;__colGO  macro  lbl
-;        __XALIGN LBL
-;        DW  @XNEST,@LBL
-;        endm
+__colGO  macro  lbl,LBL2
+        __COL2 LBL
+        __LBL  LBL2
+        endm
 
 __col5   macro  lbl
         __XALIGN LBL
@@ -140,6 +148,21 @@ __col2   macro  lbl
 __col    macro  lbl
         __XALIGN LBL
         DW  @NEST
+        endm
+
+__RVAR3  macro  lbl
+        __XALIGN LBL
+        DW  @PUSHW3
+        endm
+
+__RVAR2  macro  lbl
+        __XALIGN LBL
+        DW  @PUSHW2
+        endm
+
+__RVAR   macro  lbl
+        __XALIGN LBL
+        DW  @PUSHW
         endm
 
 __LBL    macro  lbl
@@ -187,10 +210,10 @@ __QUAN   MACRO   LBL,DAT
         DW     @_CONS3,@_setvar2,@_VAR,dat
         ENDM
 
-__VOC    MACRO   LBL,DAT
-        __XALIGN lbl
-        DW     @_SET_VOC,@_SRCH_VOC,dat
-        ENDM
+;__VOC    MACRO   LBL,DAT
+;        __XALIGN lbl
+;        DW     @_SET_VOC,@_SRCH_VOC,dat
+;        ENDM
 
 __const  macro   lbl,dat
         __XALIGN LBL

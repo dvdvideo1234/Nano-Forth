@@ -1,79 +1,79 @@
 
-        _XT XT_ifm,__mBR                ;= (-BR
-        _XT XT_?SKIP,__?SKDR            ;= ?SKIP
+        __XT _ifm,__mBR                ;= (-BR
+        __XT _?SKIP,__?SKDR            ;= ?SKIP
 
-        _bvect  xt_lp,'['               ;= c[
-        _bvect  xt_rp,']'               ;= c]
+        _bvect  _lp,'['               ;= c[
+        _bvect  _rp,']'               ;= c]
 
-        _XT     xt_2M,__2M              ;= 2-
-        _XT     xT_CALL  ,__CALL        ;= call
-        _XT     xT_FLIP  ,__FLIP        ;= FLIP
-        _XT     xT_MBR   ,__MBR         ;= (mbr
-        _XT     xT_WHI   ,__WHI         ;= hb>b
+        __XT     _2M,__2M              ;= 2-
+        __XT     _CALL  ,__CALL        ;= call
+        __XT     _FLIP  ,__FLIP        ;= FLIP
+        __XT     _MBR   ,__MBR         ;= (mbr
+        __XT     _WHI   ,__WHI         ;= hb>b
 
 _does2: call _does  ; like C,
-        dw xt_CFETCH,xt_COMMAB,xt_exit
+        dw _CFETCH,_COMMAB,_exit
 
 _does3: call _does  ; like ,
-        dw XT_FETCH,xt_COMMA,xt_exit
+        dw _FETCH,_COMMA,_exit
 
-        _XT XT_CPOP,_DOES2              ;= (POP,
-        DW  XT_POP
+        __XT _CPOP,_DOES2              ;= (POP,
+        DW  _POP
 
-        _XT XT_CDROP,_DOES2             ;= (DROP,
-        DW  XT_DROP
+        __XT _CDROP,_DOES2             ;= (DROP,
+        DW  _DROP
 
-        _XT XT_BCALL,_DOES2             ;= (CAL,
+        __XT _BCALL,_DOES2             ;= (CAL,
         DB  232
 
-        _COLON XT_REL                   ;= (REL
-        DW  XT_HERE,XT_2P,xt_minus,XT_COMMA,XT_EXIT
+        _COL _REL                   ;= (REL
+        DW  _HERE,_2P,_minus,_COMMA,_EXIT
 
 _DOES4: CALL _DOES-1
-        DW  XT_PLUS,XT_BCALL,XT_REL,XT_EXIT
+        DW  _PLUS,_BCALL,_REL,_EXIT
 
-        _XT XT_BYE,0                    ;= BYE
+        __XT _BYE,0                    ;= BYE
 
-        _colon  xt_numo                 ;= .
-        DW XT_XSPC      ;; !!! ; : . DUP 0< IF '- EMIT NEG THEN .. ;
-        dw xt_mbr,_@@1,xt_lit,'-',xt_emit,xt_neg
-_@@1:   _COLONP XT_nprt                 ;= ..
-        DW XT_LF,XT_DM,XT_?SKIP,XT_nprt,XT_PDIG,XT_EXIT
+        _COL  _numo                 ;= .
+        DW _XSPC      ;; !!! ; : . DUP 0< IF '- EMIT NEG THEN .. ;
+        dw _mbr,_@@1,_lit,'-',_emit,_neg
+_@@1:   _COLONP _nprt                 ;= ..
+        DW _LF,_DM,_?SKIP,_nprt,_PDIG,_EXIT
 
-        _colon xt_ok_do                 ;= DO_OK
-        dw xt_space,xt_cr,xt_lit,'!',xt_emit,xt_exit
+        _COL _ok_do                 ;= DO_OK
+        dw _space,_cr,_lit,'!',_emit,_exit
 
-        _colon xt_id                    ;= ID.
-        dw xt_count,xt_type,xt_space,xt_exit
+        _COL _id                    ;= ID.
+        dw _count,_type,_space,_exit
 
-        _colon xt_list                  ;= VLIST
-        dw xt_latest,xt_xdrop
-_list   dw XT_DUP,XT_LIT,1,XT_DUMP,XT_SPACE
-        DW xt_str,xt_HPRT
-        ;DW XT_1P               !!!
-        DW xt_COUNT,XT_0EX
-        DW xt_1m,xt_count,xt_plus,xt_br,_list
+        _COL _list                  ;= VLIST
+        dw _latest,_xdrop
+_list   dw _DUP,_LIT,1,_DUMP,_SPACE
+        DW _str,_HPRT
+        ;DW _1P               !!!
+        DW _COUNT,_0EX
+        DW _1m,_count,_plus,_br,_list
 
-        _COLON  XT_PRTSTR               ;= (."
-        DW XT_POP,XT_COUNT,XT_PTYPE,XT_PUSH,XT_EXIT
+        _COL  _PRTSTR               ;= (."
+        DW _POP,_COUNT,_PTYPE,_PUSH,_EXIT
 
-        _COLON  XT_ADRSTR               ;= ("
-        DW XT_I,XT_COUNT,XT_PLUS,XT_XCHG,XT_EXIT
+        _COL  _ADRSTR               ;= ("
+        DW _I,_COUNT,_PLUS,_XCHG,_EXIT
 
-        _COLON XT_SKOBA                 ;= .[]
-        DW XT_SPACE,XT_lP+_to,XT_EX,XT_rP+_to,XT_EXIT
+        _COL _SKOBA                 ;= .[]
+        DW _SPACE,_lP+_to,_EX,_rP+_to,_EXIT
 
-        _colon xt_Xtype                 ;= ;TYPE
-        DW XT_EX,XT_DUP,XT_1H,xt_minus,XT_1H,XT_SKOBA,XT_TYPE,XT_EXIT
+        _COL _Xtype                 ;= ;TYPE
+        DW _EX,_DUP,_1H,_minus,_1H,_SKOBA,_TYPE,_EXIT
 
-        _colon xt_DUMP                  ;= DUMP
-        DW  XT_1H,XT_0SWAP,XT_DIV,XT_EQZ,XT_EQZ,xt_minus
-        DW  XT_XDROP,XT_TIMES,XT_XTYPE
-        _colonP  xt_DU                  ;= DU
-        DW  XT_CR,XT_DUP,XT_HPRT,XT_twice,XT_BS,XT_SPACE
-        DW  XT_TIMES,XT_COUNT,XT_PBYTE,XT_SPACE,XT_EXIT
+        _COL _DUMP                  ;= DUMP
+        DW  _1H,_0SWAP,_DIV,_EQZ,_EQZ,_minus
+        DW  _XDROP,_TIMES,_XTYPE
+        _colonP  _DU                  ;= DU
+        DW  _CR,_DUP,_HPRT,_twice,_BS,_SPACE
+        DW  _TIMES,_COUNT,_PBYTE,_SPACE,_EXIT
 
-        _colon xt_scom                  ;= >N,
-        dw xt_xdrop,xt_times,xt_count,xt_commaB,xt_exit
+        _COL _scom                  ;= >N,
+        dw _xdrop,_times,_count,_commaB,_exit
 
 
