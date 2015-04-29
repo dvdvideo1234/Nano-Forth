@@ -50,15 +50,13 @@ D_TO    MACRO  REG
   X
         ENDM
 
-;dpop    macro
-;  tDUP  top
-;  r_to  top
-;        endm
-;
-;dpush   macro
-;  to_r  top
-;  TDROP top
-;        endm
+tDUP    macro
+        CALL  @TOPDUP
+        endm
+
+TDROP   macro
+        CALL  @TOPDROP
+        endm
 
 w2      macro
   scasw
