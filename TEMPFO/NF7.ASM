@@ -93,23 +93,24 @@ SELF0:
   MOV   DSP,@S_TOP
   CALL  @RETURN
   ; DW    _BRK ; ,_LIT,'?',_EMIT
-  DW    _DEBUG
-  __NAM "INIT !"
+  ;DW    _DEBUG
+  ;__NAM "INIT !"
 
   DW    _INIT,_INIT,_TBL,_cstr
 @MAINLP:
   DW _EVAL,_OK,_TIB,_TBL,_ACCEPT,_JUMP,@MAINLP
 
   __COL _EVAL                           ; EVAL
-        DW _dup,to_+_LTIB,_add,to_+_ETIB,_DEBUG
-        __NAM " BEFORE TOKEN"
+        DW _dup,to_+_LTIB,_add,to_+_ETIB
+        ;,_DEBUG
+        ;__NAM " BEFORE TOKEN"
 @DoEval DW _TOKEN
-        DW _DEBUG
-        __NAM "AFTER TOKEN"
+        ;DW _DEBUG
+        ;__NAM "AFTER TOKEN"
         DW _LDB,_BRK,_ZEX
-        DW _CR,_SPACE,_TBUF,_STYPE,_BRK
-        DW    _DEBUG
-        __NAM "EVAL !"
+        DW _CR,_SPACE,_TBUF,_STYPE
+        DW _BRK
+
         DW _tbuf,_FIND
         DW _OPERATION,_PERFORM,_JUMP,@DoEval
 
@@ -344,11 +345,12 @@ _@_INI:
         DW _XSETSTR     ; SET TEXT TO BUF AFTER PARSING
 
         DW _SOURCE
-        DW _LTIB,_DEBUG
-        __NAM "PARSE1"
+        DW _LTIB
+;,_DEBUG
+        ;__NAM "PARSE1"
         DW _PARS
-        DW _DEBUG
-        __NAM "PARSE2"
+        ;DW _DEBUG
+        ;__NAM "PARSE2"
         DW to_+_LTIB
         DW _BRK
         DW _EXIT
@@ -677,8 +679,8 @@ dfnd:
   JE    @JUMP
 
 @SKIP:
-  XOR   DI,DI
-  wiP2
+  INC   SI
+  INC   SI
   JMPS  @MAIN
 
 @NEXT:    ; (NEXT
