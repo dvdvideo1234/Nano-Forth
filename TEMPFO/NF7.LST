@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 1
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 1
 NF7.asm
 
 
@@ -60,7 +60,7 @@ NF7.asm
 1    55					     CALL  @TOPDUP
 1    56					     endm
 1    57
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 2
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 2
 NF7.asm
 
 
@@ -122,7 +122,7 @@ NF7.asm
 1   112					     ENDIF
 1   113					     ENDM
 1   114
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 3
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 3
 NF7.asm
 
 
@@ -184,7 +184,7 @@ NF7.asm
 1   169					     DW	 @LBL
 1   170					     endm
 1   171
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 4
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 4
 NF7.asm
 
 
@@ -246,7 +246,7 @@ NF7.asm
 1   226					     DW	   DAT
 1   227					     endm
 1   228
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 5
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 5
 NF7.asm
 
 
@@ -308,7 +308,7 @@ NF7.asm
     283	      =-0100		     @TBUF   = -256	     ; 256
     284	      =-0200		     @TIB    = @TBUF * 2     ; 256
     285	      =-0400		     @R_TOP  = @TIB * 2	     ; 512  RSTACK
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 6
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 6
 NF7.asm
 
 
@@ -320,87 +320,87 @@ NF7.asm
     290					     JMPS SELF0
 1   291	0100  EB 5C			       jmp  SHORT SELF0
     292
-    293	0102  04DDr		     _OPERATION	DW @_WARY
-    294	0104  02BCr 04D5r		     DW	_NUMBER,_EXEC	     ; INTERPRET
-    295	0108  02B4r 02ACr		     DW	_COMP_NUM,_COMMA     ; COMPILE
+    293	0102  04F4r		     _OPERATION	DW @_WARY
+    294	0104  02D4r 04ECr		     DW	_NUMBER,_EXEC	     ; INTERPRET
+    295	0108  02CCr 02C4r		     DW	_COMP_NUM,_COMMA     ; COMPILE
     296
     297				       __DEFERO	_EMIT,_@EMIT
 1   298					     __XALIGN _EMIT
 2   299	      =MYCSEG:010C	     _EMIT    =	     $
-1   300	010C  04BBr 021Er		     DW	    @_deferO,_@EMIT
+1   300	010C  04D2r 0260r		     DW	    @_deferO,_@EMIT
     301				       __DEFER	_SOURCE,_ETIB
 1   302					     __XALIGN _SOURCE
 2   303	      =MYCSEG:0110	     _SOURCE	=      $
-1   304	0110  04C2r 0140r		     DW	    @_defer,_ETIB
+1   304	0110  04D9r 0140r		     DW	    @_defer,_ETIB
     305				       __DEFER	_ACCEPT,_ACC
 1   306					     __XALIGN _ACCEPT
 2   307	      =MYCSEG:0114	     _ACCEPT	=      $
-1   308	0114  04C2r 0228r		     DW	    @_defer,_ACC
-    309				       __DEFER	_OK,0
-1   310					     __XALIGN _OK
-2   311	      =MYCSEG:0118	     _OK    =	   $
-1   312	0118  04C2r 0000		     DW	    @_defer,0
-    313				       __DEFER	_ERROR,0
-1   314					     __XALIGN _ERROR
-2   315	      =MYCSEG:011C	     _ERROR    =      $
-1   316	011C  04C2r 0000		     DW	    @_defer,0
-    317				     ;	__DEFER	 _OK,_@OK
-    318				     ;	__DEFER	 _ERROR,_@ERROR
+1   308	0114  04D9r 024Dr		     DW	    @_defer,_ACC
+    309				     ;	__DEFER	 _OK,0
+    310				     ;	__DEFER	 _ERROR,0
+    311				       __DEFER	_OK,_@OK
+1   312					     __XALIGN _OK
+2   313	      =MYCSEG:0118	     _OK    =	   $
+1   314	0118  04D9r 05D7r		     DW	    @_defer,_@OK
+    315				       __DEFER	_ERROR,_@ERROR
+1   316					     __XALIGN _ERROR
+2   317	      =MYCSEG:011C	     _ERROR    =      $
+1   318	011C  04D9r 05E8r		     DW	    @_defer,_@ERROR
     319
     320				       __CONST	_TBL,80H
 1   321					     __XALIGN _TBL
 2   322	      =MYCSEG:0120	     _TBL    =	    $
-1   323	0120  0445r 0080		     DW	   @_cons,80H
+1   323	0120  045Cr 0080		     DW	   @_cons,80H
     324				       __CONST	_TIB,@TIB
 1   325					     __XALIGN _TIB
 2   326	      =MYCSEG:0124	     _TIB    =	    $
-1   327	0124  0445r FE00		     DW	   @_cons,@TIB
+1   327	0124  045Cr FE00		     DW	   @_cons,@TIB
     328				       __CONST	_TBUF,@TBuf
 1   329					     __XALIGN _TBUF
 2   330	      =MYCSEG:0128	     _TBUF    =	     $
-1   331	0128  0445r FF00		     DW	   @_cons,@TBuf
+1   331	0128  045Cr FF00		     DW	   @_cons,@TBuf
     332				       __CONST	_0,0
 1   333					     __XALIGN _0
 2   334	      =MYCSEG:012C	     _0	   =	  $
-1   335	012C  0445r 0000		     DW	   @_cons,0
+1   335	012C  045Cr 0000		     DW	   @_cons,0
     336				       __CONST	_BL,32
 1   337					     __XALIGN _BL
 2   338	      =MYCSEG:0130	     _BL    =	   $
-1   339	0130  0445r 0020		     DW	   @_cons,32
+1   339	0130  045Cr 0020		     DW	   @_cons,32
     340
     341				       __POINT	_INIT,_@_INI
 1   342					     __XALIGN _INIT
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 7
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 7
 NF7.asm
 
 
 
 2   343	      =MYCSEG:0134	     _INIT    =	     $
-1   344	0134  0492r 049Cr 0236r		     DW	    @_point,@_setpnt,_@_INI
+1   344	0134  04A9r 04B3r 026Ar		     DW	    @_point,@_setpnt,_@_INI
     345				       __VALUE	_HERE,FREEMEM
 1   346					     __XALIGN _HERE
 2   347	      =MYCSEG:013A	     _HERE    =	     $
-1   348	013A  0444r 045Dr 04F8r		     DW	    @_cons2,@_setvar,FREEMEM
+1   348	013A  045Br 0474r 0637r		     DW	    @_cons2,@_setvar,FREEMEM
     349				       __VALUE	_ETIB,0
 1   350					     __XALIGN _ETIB
 2   351	      =MYCSEG:0140	     _ETIB    =	     $
-1   352	0140  0444r 045Dr 0000		     DW	    @_cons2,@_setvar,0
+1   352	0140  045Br 0474r 0000		     DW	    @_cons2,@_setvar,0
     353				       __VALUE	_LTIB,0
 1   354					     __XALIGN _LTIB
 2   355	      =MYCSEG:0146	     _LTIB    =	     $
-1   356	0146  0444r 045Dr 0000		     DW	    @_cons2,@_setvar,0
+1   356	0146  045Br 0474r 0000		     DW	    @_cons2,@_setvar,0
     357				       __VALUE	_DICT,@VOCTOP
 1   358					     __XALIGN _DICT
 2   359	      =MYCSEG:014C	     _DICT    =	     $
-1   360	014C  0444r 045Dr D800		     DW	    @_cons2,@_setvar,@VOCTOP
+1   360	014C  045Br 0474r D800		     DW	    @_cons2,@_setvar,@VOCTOP
     361				       __VALUE	_CNTC,0
 1   362					     __XALIGN _CNTC
 2   363	      =MYCSEG:0152	     _CNTC    =	     $
-1   364	0152  0444r 045Dr 0000		     DW	    @_cons2,@_setvar,0
+1   364	0152  045Br 0474r 0000		     DW	    @_cons2,@_setvar,0
     365				       __value	_stat,0
 1   366					     __XALIGN _stat
 2   367	      =MYCSEG:0158	     _stat    =	     $
-1   368	0158  0444r 045Dr 0000		     DW	    @_cons2,@_setvar,0
+1   368	0158  045Br 0474r 0000		     DW	    @_cons2,@_setvar,0
     369
     370				     ;------------  MAIN LOOP  OUTER INTERPRETTER ----
     371
@@ -411,1203 +411,1624 @@ NF7.asm
     376	0165			     @ABORT:
     377	0165  BC FC00		       MOV   RSP,@R_TOP
     378	0168  B8 F800		       MOV   DSP,@S_TOP
-    379	016B  E8 0383		       CALL  @RETURN
-    380				       ; DW    _LIT,'?',_EMIT
-    381
-    382	016E  0134r 0134r 0120r	  +    DW    _INIT,_INIT,_TBL,_cstr
-    383	      01E5r
-    384	0176			     @MAINLP:
-    385	0176  0246r 0118r 0124r	  +    DW _EVAL,_OK,_TIB,_TBL,_ACCEPT,_JUMP,@MAINLP
-    386	      0120r 0114r 029Cr	  +
-    387	      0176r
-    388
-    389				     ;------------------------------------
-    390				     ; LOGICAL	    COMMANDS  XOR AND
-    391
-    392				       __XT  _3P,@_CALL	     ; 3+
-1   393					     __XALIGN _3P
-2   394	      =MYCSEG:0184	     _3P    =	   $
-1   395	0184  0475r			     DW	     @_CALL
-    396	0186  43		       inc   top
-    397				       JMPS  @2P
-1   398	0187  EB 14			       jmp  SHORT @2P
-    399
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 8
+    379	016B  E8 039A		       CALL  @RETURN
+    380	016E  0534r 0215r 003F	  +    DW    _BRK,_LIT,'?',_EMIT
+    381	      010Cr
+    382
+    383	0176  0134r 0134r 0120r	  +    DW    _INIT,_INIT,_TBL,_cstr
+    384	      021Br
+    385	017E			     @MAINLP:
+    386	017E  018Cr 0118r 0124r	  +    DW _EVAL,_OK,_TIB,_TBL,_ACCEPT,_JUMP,@MAINLP
+    387	      0120r 0114r 02B4r	  +
+    388	      017Er
+    389
+    390				       __COL _EVAL			     ; EVAL
+1   391					     __XALIGN _EVAL
+2   392	      =MYCSEG:018C	     _EVAL    =	     $
+1   393	018C  0506r			     DW	 @NEST
+    394	018E  0202r 0148r 0240r	  +	     DW	_dup,to_+_LTIB,_add,to_+_ETIB
+    395	      0142r
+    396	0196  0534r 031Ar 0223r	  +  @DoEval DW	_BRK,_TOKEN,_LDB,_ZEX
+    397	      04AEr
+    398	019E  0128r 05CAr 05C2r	  +	     DW	_TBUF,_CR,_SPACE,_STYPE,_TBL,_TBL,_ACCEPT,_CR
+    399	      05FAr 0120r 0120r	  +
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 8
 NF7.asm
 
 
 
-    400				       __XT  _1P,@_CALL	     ; 1+
-1   401					     __XALIGN _1P
-2   402	      =MYCSEG:0189	     _1P    =	   $
-1   403	0189  0475r			     DW	     @_CALL
-    404	018B  43		       INC   TOP
-    405	018C  C3		       RET
-    406
-    407				       __XT  _STBP,@_NIP     ; C!+
-1   408					     __XALIGN _STBP
-2   409	      =MYCSEG:018D	     _STBP    =	     $
-1   410	018D  0469r			     DW	     @_NIP
-    411	018F  88 17		       MOV   [Top],NRL
-    412	0191  43		       INC   TOP
-    413	0192  C3		       RET
-    414
-    415				       __XT  _STP,@_NIP	     ; !+
-1   416					     __XALIGN _STP
-2   417	      =MYCSEG:0193	     _STP    =	    $
-1   418	0193  0469r			     DW	     @_NIP
-    419	0195  89 17		       MOV   [Top],NR
-    420				       JMPS  @2P
-1   421	0197  EB 04			       jmp  SHORT @2P
+    400	      0114r 05CAr
+    401	01AE  0128r 027Ar		     DW	_tbuf,_FIND
+    402	01B2  0102r 04F0r 02B4r	  +	     DW	_OPERATION,_PERFORM,_JUMP,@DoEval
+    403	      0196r
+    404
+    405				     ;------------------------------------
+    406				     ; LOGICAL	    COMMANDS  XOR AND
+    407
+    408				       __XT  _3P,@_CALL	     ; 3+
+1   409					     __XALIGN _3P
+2   410	      =MYCSEG:01BA	     _3P    =	   $
+1   411	01BA  048Cr			     DW	     @_CALL
+    412	01BC  43		       inc   top
+    413				       JMPS  @2P
+1   414	01BD  EB 14			       jmp  SHORT @2P
+    415
+    416				       __XT  _1P,@_CALL	     ; 1+
+1   417					     __XALIGN _1P
+2   418	      =MYCSEG:01BF	     _1P    =	   $
+1   419	01BF  048Cr			     DW	     @_CALL
+    420	01C1  43		       INC   TOP
+    421	01C2  C3		       RET
     422
-    423				       __XT  _LDP,@_DUP	     ; @+
-1   424					     __XALIGN _LDP
-2   425	      =MYCSEG:0199	     _LDP    =	    $
-1   426	0199  0472r			     DW	     @_DUP
-    427	019B			     @LDP:
-    428	019B  8B 17		       MOV   NR,[Top]
-    429	019D			     @2p:
-    430	019D  43		       inc   top
-    431	019E  43		       inc   top
-    432	019F  C3		       RET
-    433
-    434	01A0			     @_FOR:
-    435	01A0  F7 DB		       NEG   TOP
-    436	01A2			     @_PUSH:
-    437				       TO_R  TOP
-1   438	01A2  53		       PUSH   TOP
-    439	01A3			     @_DROP:
-    440	01A3  0B DB		       OR    top,top
-    441				       to_r  W
-1   442	01A5  57		       PUSH   W
-    443	01A6  8B FB		       MOV   W,top
-    444	01A8			     @TOPDROP:
-    445	01A8  8B DA		       MOV   TOP,NR
-    446	01AA			     NR_NIP:
-    447				       D_TO  NR
-1   448				       X
-2   449	01AA  94		       xchg Rsp,DSP
-1   450	01AB  5A		       POP    NR
-1   451				       X
-2   452	01AC  94		       xchg Rsp,DSP
-    453	01AD  C3		       RET
-    454
-    455				       __XT  _RSTBP,@_RST@   ; C!R+
-1   456					     __XALIGN _RSTBP
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 9
+    423				       __XT  _STBP,@_NIP     ; C!+
+1   424					     __XALIGN _STBP
+2   425	      =MYCSEG:01C3	     _STBP    =	     $
+1   426	01C3  0480r			     DW	     @_NIP
+    427	01C5  88 17		       MOV   [Top],NRL
+    428	01C7  43		       INC   TOP
+    429	01C8  C3		       RET
+    430
+    431				       __XT  _STP,@_NIP	     ; !+
+1   432					     __XALIGN _STP
+2   433	      =MYCSEG:01C9	     _STP    =	    $
+1   434	01C9  0480r			     DW	     @_NIP
+    435	01CB  89 17		       MOV   [Top],NR
+    436				       JMPS  @2P
+1   437	01CD  EB 04			       jmp  SHORT @2P
+    438
+    439				       __XT  _LDP,@_DUP	     ; @+
+1   440					     __XALIGN _LDP
+2   441	      =MYCSEG:01CF	     _LDP    =	    $
+1   442	01CF  0489r			     DW	     @_DUP
+    443	01D1			     @LDP:
+    444	01D1  8B 17		       MOV   NR,[Top]
+    445	01D3			     @2p:
+    446	01D3  43		       inc   top
+    447	01D4  43		       inc   top
+    448	01D5  C3		       RET
+    449
+    450	01D6			     @_FOR:
+    451	01D6  F7 DB		       NEG   TOP
+    452	01D8			     @_PUSH:
+    453				       TO_R  TOP
+1   454	01D8  53		       PUSH   TOP
+    455	01D9			     @_DROP:
+    456	01D9  0B DB		       OR    top,top
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 9
 NF7.asm
 
 
 
-2   457	      =MYCSEG:01AE	     _RSTBP    =      $
-1   458	01AE  0437r			     DW	     @_RST@
-    459	01B0  88 1D		       MOV   [W],TOPL
-    460	01B2  47		       INC   W
-    461				       JMPS  @TOPDROP
-1   462	01B3  EB F3			       jmp  SHORT @TOPDROP
-    463
-    464				       __XT  _RLDP,@_RLD@    ; @R+
-1   465					     __XALIGN _RLDP
-2   466	      =MYCSEG:01B5	     _RLDP    =	     $
-1   467	01B5  0432r			     DW	     @_RLD@
-    468	01B7  8B 1D		       MOV   TOP,[W]
-    469				       W2
-1   470	01B9  AF		       scasw
-    471	01BA  C3		       RET
-    472
-    473				       __XT  _ASTR,@_RLD@    ; (STR
-1   474					     __XALIGN _ASTR
-2   475	      =MYCSEG:01BB	     _ASTR    =	     $
-1   476	01BB  0432r			     DW	     @_RLD@
-    477	01BD  8A 1D		       MOV   TOPL,[W]
-    478	01BF  43		       inc   top
-    479	01C0  03 DF		       ADD   top,W
-    480				       SKIPA
-1   481	01C2  3D			     DB	   03DH
-    482
-    483				       __XT  _XCHG,@_RST@    ; XCHG
-1   484					     __XALIGN _XCHG
-2   485	      =MYCSEG:01C3	     _XCHG    =	     $
-1   486	01C3  0437r			     DW	     @_RST@
-    487	01C5  87 DF		       XCHG  TOP,W
-    488	01C7  C3		       RET
-    489
-    490				     ; __XT  _RST,@_RST
-    491				     ; MOV   [W],TOP
-    492				     ; W2
-    493				     ; JMPS  @TOPDROP
-    494
-    495				       __XT  _DROP,@DROP     ; DROP
-1   496					     __XALIGN _DROP
-2   497	      =MYCSEG:01C8	     _DROP    =	     $
-1   498	01C8  045Fr			     DW	     @DROP
-    499
-    500				       __XT  _OVER,@OVER     ; OVER
-1   501					     __XALIGN _OVER
-2   502	      =MYCSEG:01CA	     _OVER    =	     $
-1   503	01CA  0452r			     DW	     @OVER
-    504
-    505				       __XT  _DUP,@_CALL     ; dup
-1   506					     __XALIGN _DUP
-2   507	      =MYCSEG:01CC	     _DUP    =	    $
-1   508	01CC  0475r			     DW	     @_CALL
-    509	01CE			     @TOPDUP:
-    510				       TO_D  NR
-1   511				       X
-2   512	01CE  94		       xchg Rsp,DSP
-1   513	01CF  52		       PUSH   NR
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 10
+    457				       to_r  W
+1   458	01DB  57		       PUSH   W
+    459	01DC  8B FB		       MOV   W,top
+    460	01DE			     @TOPDROP:
+    461	01DE  8B DA		       MOV   TOP,NR
+    462	01E0			     NR_NIP:
+    463				       D_TO  NR
+1   464				       X
+2   465	01E0  94		       xchg Rsp,DSP
+1   466	01E1  5A		       POP    NR
+1   467				       X
+2   468	01E2  94		       xchg Rsp,DSP
+    469	01E3  C3		       RET
+    470
+    471				       __XT  _RSTBP,@_RST@   ; C!R+
+1   472					     __XALIGN _RSTBP
+2   473	      =MYCSEG:01E4	     _RSTBP    =      $
+1   474	01E4  044Ar			     DW	     @_RST@
+    475	01E6  88 1D		       MOV   [W],TOPL
+    476	01E8  47		       INC   W
+    477				       JMPS  @TOPDROP
+1   478	01E9  EB F3			       jmp  SHORT @TOPDROP
+    479
+    480				       __XT  _RLDP,@_RLD@    ; @R+
+1   481					     __XALIGN _RLDP
+2   482	      =MYCSEG:01EB	     _RLDP    =	     $
+1   483	01EB  0445r			     DW	     @_RLD@
+    484	01ED  8B 1D		       MOV   TOP,[W]
+    485				       W2
+1   486	01EF  AF		       scasw
+    487	01F0  C3		       RET
+    488
+    489				       __XT  _ASTR,@_RLD@    ; (STR
+1   490					     __XALIGN _ASTR
+2   491	      =MYCSEG:01F1	     _ASTR    =	     $
+1   492	01F1  0445r			     DW	     @_RLD@
+    493	01F3  8A 1D		       MOV   TOPL,[W]
+    494	01F5  43		       inc   top
+    495	01F6  03 DF		       ADD   top,W
+    496				       SKIPA
+1   497	01F8  3D			     DB	   03DH
+    498
+    499				       __XT  _XCHG,@_RST@    ; XCHG
+1   500					     __XALIGN _XCHG
+2   501	      =MYCSEG:01F9	     _XCHG    =	     $
+1   502	01F9  044Ar			     DW	     @_RST@
+    503	01FB  87 DF		       XCHG  TOP,W
+    504	01FD  C3		       RET
+    505
+    506				     ; __XT  _RST,@_RST
+    507				     ; MOV   [W],TOP
+    508				     ; W2
+    509				     ; JMPS  @TOPDROP
+    510
+    511				       __XT  _DROP,@DROP     ; DROP
+1   512					     __XALIGN _DROP
+2   513	      =MYCSEG:01FE	     _DROP    =	     $
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 10
 NF7.asm
 
 
 
-1   514				       X
-2   515	01D0  94		       xchg Rsp,DSP
-    516	01D1  8B D3		       MOV   NR,TOP
-    517	01D3  C3		       RET
-    518
-    519				       __XT  _SWAP,@_CALL    ; SWAP
-1   520					     __XALIGN _SWAP
-2   521	      =MYCSEG:01D4	     _SWAP    =	     $
-1   522	01D4  0475r			     DW	     @_CALL
-    523	01D6  87 DA		       XCHG  TOP,NR
-    524	01D8  C3		       RET
-    525
-    526				       __XT  _Wstr,@_2P_DUP  ; STR
-1   527					     __XALIGN _Wstr
-2   528	      =MYCSEG:01D9	     _Wstr    =	     $
-1   529	01D9  0470r			     DW	     @_2P_DUP
-    530	01DB  8B 5F FE		       MOV   TOP,[TOP-2]
-    531	01DE  C3		       RET
-    532
-    533				       __XT  _LIT,@_DUP	      ;	LIT
-1   534					     __XALIGN _LIT
-2   535	      =MYCSEG:01DF	     _LIT    =	    $
-1   536	01DF  0472r			     DW	     @_DUP
-    537	01E1  8B 1C		       MOV   TOP,[IP]
-    538				       wiP2
-1   539	01E3  A7		       cmpsw
-    540	01E4  C3		       RET
+1   514	01FE  0476r			     DW	     @DROP
+    515
+    516				       __XT  _OVER,@OVER     ; OVER
+1   517					     __XALIGN _OVER
+2   518	      =MYCSEG:0200	     _OVER    =	     $
+1   519	0200  0469r			     DW	     @OVER
+    520
+    521				       __XT  _DUP,@_CALL     ; dup
+1   522					     __XALIGN _DUP
+2   523	      =MYCSEG:0202	     _DUP    =	    $
+1   524	0202  048Cr			     DW	     @_CALL
+    525	0204			     @TOPDUP:
+    526				       TO_D  NR
+1   527				       X
+2   528	0204  94		       xchg Rsp,DSP
+1   529	0205  52		       PUSH   NR
+1   530				       X
+2   531	0206  94		       xchg Rsp,DSP
+    532	0207  8B D3		       MOV   NR,TOP
+    533	0209  C3		       RET
+    534
+    535				       __XT  _SWAP,@_CALL    ; SWAP
+1   536					     __XALIGN _SWAP
+2   537	      =MYCSEG:020A	     _SWAP    =	     $
+1   538	020A  048Cr			     DW	     @_CALL
+    539	020C  87 DA		       XCHG  TOP,NR
+    540	020E  C3		       RET
     541
-    542				       __XT  _CSTR,@_1P_DUP  ; CSTR
-1   543					     __XALIGN _CSTR
-2   544	      =MYCSEG:01E5	     _CSTR    =	     $
-1   545	01E5  0471r			     DW	     @_1P_DUP
-    546	01E7  4B		       DEC   TOP
-    547				       JMPS  @LDB
-1   548	01E8  EB 05			       jmp  SHORT @LDB
-    549
-    550				       __XT  _DLDB,@_DUP     ; DUP C@
-1   551					     __XALIGN _DLDB
-2   552	      =MYCSEG:01EA	     _DLDB    =	     $
-1   553	01EA  0472r			     DW	     @_DUP
-    554				       SKIPA
-1   555	01EC  3D			     DB	   03DH
-    556
-    557				       __XT  _LDB,@_CALL     ; C@
-1   558					     __XALIGN _LDB
-2   559	      =MYCSEG:01ED	     _LDB    =	    $
-1   560	01ED  0475r			     DW	     @_CALL
-    561	01EF			     @LDB:
-    562	01EF  8A 1F		       MOV   TOPL,[TOP]
-    563	01F1  B7 00		       MOV   TOPH,0
-    564	01F3  C3		       RET
+    542				       __XT  _Wstr,@_2P_DUP  ; STR
+1   543					     __XALIGN _Wstr
+2   544	      =MYCSEG:020F	     _Wstr    =	     $
+1   545	020F  0487r			     DW	     @_2P_DUP
+    546	0211  8B 5F FE		       MOV   TOP,[TOP-2]
+    547	0214  C3		       RET
+    548
+    549				       __XT  _LIT,@_DUP	      ;	LIT
+1   550					     __XALIGN _LIT
+2   551	      =MYCSEG:0215	     _LIT    =	    $
+1   552	0215  0489r			     DW	     @_DUP
+    553	0217  8B 1C		       MOV   TOP,[IP]
+    554				       wiP2
+1   555	0219  A7		       cmpsw
+    556	021A  C3		       RET
+    557
+    558				       __XT  _CSTR,@_1P_DUP  ; CSTR
+1   559					     __XALIGN _CSTR
+2   560	      =MYCSEG:021B	     _CSTR    =	     $
+1   561	021B  0488r			     DW	     @_1P_DUP
+    562	021D  4B		       DEC   TOP
+    563				       JMPS  @LDB
+1   564	021E  EB 05			       jmp  SHORT @LDB
     565
-    566				       __XT  _LD,@_CALL	     ; @
-1   567					     __XALIGN _LD
-2   568	      =MYCSEG:01F4	     _LD    =	   $
-1   569	01F4  0475r			     DW	     @_CALL
-    570	01F6  8B 1F		       MOV   TOP,[TOP]
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 11
+    566				       __XT  _DLDB,@_DUP     ; DUP C@
+1   567					     __XALIGN _DLDB
+2   568	      =MYCSEG:0220	     _DLDB    =	     $
+1   569	0220  0489r			     DW	     @_DUP
+    570				       SKIPA
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 11
 NF7.asm
 
 
 
-    571	01F8  C3		       RET
+1   571	0222  3D			     DB	   03DH
     572
-    573				       __XT  _LPAR,@_state   ; [`
-1   574					     __XALIGN _LPAR
-2   575	      =MYCSEG:01F9	     _LPAR    =	     $
-1   576	01F9  0332r			     DW	     @_state
-    577
-    578				       __XT  _and,@_NIP	     ; and
-1   579					     __XALIGN _and
-2   580	      =MYCSEG:01FB	     _and    =	    $
-1   581	01FB  0469r			     DW	     @_NIP
-    582	01FD  23 DA		       and   top,NR
-    583	01FF  C3		       RET
-    584
-    585				       __XT  _xor,@_NIP	     ; xor
-1   586					     __XALIGN _xor
-2   587	      =MYCSEG:0200	     _xor    =	    $
-1   588	0200  0469r			     DW	     @_NIP
-    589	0202  33 DA		       xor   top,NR
-    590	0204  C3		       RET
-    591
-    592				       __XT   _SUB,@_SWAP_NIP; -
-1   593					     __XALIGN _SUB
-2   594	      =MYCSEG:0205	     _SUB    =	    $
-1   595	0205  0464r			     DW	     @_SWAP_NIP
-    596	0207  2B DA		       SUB   TOP,NR
-    597	0209  C3		       RET
-    598
-    599				       __XT  _add,@_NIP	     ; +
-1   600					     __XALIGN _add
-2   601	      =MYCSEG:020A	     _add    =	    $
-1   602	020A  0469r			     DW	     @_NIP
-    603	020C  03 DA		       ADD   top,NR
-    604	020E  C3		       RET
-    605
-    606				       __XT  _ZEQ,@_CALL     ; 0=
-1   607					     __XALIGN _ZEQ
-2   608	      =MYCSEG:020F	     _ZEQ    =	    $
-1   609	020F  0475r			     DW	     @_CALL
-    610	0211  83 EB 01		       SUB   top,1
-    611	0214			     @CF:
-    612				       cf_to top
-1   613	0214  1B DB		       sbb   top,top
-    614	0216  C3		       RET
-    615
-    616				     ; __XT  _ULESS,@_NIP    ; U<
-    617				     ; SUB NR,TOP
-    618				     ; JMPS @CF
-    619				     ;
-    620				     ; __XT  _SGN,@_CALL     ; 0<
-    621				     ; SHL   TOP,1
-    622				     ; JMPS  @CF
-    623				     ;
-    624				       ;--------------------   IO  ---------------
-    625
-    626				       __XT  _ACCZ,@_SWAP_NIP ;	RETURNS	1 PARAM
-1   627					     __XALIGN _ACCZ
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 12
+    573				       __XT  _LDB,@_CALL     ; C@
+1   574					     __XALIGN _LDB
+2   575	      =MYCSEG:0223	     _LDB    =	    $
+1   576	0223  048Cr			     DW	     @_CALL
+    577	0225			     @LDB:
+    578	0225  8A 1F		       MOV   TOPL,[TOP]
+    579	0227  B7 00		       MOV   TOPH,0
+    580	0229  C3		       RET
+    581
+    582				       __XT  _LD,@_CALL	     ; @
+1   583					     __XALIGN _LD
+2   584	      =MYCSEG:022A	     _LD    =	   $
+1   585	022A  048Cr			     DW	     @_CALL
+    586	022C  8B 1F		       MOV   TOP,[TOP]
+    587	022E  C3		       RET
+    588
+    589				       __XT  _LPAR,@_state   ; [`
+1   590					     __XALIGN _LPAR
+2   591	      =MYCSEG:022F	     _LPAR    =	     $
+1   592	022F  034Ar			     DW	     @_state
+    593
+    594				       __XT  _and,@_NIP	     ; and
+1   595					     __XALIGN _and
+2   596	      =MYCSEG:0231	     _and    =	    $
+1   597	0231  0480r			     DW	     @_NIP
+    598	0233  23 DA		       and   top,NR
+    599	0235  C3		       RET
+    600
+    601				       __XT  _xor,@_NIP	     ; xor
+1   602					     __XALIGN _xor
+2   603	      =MYCSEG:0236	     _xor    =	    $
+1   604	0236  0480r			     DW	     @_NIP
+    605	0238  33 DA		       xor   top,NR
+    606	023A  C3		       RET
+    607
+    608				       __XT   _SUB,@_SWAP_NIP; -
+1   609					     __XALIGN _SUB
+2   610	      =MYCSEG:023B	     _SUB    =	    $
+1   611	023B  047Br			     DW	     @_SWAP_NIP
+    612	023D  2B DA		       SUB   TOP,NR
+    613	023F  C3		       RET
+    614
+    615				       __XT  _add,@_NIP	     ; +
+1   616					     __XALIGN _add
+2   617	      =MYCSEG:0240	     _add    =	    $
+1   618	0240  0480r			     DW	     @_NIP
+    619	0242  03 DA		       ADD   top,NR
+    620	0244  C3		       RET
+    621
+    622				       __XT  _ZEQ,@_CALL     ; 0=
+1   623					     __XALIGN _ZEQ
+2   624	      =MYCSEG:0245	     _ZEQ    =	    $
+1   625	0245  048Cr			     DW	     @_CALL
+    626	0247  83 EB 01		       SUB   top,1
+    627	024A			     @CF:
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 12
 NF7.asm
 
 
 
-2   628	      =MYCSEG:0217	     _ACCZ    =	     $
-1   629	0217  0464r			     DW	     @_SWAP_NIP
-    630	0219  BF 0A00		       MOV   dI,0A00H	     ; DOS ACCEPT FUNCTION NUMBER
-    631				       JMPS  @DOS_DX
-1   632	021C  EB 05			       jmp  SHORT @DOS_DX
+    628				       cf_to top
+1   629	024A  1B DB		       sbb   top,top
+    630	024C  C3		       RET
+    631
+    632				       ;--------------------   IO  ---------------
     633
-    634				       __XT  _@EMIT,@_SWAP_NIP	   ; (EMIT
-1   635					     __XALIGN _@EMIT
-2   636	      =MYCSEG:021E	     _@EMIT    =      $
-1   637	021E  0464r			     DW	     @_SWAP_NIP
-    638	0220  BF 0200		       MOV   DI,200h  ;	dos function number EMIT
-    639	0223			     @DOS_DX:
-    640				       RCHG  DI
-1   641	0223  97		       xchg  ax,DI
-    642	0224  CD 21		       INT   21H
-    643				       RCHG  DI
-1   644	0226  97		       xchg  ax,DI
-    645	0227  C3		       RET
-    646
-    647				       __COL _ACC
-1   648					     __XALIGN _ACC
-2   649	      =MYCSEG:0228	     _ACC    =	    $
-1   650	0228  04EFr			     DW	 @NEST
-    651	022A  01CAr 045Br 0217r	  +	     DW	_OVER,_ST,_ACCZ,_1P,_CSTR,_EXIT
-    652	      0189r 01E5r 02A2r
-    653
-    654				     ;------------------------------------
-    655
-    656	0236			     _@_INI:
-    657	0236  013Ar 01D9r 02F6r		     DW	 _HERE,_WSTR,_DPUSH
-    658	023C  0136r			     DW	 to_+_INIT
-    659	023E  01F9r 012Cr 0148r	  +	     DW	 _LPAR,_0,to_+_LTIB,_EXIT
-    660	      02A2r
-    661
-    662				       __COL _EVAL			     ; EVAL
-1   663					     __XALIGN _EVAL
-2   664	      =MYCSEG:0246	     _EVAL    =	     $
-1   665	0246  04EFr			     DW	 @NEST
-    666	0248  01CCr 0148r 020Ar	  +	     DW	_dup,to_+_LTIB,_add,to_+_ETIB
-    667	      0142r
-    668	0250  0302r 01EDr 0497r	  +  @DoEval DW	_TOKEN,_LDB,_ZEX,_tbuf,_FIND
-    669	      0128r 0262r
-    670	025A  0102r 04D9r 029Cr	  +	     DW	_OPERATION,_PERFORM,_JUMP,@DoEval
-    671	      0250r
-    672
-    673				       __col _find			     ; FIND  with status
-1   674					     __XALIGN _find
-2   675	      =MYCSEG:0262	     _find    =	     $
-1   676	0262  04EFr			     DW	 @NEST
-    677	0264  0158r 04E5r 0205r	  +	     DW	_stat,_DOES,_SUB,_dict,_FND,_EXIT
-    678	      014Cr 03F4r 02A2r
-    679
-    680				       __XT _COLON,@_MAKER	     ; :
-1   681					     __XALIGN _COLON
-2   682	      =MYCSEG:0270	     _COLON    =      $
-1   683	0270  0348r			     DW	     @_MAKER
-    684	0272  04EFr 04E3r		     DW	@NEST,_RPAR
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 13
+    634				       __XT  _ACC,@_CALL     ; RETURNS 2 PARAM
+1   635					     __XALIGN _ACC
+2   636	      =MYCSEG:024D	     _ACC    =	    $
+1   637	024D  048Cr			     DW	     @_CALL
+    638	024F  8B FA		       MOV   DI,DX
+    639	0251  89 1D		       MOV   [DI],BX
+    640	0253  BB 0A00		       MOV   BX,0A00H	     ; DOS ACCEPT FUNCTION NUMBER
+    641	0256  87 DF		       XCHG  BX,DI
+    642	0258  E8 000A		       CALL  @DOS_DX
+    643	025B  43		       INC   BX
+    644	025C  43		       INC   BX
+    645	025D  42		       INC   DX
+    646	025E  EB C5		       JMP   @LDB
+    647
+    648				       __XT  _@EMIT,@_SWAP_NIP	   ; (EMIT
+1   649					     __XALIGN _@EMIT
+2   650	      =MYCSEG:0260	     _@EMIT    =      $
+1   651	0260  047Br			     DW	     @_SWAP_NIP
+    652	0262  BF 0200		       MOV   DI,200h  ;	dos function number EMIT
+    653	0265			     @DOS_DX:
+    654				       RCHG  DI
+1   655	0265  97		       xchg  ax,DI
+    656	0266  CD 21		       INT   21H
+    657				       RCHG  DI
+1   658	0268  97		       xchg  ax,DI
+    659	0269  C3		       RET
+    660
+    661				     ; __COL _ACC
+    662				     ;	     DW	_OVER,_ST,_ACCZ,_1P,_CSTR,_EXIT
+    663
+    664				     ;------------------------------------
+    665
+    666	026A			     _@_INI:
+    667	026A  013Ar 020Fr 030Er		     DW	 _HERE,_WSTR,_DPUSH
+    668	0270  0136r			     DW	 to_+_INIT
+    669	0272  022Fr 012Cr 0148r	  +	     DW	 _LPAR,_0,to_+_LTIB,_EXIT
+    670	      02BAr
+    671
+    672				       __col _find			     ; FIND  with status
+1   673					     __XALIGN _find
+2   674	      =MYCSEG:027A	     _find    =	     $
+1   675	027A  0506r			     DW	 @NEST
+    676	027C  0158r 04FCr 023Br	  +	     DW	_stat,_DOES,_SUB,_dict,_FND,_EXIT
+    677	      014Cr 040Cr 02BAr
+    678
+    679				       __XT _COLON,@_MAKER	     ; :
+1   680					     __XALIGN _COLON
+2   681	      =MYCSEG:0288	     _COLON    =      $
+1   682	0288  0360r			     DW	     @_MAKER
+    683	028A  0506r 04FAr		     DW	@NEST,_RPAR
+    684
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 13
 NF7.asm
 
 
 
-    685
-    686				       __XT  _SEMICO,@_COMMA
-1   687					     __XALIGN _SEMICO
-2   688	      =MYCSEG:0276	     _SEMICO	=      $
-1   689	0276  0343r			     DW	     @_COMMA
-    690	0278  02A2r 01F9r		     DW	_EXIT,_LPAR	     ; ;`
-    691
-    692				       __XT _CLIT,@_COMMA
-1   693					     __XALIGN _CLIT
-2   694	      =MYCSEG:027C	     _CLIT    =	     $
-1   695	027C  0343r			     DW	     @_COMMA
-    696	027E  01DFr 02ACr		     DW	_LIT,_COMMA	     ; #,`
-    697
-    698				       __XT  _J,@_IJ
-1   699					     __XALIGN _J
-2   700	      =MYCSEG:0282	     _J	   =	  $
-1   701	0282  043Er			     DW	     @_IJ
-    702	0284  0002			     DW	2
-    703
-    704				       __COL _LOOPS
-1   705					     __XALIGN _LOOPS
-2   706	      =MYCSEG:0286	     _LOOPS    =      $
-1   707	0286  04EFr			     DW	 @NEST
-    708	0288  0479r 0294r		     DW	_FOR,@@LP2
-    709	028C  0282r 04D1r 0298r	  +  @@LP1   DW	_J,_EXECUTE,_NEXT,@@LP1
-    710	      028Cr
-    711	0294  029Ar 02A2r	     @@LP2   DW	_RDROP,_EXIT
-    712
-    713				       __XT  _NEXT,@NEXT	     ;
-1   714					     __XALIGN _NEXT
-2   715	      =MYCSEG:0298	     _NEXT    =	     $
-1   716	0298  0489r			     DW	     @NEXT
-    717				       __XT  _RDROP,@RDROP	     ;
-1   718					     __XALIGN _RDROP
-2   719	      =MYCSEG:029A	     _RDROP    =      $
-1   720	029A  047Fr			     DW	     @RDROP
-    721				       __XT  _JUMP,@JUMP	     ;
-1   722					     __XALIGN _JUMP
-2   723	      =MYCSEG:029C	     _JUMP    =	     $
-1   724	029C  048Er			     DW	     @JUMP
-    725				       __XT  _SKIP,@SKIP	     ;
-1   726					     __XALIGN _SKIP
-2   727	      =MYCSEG:029E	     _SKIP    =	     $
-1   728	029E  0486r			     DW	     @SKIP
-    729				       __XT  _ABORT,@ABORT	     ;
-1   730					     __XALIGN _ABORT
-2   731	      =MYCSEG:02A0	     _ABORT    =      $
-1   732	02A0  0165r			     DW	     @ABORT
-    733
-    734
-    735				       __XT  _EXIT,@RETURN
-1   736					     __XALIGN _EXIT
-2   737	      =MYCSEG:02A2	     _EXIT    =	     $
-1   738	02A2  04F1r			     DW	     @RETURN
-    739				       __XT  _EX,@EX
-1   740					     __XALIGN _EX
-2   741	      =MYCSEG:02A4	     _EX    =	   $
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 14
+    685				       __XT  _SEMICO,@_COMMA
+1   686					     __XALIGN _SEMICO
+2   687	      =MYCSEG:028E	     _SEMICO	=      $
+1   688	028E  035Br			     DW	     @_COMMA
+    689	0290  02BAr 022Fr		     DW	_EXIT,_LPAR	     ; ;`
+    690
+    691				       __XT _CLIT,@_COMMA
+1   692					     __XALIGN _CLIT
+2   693	      =MYCSEG:0294	     _CLIT    =	     $
+1   694	0294  035Br			     DW	     @_COMMA
+    695	0296  0215r 02C4r		     DW	_LIT,_COMMA	     ; #,`
+    696
+    697				       __XT  _J,@_IJ
+1   698					     __XALIGN _J
+2   699	      =MYCSEG:029A	     _J	   =	  $
+1   700	029A  0455r			     DW	     @_IJ
+    701	029C  0002			     DW	2
+    702
+    703				       __COL _LOOPS		     ; LOOPS
+1   704					     __XALIGN _LOOPS
+2   705	      =MYCSEG:029E	     _LOOPS    =      $
+1   706	029E  0506r			     DW	 @NEST
+    707	02A0  0490r 02ACr		     DW	_FOR,@@LP2
+    708	02A4  029Ar 04E8r 02B0r	  +  @@LP1   DW	_J,_EXECUTE,_NEXT,@@LP1
+    709	      02A4r
+    710	02AC  02B2r 02BAr	     @@LP2   DW	_RDROP,_EXIT
+    711
+    712				       __XT  _NEXT,@NEXT	     ; (NEXT
+1   713					     __XALIGN _NEXT
+2   714	      =MYCSEG:02B0	     _NEXT    =	     $
+1   715	02B0  04A0r			     DW	     @NEXT
+    716				       __XT  _RDROP,@RDROP	     ; RDROP
+1   717					     __XALIGN _RDROP
+2   718	      =MYCSEG:02B2	     _RDROP    =      $
+1   719	02B2  0496r			     DW	     @RDROP
+    720				       __XT  _JUMP,@JUMP	     ; (JUMP
+1   721					     __XALIGN _JUMP
+2   722	      =MYCSEG:02B4	     _JUMP    =	     $
+1   723	02B4  04A5r			     DW	     @JUMP
+    724				       __XT  _SKIP,@SKIP	     ; SKIP
+1   725					     __XALIGN _SKIP
+2   726	      =MYCSEG:02B6	     _SKIP    =	     $
+1   727	02B6  049Dr			     DW	     @SKIP
+    728				       __XT  _ABORT,@ABORT	     ; ABORT
+1   729					     __XALIGN _ABORT
+2   730	      =MYCSEG:02B8	     _ABORT    =      $
+1   731	02B8  0165r			     DW	     @ABORT
+    732				       __XT  _EXIT,@RETURN	     ; EXIT
+1   733					     __XALIGN _EXIT
+2   734	      =MYCSEG:02BA	     _EXIT    =	     $
+1   735	02BA  0508r			     DW	     @RETURN
+    736				       __XT  _EX,@EX		     ; EX
+1   737					     __XALIGN _EX
+2   738	      =MYCSEG:02BC	     _EX    =	   $
+1   739	02BC  0505r			     DW	     @EX
+    740				       __XT  _POP,@POP		     ; POP
+1   741					     __XALIGN _POP
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 14
 NF7.asm
 
 
 
-1   742	02A4  04EEr			     DW	     @EX
-    743
-    744				       __XT  _POP,@POP
-1   745					     __XALIGN _POP
-2   746	      =MYCSEG:02A6	     _POP    =	    $
-1   747	02A6  0453r			     DW	     @POP
+2   742	      =MYCSEG:02BE	     _POP    =	    $
+1   743	02BE  046Ar			     DW	     @POP
+    744				       __XT  _NIPX,@_NIPX	     ; NIP;
+1   745					     __XALIGN _NIPX
+2   746	      =MYCSEG:02C0	     _NIPX    =	     $
+1   747	02C0  047Er			     DW	     @_NIPX
     748
-    749				       __XT  _NIPX,@_NIPX
-1   750					     __XALIGN _NIPX
-2   751	      =MYCSEG:02A8	     _NIPX    =	     $
-1   752	02A8  0467r			     DW	     @_NIPX
-    753
-    754				       __RVAR2 _XCOMMA			     ; ;,
-1   755					     __XALIGN _XCOMMA
-2   756	      =MYCSEG:02AA	     _XCOMMA	=      $
-1   757	02AA  042Er			     DW	 @PUSHW2
-    758				       __col  _COMMA			     ; ,
-1   759					     __XALIGN _COMMA
-2   760	      =MYCSEG:02AC	     _COMMA    =      $
-1   761	02AC  04EFr			     DW	 @NEST
-    762	02AE  02C6r 0193r 02A2r		     DW	_HEREX,_STP,_EXIT
-    763
-    764				       __COL _COMP_NUM			     ; (NUM,
-1   765					     __XALIGN _COMP_NUM
-2   766	      =MYCSEG:02B4	     _COMP_NUM	  =	 $
-1   767	02B4  04EFr			     DW	 @NEST
-    768	02B6  02BCr 027Cr 02A2r		     DW	_NUMBER,_CLIT,_EXIT
-    769
-    770				       __COL _NUMBER			     ; (NUMBER
-1   771					     __XALIGN _NUMBER
-2   772	      =MYCSEG:02BC	     _NUMBER	=      $
-1   773	02BC  04EFr			     DW	 @NEST
-    774	02BE  01E5r 03CBr 0324r	  +	     DW	_cstr,_NUM,_??,_EXIT
-    775	      02A2r
-    776
-    777				       __COL _HEREX			     ; ;HERE
-1   778					     __XALIGN _HEREX
-2   779	      =MYCSEG:02C6	     _HEREX    =      $
-1   780	02C6  04EFr			     DW	 @NEST
-    781	02C8  013Ar 02A4r 013Cr	  +	     DW	_HERE,_EX,to_+_HERE,_EXIT
-    782	      02A2r
-    783
-    784				       __COL _ABORT?			     ; (A"
-1   785					     __XALIGN _ABORT?
-2   786	      =MYCSEG:02D0	     _ABORT?	=      $
-1   787	02D0  04EFr			     DW	 @NEST
-    788	02D2  01BBr 015Ar 0497r	  +	     DW	_ASTR,TO_+_STAT,_ZEX,_ERROR,_ABORT
-    789	      011Cr 02A0r
-    790					     ; ADDRESS OF ERROR	MESSAGE	IS IN _STAT
-    791
-    792				       __COL3 _ENTRYC			     ; =,    CODE,
-1   793					     __XALIGN _ENTRYC
-2   794	      =MYCSEG:02DC	     _ENTRYC	=      $
-1   795	02DC  04CEr			     DW	 @NEST3
-    796				       __COL3 _ENTRYH			     ; =H    HEADER
-1   797					     __XALIGN _ENTRYH
-2   798	      =MYCSEG:02DE	     _ENTRYH	=      $
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 15
+    749				       __RVAR2 _XCOMMA		     ; ;,
+1   750					     __XALIGN _XCOMMA
+2   751	      =MYCSEG:02C2	     _XCOMMA	=      $
+1   752	02C2  0451r			     DW	 @PUSHW2
+    753				       __col  _COMMA		     ; ,
+1   754					     __XALIGN _COMMA
+2   755	      =MYCSEG:02C4	     _COMMA    =      $
+1   756	02C4  0506r			     DW	 @NEST
+    757	02C6  02DEr 01C9r 02BAr		     DW	_HEREX,_STP,_EXIT
+    758
+    759				       __COL _COMP_NUM		     ; (NUM,
+1   760					     __XALIGN _COMP_NUM
+2   761	      =MYCSEG:02CC	     _COMP_NUM	  =	 $
+1   762	02CC  0506r			     DW	 @NEST
+    763	02CE  02D4r 0294r 02BAr		     DW	_NUMBER,_CLIT,_EXIT
+    764
+    765				       __COL _NUMBER			     ; (NUMBER
+1   766					     __XALIGN _NUMBER
+2   767	      =MYCSEG:02D4	     _NUMBER	=      $
+1   768	02D4  0506r			     DW	 @NEST
+    769	02D6  021Br 03E3r 033Cr	  +	     DW	_cstr,_NUM,_??,_EXIT
+    770	      02BAr
+    771
+    772				       __COL _HEREX			     ; ;HERE
+1   773					     __XALIGN _HEREX
+2   774	      =MYCSEG:02DE	     _HEREX    =      $
+1   775	02DE  0506r			     DW	 @NEST
+    776	02E0  013Ar 02BCr 013Cr	  +	     DW	_HERE,_EX,to_+_HERE,_EXIT
+    777	      02BAr
+    778
+    779				       __COL _ABORT?			     ; (A"
+1   780					     __XALIGN _ABORT?
+2   781	      =MYCSEG:02E8	     _ABORT?	=      $
+1   782	02E8  0506r			     DW	 @NEST
+    783	02EA  01F1r 015Ar 04AEr	  +	     DW	_ASTR,TO_+_STAT,_ZEX,_ERROR,_ABORT
+    784	      011Cr 02B8r
+    785					     ; ADDRESS OF ERROR	MESSAGE	IS IN _STAT
+    786
+    787				       __COL3 _ENTRYC			     ; =,    CODE,
+1   788					     __XALIGN _ENTRYC
+2   789	      =MYCSEG:02F4	     _ENTRYC	=      $
+1   790	02F4  04E5r			     DW	 @NEST3
+    791				       __COL3 _ENTRYH			     ; =H    HEADER
+1   792					     __XALIGN _ENTRYH
+2   793	      =MYCSEG:02F6	     _ENTRYH	=      $
+1   794	02F6  04E5r			     DW	 @NEST3
+    795				       __COL3 _ENTRY			     ; =:    ALIAS
+1   796					     __XALIGN _ENTRY
+2   797	      =MYCSEG:02F8	     _ENTRY    =      $
+1   798	02F8  04E5r			     DW	 @NEST3
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 15
 NF7.asm
 
 
 
-1   799	02DE  04CEr			     DW	 @NEST3
-    800				       __COL3 _ENTRY			     ; =:    ALIAS
-1   801					     __XALIGN _ENTRY
-2   802	      =MYCSEG:02E0	     _ENTRY    =      $
-1   803	02E0  04CEr			     DW	 @NEST3
-    804	02E2  02AAr 013Ar 0300r	  +	     DW	_XCOMMA,_HERE,_TOKEN?,_CSTR,_ADD,_ST,_TBUF,_DLDB,_3P
-    805	      01E5r 020Ar 045Br	  +
-    806	      0128r 01EAr 0184r
-    807	02F4  029Er			     DW	_SKIP
-    808				       __COL   _DPUSH			       ; >DICT
-1   809					     __XALIGN _DPUSH
-2   810	      =MYCSEG:02F6	     _DPUSH    =      $
-1   811	02F6  04EFr			     DW	 @NEST
-    812	02F8  014Cr 03D6r 014Er	  +	     DW	 _DICT,_MPUSH,To_+_DICT,_EXIT
-    813	      02A2r
-    814
-    815				       __COL4 _TOKEN?			     ; TOKEN?
-1   816					     __XALIGN _TOKEN?
-2   817	      =MYCSEG:0300	     _TOKEN?	=      $
-1   818	0300  04CDr			     DW	 @NEST4
-    819				       __COL4 _TOKEN			     ; TOKEN
-1   820					     __XALIGN _TOKEN
-2   821	      =MYCSEG:0302	     _TOKEN    =      $
-1   822	0302  04CDr			     DW	 @NEST4
-    823				       __COL4 _WORD			     ; WORD
-1   824					     __XALIGN _WORD
-2   825	      =MYCSEG:0304	     _WORD    =	     $
-1   826	0304  04CDr			     DW	 @NEST4
-    827				       __COL4 _PARSE			     ; PARSE
-1   828					     __XALIGN _PARSE
-2   829	      =MYCSEG:0306	     _PARSE    =      $
-1   830	0306  04CDr			     DW	 @NEST4
-    831	0308  0320r			     DW	_XTOK?	     ; IS IT A TOKEN IN	THE BUFFER ?
-    832	030A  0130r			     DW	_BL	     ; SPACE IS	DELIMITER
-    833	030C  0318r			     DW	_XSETSTR     ; SET TEXT	TO BUF AFTER PARSING
-    834
-    835	030E  0110r			     DW	_SOURCE
-    836	0310  0146r			     DW	_LTIB
-    837	0312  03A7r			     DW	_PARS
-    838	0314  0148r			     DW	to_+_LTIB
-    839	0316  02A2r			     DW	_EXIT
-    840
-    841				       __RVAR _XSETSTR			     ; ;S!
-1   842					     __XALIGN _XSETSTR
-2   843	      =MYCSEG:0318	     _XSETSTR	 =	$
-1   844	0318  042Fr			     DW	 @PUSHW
-    845	031A  0128r 03E3r 02A8r		     dw	_TBUF,_MSTR,_nipx
-    846
-    847				       __RVAR3 _XTOK?
-1   848					     __XALIGN _XTOK?
-2   849	      =MYCSEG:0320	     _XTOK?    =      $
-1   850	0320  042Dr			     DW	 @PUSHW3
-    851				       __COL3  _Z??
-1   852					     __XALIGN _Z??
-2   853	      =MYCSEG:0322	     _Z??    =	    $
-1   854	0322  04CEr			     DW	 @NEST3
-    855				       __COL3  _??
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 16
+    799	02FA  02C2r 013Ar 0318r	  +	     DW	_XCOMMA,_HERE,_TOKEN?,_CSTR,_ADD,_ST,_TBUF,_DLDB,_3P
+    800	      021Br 0240r 0472r	  +
+    801	      0128r 0220r 01BAr
+    802	030C  02B6r			     DW	_SKIP
+    803				       __COL   _DPUSH			     ; >DICT
+1   804					     __XALIGN _DPUSH
+2   805	      =MYCSEG:030E	     _DPUSH    =      $
+1   806	030E  0506r			     DW	 @NEST
+    807	0310  014Cr 03EEr 014Er	  +	     DW	 _DICT,_MPUSH,To_+_DICT,_EXIT
+    808	      02BAr
+    809
+    810				       __COL4 _TOKEN?			     ; TOKEN?
+1   811					     __XALIGN _TOKEN?
+2   812	      =MYCSEG:0318	     _TOKEN?	=      $
+1   813	0318  04E4r			     DW	 @NEST4
+    814				       __COL4 _TOKEN			     ; TOKEN
+1   815					     __XALIGN _TOKEN
+2   816	      =MYCSEG:031A	     _TOKEN    =      $
+1   817	031A  04E4r			     DW	 @NEST4
+    818				       __COL4 _WORD			     ; WORD
+1   819					     __XALIGN _WORD
+2   820	      =MYCSEG:031C	     _WORD    =	     $
+1   821	031C  04E4r			     DW	 @NEST4
+    822				       __COL4 _PARSE			     ; PARSE
+1   823					     __XALIGN _PARSE
+2   824	      =MYCSEG:031E	     _PARSE    =      $
+1   825	031E  04E4r			     DW	 @NEST4
+    826	0320  0338r			     DW	_XTOK?	     ; IS IT A TOKEN IN	THE BUFFER ?
+    827	0322  0130r			     DW	_BL	     ; SPACE IS	DELIMITER
+    828	0324  0330r			     DW	_XSETSTR     ; SET TEXT	TO BUF AFTER PARSING
+    829
+    830	0326  0110r			     DW	_SOURCE
+    831	0328  0146r			     DW	_LTIB
+    832	032A  03BFr			     DW	_PARS
+    833	032C  0148r			     DW	to_+_LTIB
+    834	032E  02BAr			     DW	_EXIT
+    835
+    836				       __RVAR _XSETSTR			     ; ;S!
+1   837					     __XALIGN _XSETSTR
+2   838	      =MYCSEG:0330	     _XSETSTR	 =	$
+1   839	0330  0452r			     DW	 @PUSHW
+    840	0332  0128r 03FBr 02C0r		     dw	_TBUF,_MSTR,_nipx
+    841
+    842				       __RVAR3 _XTOK?			     ; ;TOK?
+1   843					     __XALIGN _XTOK?
+2   844	      =MYCSEG:0338	     _XTOK?    =      $
+1   845	0338  0450r			     DW	 @PUSHW3
+    846				       __COL3  _Z??			     ; #??
+1   847					     __XALIGN _Z??
+2   848	      =MYCSEG:033A	     _Z??    =	    $
+1   849	033A  04E5r			     DW	 @NEST3
+    850				       __COL3  _??			     ; ??
+1   851					     __XALIGN _??
+2   852	      =MYCSEG:033C	     _??    =	   $
+1   853	033C  04E5r			     DW	 @NEST3
+    854	033E  0220r			     DW	_DLDB	     ; DUP C@
+    855	0340  0245r			     DW	_ZEQ	     ; LOGICAL INVERT -> #0 IS OK
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 16
 NF7.asm
 
 
 
-1   856					     __XALIGN _??
-2   857	      =MYCSEG:0324	     _??    =	   $
-1   858	0324  04CEr			     DW	 @NEST3
-    859	0326  01EAr			     DW	_DLDB	     ; DUP C@
-    860	0328  020Fr			     DW	_ZEQ	     ; LOGICAL INVERT -> #0 IS OK
-    861	032A  02D0r			     DW	_ABORT?	     ; ZERO ? 0	/ FALSE	IS OK
-    862					  __NAM	" ? "
-1   863	032C  03		       db    ??0000-$-1
-1   864	032D  20 3F 20		       db    " ? "
-1   865	0330			     ??0000  label   byte
-    866	0330  02A2r			     DW	_EXIT
-    867
-    868	0332			     @_state:
-    869	0332  E8 01B2		       call  @does3
-    870	0335  015Ar 02A2r	       dw to_+_stat,_exit
-    871
-    872				     ;	__COL _BCOMMA,_BCOMMAL		; C, >C,
-    873				     ;	      DW _HEREX,_STBP,_EXIT
-    874
-    875				       __LBL _COMMAER
-1   876					     __XALIGN _COMMAER
-2   877	      =MYCSEG:0339	     _COMMAER	 =	$
-1   878	0339  04F0r			     DW	 @LBL
-    879	033B  01D9r 02ACr 04D9r	  +    dw _Wstr,_comma,_perfORM,_exit
-    880	      02A2r
-    881
-    882	0343			     @_comma:
-    883	0343  E8 01A3		       call @does
-    884	0346  0339r		       DW _COMMAER
-    885
-    886	0348			     @_MAKER:
-    887	0348  E8 019E		       call @does
-    888	034B  02DEr 0339r	       dw _entryH,_commaER
+    856	0342  02E8r			     DW	_ABORT?	     ; ZERO ? 0	/ FALSE	IS OK
+    857					  __NAM	" ? "
+1   858	0344  03		       db    ??0000-$-1
+1   859	0345  20 3F 20		       db    " ? "
+1   860	0348			     ??0000  label   byte
+    861	0348  02BAr			     DW	_EXIT
+    862
+    863	034A			     @_state:
+    864	034A  E8 01B1		       call  @does3
+    865	034D  015Ar 02BAr	       dw to_+_stat,_exit
+    866
+    867				     ;	__COL _BCOMMA,_BCOMMAL		; C, >C,
+    868				     ;	      DW _HEREX,_STBP,_EXIT
+    869
+    870				       __LBL _COMMAER
+1   871					     __XALIGN _COMMAER
+2   872	      =MYCSEG:0351	     _COMMAER	 =	$
+1   873	0351  0507r			     DW	 @LBL
+    874	0353  020Fr 02C4r 04F0r	  +    dw _Wstr,_comma,_perfORM,_exit
+    875	      02BAr
+    876
+    877	035B			     @_comma:
+    878	035B  E8 01A2		       call @does
+    879	035E  0351r		       DW _COMMAER
+    880
+    881	0360			     @_MAKER:
+    882	0360  E8 019D		       call @does
+    883	0363  02F6r 0351r	       dw _entryH,_commaER
+    884
+    885				     ;vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    886
+    887				       ;-------------------  NUMBER  ------------
+    888					      ;	adr count base	/ num flag -> =0 ok
     889
-    890				     ;vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    891
-    892				       ;-------------------  NUMBER  ------------
-    893					      ;	adr count base	/ num flag -> =0 ok
-    894
-    895	034F			     @NUM:
-    896	034F  E8 0015		       CALL  @@numini
-    897	0352  E8 0045		       CALL  @@SGN
-    898	0355			     @@NUMZ:
-    899	0355  E8 0002		       CALL  @@N1
-    900				       JMPS  @@NUMZ
-1   901	0358  EB FB			       jmp  SHORT @@NUMZ
-    902
-    903	035A			     @@n1:
-    904	035A  3C 24		       cmp   al,'$'	; BASE := 16
-    905	035C  75 04		       JNE   @@N2
-    906	035E  B0 0F		       MOV   al,16-1
-    907	0360  EB 08		       jmp   SHORT @@setbas
-    908
-    909	0362  3C 23		     @@N2:   cmp  al,'#'     ; BASE := nbase
-    910	0364  75 10		       JNE   @@N3
-    911				       RCHG  nacc
-1   912	0366  97		       xchg  ax,nacc
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 17
+    890	0367			     @NUM:
+    891	0367  E8 0015		       CALL  @@numini
+    892	036A  E8 0045		       CALL  @@SGN
+    893	036D			     @@NUMZ:
+    894	036D  E8 0002		       CALL  @@N1
+    895				       JMPS  @@NUMZ
+1   896	0370  EB FB			       jmp  SHORT @@NUMZ
+    897
+    898	0372			     @@n1:
+    899	0372  3C 24		       cmp   al,'$'	; BASE := 16
+    900	0374  75 04		       JNE   @@N2
+    901	0376  B0 0F		       MOV   al,16-1
+    902	0378  EB 08		       jmp   SHORT @@setbas
+    903
+    904	037A  3C 23		     @@N2:   cmp  al,'#'     ; BASE := nbase
+    905	037C  75 10		       JNE   @@N3
+    906				       RCHG  nacc
+1   907	037E  97		       xchg  ax,nacc
+    908	037F			     @@numini:
+    909	037F  48		       DEC   AX
+    910	0380  33 FF		       Xor   nacc,nacc	     ; ACCUMULATOR
+    911	0382			     @@setbas:
+    912	0382  32 E4		       xor   ah,ah
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 17
 NF7.asm
 
 
 
-    913	0367			     @@numini:
-    914	0367  48		       DEC   AX
-    915	0368  33 FF		       Xor   nacc,nacc	     ; ACCUMULATOR
-    916	036A			     @@setbas:
-    917	036A  32 E4		       xor   ah,ah
-    918	036C  8B D8		       mov   nbase,ax
-    919	036E  43		       INC   NBASE
-    920	036F			     @@END?:
-    921	036F  0B C9		       or    CX,cx
-    922	0371  75 24		       Jnz   @@GETC
-    923	0373			     @@ERNUM:
-    924	0373  41		       INC   CX
-    925	0374			     @@EXNUM:
-    926	0374  5A		       pop   dx	   ; rdrop
-    927	0375  C3		       RET
-    928
-    929	0376			     @@N3:
-    930	0376  3C 27		       cmp   al,''''
-    931	0378  75 05		       jNE   @@N4
-    932	037A  E8 FFF2		       CALL  @@END?
-    933				       JMPS  @@ESCAPE
-1   934	037D  EB 10			       jmp  SHORT @@ESCAPE
-    935
-    936	037F			     @@N4:
-    937	037F  3C 3A		       cmp   al,'9'+1
-    938	0381  72 06		       jc    @@ton2
-    939	0383  3C 41		       cmp   al,'A'	 ; no case sensivity
-    940	0385  72 EC		       jc    @@ERNUM
-    941	0387  2C 07		       sub   al,7
-    942	0389			     @@ton2:
-    943	0389  2C 30		       sub   al,'0'
-    944	038B  3B C3		       cmp   ax,nbase
-    945	038D  73 E4		       jnc   @@ERNUM
-    946	038F			     @@ESCAPE:
-    947				       rchg  nacc
-1   948	038F  97		       xchg  ax,nacc
-    949	0390  F7 E3		       mul   nbase
-    950				       rchg  nacc
-1   951	0392  97		       xchg  ax,nacc
-    952	0393  03 F8		       add   nacc,ax
-    953	0395  E3 DD		       JCXZ  @@EXNUM
-    954	0397			     @@GETC:
-    955	0397  49		       deC   CX
-    956	0398  AC		       LODSB
-    957	0399  C3		       RET
-    958
-    959	039A			     @@SGN:
-    960	039A  3C 2D		       CMP   AL,'-'	; SGN
-    961	039C  75 BC		       JNE   @@N1
-    962	039E  E8 FFCE		       CALL  @@END?
-    963	03A1  5A		       POP   dX
-    964	03A2  FF D2		       CALL  dX		; return to caller
-    965	03A4  F7 DF		       NEG   nacc
-    966	03A6  C3		       RET
+    913	0384  8B D8		       mov   nbase,ax
+    914	0386  43		       INC   NBASE
+    915	0387			     @@END?:
+    916	0387  0B C9		       or    CX,cx
+    917	0389  75 24		       Jnz   @@GETC
+    918	038B			     @@ERNUM:
+    919	038B  41		       INC   CX
+    920	038C			     @@EXNUM:
+    921	038C  5A		       pop   dx	   ; rdrop
+    922	038D  C3		       RET
+    923
+    924	038E			     @@N3:
+    925	038E  3C 27		       cmp   al,''''
+    926	0390  75 05		       jNE   @@N4
+    927	0392  E8 FFF2		       CALL  @@END?
+    928				       JMPS  @@ESCAPE
+1   929	0395  EB 10			       jmp  SHORT @@ESCAPE
+    930
+    931	0397			     @@N4:
+    932	0397  3C 3A		       cmp   al,'9'+1
+    933	0399  72 06		       jc    @@ton2
+    934	039B  3C 41		       cmp   al,'A'	 ; no case sensivity
+    935	039D  72 EC		       jc    @@ERNUM
+    936	039F  2C 07		       sub   al,7
+    937	03A1			     @@ton2:
+    938	03A1  2C 30		       sub   al,'0'
+    939	03A3  3B C3		       cmp   ax,nbase
+    940	03A5  73 E4		       jnc   @@ERNUM
+    941	03A7			     @@ESCAPE:
+    942				       rchg  nacc
+1   943	03A7  97		       xchg  ax,nacc
+    944	03A8  F7 E3		       mul   nbase
+    945				       rchg  nacc
+1   946	03AA  97		       xchg  ax,nacc
+    947	03AB  03 F8		       add   nacc,ax
+    948	03AD  E3 DD		       JCXZ  @@EXNUM
+    949	03AF			     @@GETC:
+    950	03AF  49		       deC   CX
+    951	03B0  AC		       LODSB
+    952	03B1  C3		       RET
+    953
+    954	03B2			     @@SGN:
+    955	03B2  3C 2D		       CMP   AL,'-'	; SGN
+    956	03B4  75 BC		       JNE   @@N1
+    957	03B6  E8 FFCE		       CALL  @@END?
+    958	03B9  5A		       POP   dX
+    959	03BA  FF D2		       CALL  dX		; return to caller
+    960	03BC  F7 DF		       NEG   nacc
+    961	03BE  C3		       RET
+    962
+    963				       ;----------------  PARSE	  -----------------
+    964
+    965				     ;	CHAR etib ltib	/  START LEN >IN
+    966				     ;	SI   CX	  DI	   di	 si  cx
     967
-    968				       ;----------------  PARSE	  -----------------
-    969
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 18
+    968				       __XT  _PARS,@_PARAM3	      ;= (PARS
+1   969					     __XALIGN _PARS
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 18
 NF7.asm
 
 
 
-    970				     ;	CHAR etib ltib	/  START LEN >IN
-    971				     ;	SI   CX	  DI	   di	 si  cx
-    972
-    973				       __XT  _PARS,@_PARAM3	      ;= (PARS
-1   974					     __XALIGN _PARS
-2   975	      =MYCSEG:03A7	     _PARS    =	     $
-1   976	03A7  04A6r			     DW	     @_PARAM3
-    977	03A9  87 CF		       XCHG  CX,DI
-    978	03AB  2B F9		       SUB   DI,CX
-    979	03AD  96		       XCHG  AX,SI
-    980
-    981	03AE  3C 20		       CMP   AL,' '
-    982	03B0  75 08		       JNE   @@SKIPX
-    983	03B2  E3 06		       JCXZ  @@SKIPX
-    984	03B4  F3> AE		       REPE  SCASB
-    985	03B6  74 02		       JE    @@SKIPX
-    986	03B8  4F		       DEC   DI
-    987	03B9  41		       INC   CX
-    988	03BA			     @@SKIPX:
-    989	03BA  57		       push  di	     ;	START OF THE SOURCE
-    990	03BB  E3 05		       JCXZ  @@WEX
-    991
-    992	03BD  F2> AE		       REPNE SCASB
-    993	03BF  75 01		       JNE   @@WEX
-    994	03C1  4F		       DEC   DI
-    995
-    996	03C2			     @@WEX:	     ; END OF THE SOURCE  IN DI
-    997	03C2  97		       xchg  ax,di
-    998	03C3  5F		       pop   di
-    999	03C4  2B C7		       SUB   ax,di
-   1000	03C6  96		       XCHG  AX,SI
-   1001				       X
-1  1002	03C7  94		       xchg Rsp,DSP
-   1003	03C8  57		       PUSH  di	     ; START OF	THE SOURCE
-   1004				       JMPS  @PUSH_sC+1
-1  1005	03C9  EB 2F			       jmp  SHORT @PUSH_sC+1
-   1006
-   1007				       __XT  _num,@_PARAM2	     ;=	(ATOI
-1  1008					     __XALIGN _num
-2  1009	      =MYCSEG:03CB	     _num    =	    $
-1  1010	03CB  04A3r			     DW	     @_PARAM2
-   1011				       to_r  ax
-1  1012	03CD  50		       PUSH   ax
-   1013	03CE  B0 0A		       MOV   AL,10   ; BASE 10
-   1014	03D0  E8 FF7C		       CALL  @NUM
-   1015				       r_to  AX
-1  1016	03D3  58		       POP    AX
-   1017				       jmps  @push_DC
-1  1018	03D4  EB 19			       jmp  SHORT @push_DC
-   1019
-   1020				       ;----------------  MEMORY  -------------------
-   1021
-   1022				       __XT  _MPUSH,@_PARAM3 ; TOP OF DICTIONARY   IN DI
-1  1023					     __XALIGN _MPUSH
-2  1024	      =MYCSEG:03D6	     _MPUSH    =      $
-1  1025	03D6  04A6r			     DW	     @_PARAM3
-   1026	03D8  03 F1		       ADD   SI,CX		  ; AFTER NAME ADDRESS
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 19
+2   970	      =MYCSEG:03BF	     _PARS    =	     $
+1   971	03BF  04BDr			     DW	     @_PARAM3
+    972	03C1  87 CF		       XCHG  CX,DI
+    973	03C3  2B F9		       SUB   DI,CX
+    974	03C5  96		       XCHG  AX,SI
+    975
+    976	03C6  3C 20		       CMP   AL,' '
+    977	03C8  75 08		       JNE   @@SKIPX
+    978	03CA  E3 06		       JCXZ  @@SKIPX
+    979	03CC  F3> AE		       REPE  SCASB
+    980	03CE  74 02		       JE    @@SKIPX
+    981	03D0  4F		       DEC   DI
+    982	03D1  41		       INC   CX
+    983	03D2			     @@SKIPX:
+    984	03D2  57		       push  di	     ;	START OF THE SOURCE
+    985	03D3  E3 05		       JCXZ  @@WEX
+    986
+    987	03D5  F2> AE		       REPNE SCASB
+    988	03D7  75 01		       JNE   @@WEX
+    989	03D9  4F		       DEC   DI
+    990
+    991	03DA			     @@WEX:	     ; END OF THE SOURCE  IN DI
+    992	03DA  97		       xchg  ax,di
+    993	03DB  5F		       pop   di
+    994	03DC  2B C7		       SUB   ax,di
+    995	03DE  96		       XCHG  AX,SI
+    996				       X
+1   997	03DF  94		       xchg Rsp,DSP
+    998	03E0  57		       PUSH  di	     ; START OF	THE SOURCE
+    999				       JMPS  @PUSH_sC+1
+1  1000	03E1  EB 2F			       jmp  SHORT @PUSH_sC+1
+   1001
+   1002				       __XT  _num,@_PARAM2	     ;=	(ATOI
+1  1003					     __XALIGN _num
+2  1004	      =MYCSEG:03E3	     _num    =	    $
+1  1005	03E3  04BAr			     DW	     @_PARAM2
+   1006				       to_r  ax
+1  1007	03E5  50		       PUSH   ax
+   1008	03E6  B0 0A		       MOV   AL,10   ; BASE 10
+   1009	03E8  E8 FF7C		       CALL  @NUM
+   1010				       r_to  AX
+1  1011	03EB  58		       POP    AX
+   1012				       jmps  @push_DC
+1  1013	03EC  EB 19			       jmp  SHORT @push_DC
+   1014
+   1015				       ;----------------  MEMORY  -------------------
+   1016
+   1017				       __XT  _MPUSH,@_PARAM3 ; TOP OF DICTIONARY   IN DI
+1  1018					     __XALIGN _MPUSH
+2  1019	      =MYCSEG:03EE	     _MPUSH    =      $
+1  1020	03EE  04BDr			     DW	     @_PARAM3
+   1021	03F0  03 F1		       ADD   SI,CX		  ; AFTER NAME ADDRESS
+   1022	03F2  FD		       STD			  ; BACKWARDS
+   1023	03F3  A6		       CMPSB			  ; PREPARE FOR	DIRECTION
+   1024	03F4  F3> A4		       REP   MOVSB		  ; NAME  MOVE
+   1025	03F6  47		       inc   di
+   1026				       TO_D  DI
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 19
 NF7.asm
 
 
 
-   1027	03DA  FD		       STD			  ; BACKWARDS
-   1028	03DB  A6		       CMPSB			  ; PREPARE FOR	DIRECTION
-   1029	03DC  F3> A4		       REP   MOVSB		  ; NAME  MOVE
-   1030	03DE  47		       inc   di
-   1031				       TO_D  DI
-1  1032				       X
-2  1033	03DF  94		       xchg Rsp,DSP
-1  1034	03E0  57		       PUSH   DI
-1  1035				       X
-2  1036	03E1  94		       xchg Rsp,DSP
-   1037	03E2  C3		       RET
-   1038
-   1039				       __XT  _MSTR,@_PARAM3	   ; (S!
-1  1040					     __XALIGN _MSTR
-2  1041	      =MYCSEG:03E3	     _MSTR    =	     $
-1  1042	03E3  04A6r			     DW	     @_PARAM3
-   1043				       to_r  di
-1  1044	03E5  57		       PUSH   di
-   1045	03E6  88 0D		       MOV   [DI],CL
-   1046	03E8  47		       INC   DI
-   1047	03E9  F3> A4		       REP   MOVSB   ; NAME  MOVE
-   1048	03EB  C6 05 60		       MOV   PB	[DI],'`'
-   1049				       r_to  cx
-1  1050	03EE  59		       POP    cx
-   1051	03EF			     @push_DC:
-   1052				       DUP2  DI,CX
-1  1053				       X
-2  1054	03EF  94		       xchg Rsp,DSP
-1  1055	03F0  57		       PUSH  DI
-1  1056	03F1  51		       PUSH  CX
-1  1057				       X
-2  1058	03F2  94		       xchg Rsp,DSP
-   1059	03F3  C3		       RET
-   1060
-   1061				       ; ------------ SEARCH  --------------
-   1062				       __XT  _FND,@_PARAM3	      ;	(FIND
-1  1063					     __XALIGN _FND
-2  1064	      =MYCSEG:03F4	     _FND    =	    $
-1  1065	03F4  04A6r			     DW	     @_PARAM3
-   1066	03F6  E8 0005		       CALL  FNDZ
-   1067	03F9			     @PUSH_SC:;	RETURNS	SI CX
-   1068				       DUP2  SI,CX
-1  1069				       X
-2  1070	03F9  94		       xchg Rsp,DSP
-1  1071	03FA  56		       PUSH  SI
-1  1072	03FB  51		       PUSH  CX
-1  1073				       X
-2  1074	03FC  94		       xchg Rsp,DSP
-   1075	03FD  C3		       RET
-   1076	03FE			     FNDZ:
-   1077	03FE  8B DE		       MOV   BX,SI
-   1078	0400  E3 19		       jcxz  Mfnd
-   1079	0402			     fnd:
-   1080	0402  33 C9		       xor   cx,cx
-   1081				       jMPS  l@Nfnd
-1  1082	0404  EB 06			       jmp  SHORT l@Nfnd
-   1083	0406			     ZFND:	     ; SKIP FIRST WORD IN DICTIONARY
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 20
+1  1027				       X
+2  1028	03F7  94		       xchg Rsp,DSP
+1  1029	03F8  57		       PUSH   DI
+1  1030				       X
+2  1031	03F9  94		       xchg Rsp,DSP
+   1032	03FA  C3		       RET
+   1033
+   1034				       __XT  _MSTR,@_PARAM3	   ; (S!
+1  1035					     __XALIGN _MSTR
+2  1036	      =MYCSEG:03FB	     _MSTR    =	     $
+1  1037	03FB  04BDr			     DW	     @_PARAM3
+   1038				       to_r  di
+1  1039	03FD  57		       PUSH   di
+   1040	03FE  88 0D		       MOV   [DI],CL
+   1041	0400  47		       INC   DI
+   1042	0401  F3> A4		       REP   MOVSB   ; NAME  MOVE
+   1043	0403  C6 05 60		       MOV   PB	[DI],'`'
+   1044				       r_to  cx
+1  1045	0406  59		       POP    cx
+   1046	0407			     @push_DC:
+   1047				       DUP2  DI,CX
+1  1048				       X
+2  1049	0407  94		       xchg Rsp,DSP
+1  1050	0408  57		       PUSH  DI
+1  1051	0409  51		       PUSH  CX
+1  1052				       X
+2  1053	040A  94		       xchg Rsp,DSP
+   1054	040B  C3		       RET
+   1055
+   1056				       ; ------------ SEARCH  --------------
+   1057				       __XT  _FND,@_PARAM3	      ;	(FIND
+1  1058					     __XALIGN _FND
+2  1059	      =MYCSEG:040C	     _FND    =	    $
+1  1060	040C  04BDr			     DW	     @_PARAM3
+   1061	040E  E8 0005		       CALL  FNDZ
+   1062	0411			     @PUSH_SC:;	RETURNS	SI CX
+   1063				       DUP2  SI,CX
+1  1064				       X
+2  1065	0411  94		       xchg Rsp,DSP
+1  1066	0412  56		       PUSH  SI
+1  1067	0413  51		       PUSH  CX
+1  1068				       X
+2  1069	0414  94		       xchg Rsp,DSP
+   1070	0415  C3		       RET
+   1071	0416			     FNDZ:
+   1072	0416  8B DE		       MOV   BX,SI
+   1073	0418  E3 19		       jcxz  Mfnd
+   1074	041A			     fnd:
+   1075	041A  33 C9		       xor   cx,cx
+   1076				       jMPS  l@Nfnd
+1  1077	041C  EB 06			       jmp  SHORT l@Nfnd
+   1078	041E			     ZFND:	     ; SKIP FIRST WORD IN DICTIONARY
+   1079	041E  8A 0D		       MOV   CL,[DI] ; ON COMPILE ONLY
+   1080	0420  47		       INC   DI
+   1081	0421			     NFND:
+   1082	0421  03 F9		       add   di,cx
+   1083	0423  AF		       SCASW
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 20
 NF7.asm
 
 
 
-   1084	0406  8A 0D		       MOV   CL,[DI] ; ON COMPILE ONLY
-   1085	0408  47		       INC   DI
-   1086	0409			     NFND:
-   1087	0409  03 F9		       add   di,cx
-   1088	040B  AF		       SCASW
-   1089	040C			     l@Nfnd:
-   1090	040C  8B F3		       MOV   SI,BX
-   1091	040E  8A 0D		       mov   cl,[di]
-   1092	0410  E3 08		       jcxz  xfnd?
-   1093	0412  41		       INC   CX
-   1094	0413  F3> A6		       repe  cmpsb
-   1095	0415  75 F2		       jNZ   Nfnd
-   1096	0417			     YFND:
-   1097	0417  8B 35		       MOV   SI,[DI]
-   1098	0419  41		       inc   cx
-   1099	041A			     xFND?:
-   1100	041A  C3		       ret
-   1101
-   1102	041B			     MFND:	 ; COMPILE MODE	SEARCH
-   1103	041B  57		       push  di
-   1104	041C  FE 07		       inc   pb	[BX]
-   1105	041E  E8 FFE5		       call  Zfnd
-   1106	0421  FE 0F		       dec   pb	[BX]
-   1107	0423  5F		       pop   di
-   1108	0424  E3 01		       jCXZ  Dfnd
-   1109	0426  C3		       RET
-   1110
-   1111	0427			     dfnd:
-   1112	0427  E8 FFDC		       call  ZFND
-   1113	042A  41		       inc   cx
-   1114	042B  41		       inc   cx
-   1115	042C  C3		       ret
-   1116
-   1117				     ;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   1118
-   1119
-   1120				     ;------------  MAIN LOOP  INNER INTERPRETTER ----
-   1121				     ;vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-   1122
-   1123	042D			     @PUSHW3:
-   1124				       W2
-1  1125	042D  AF		       scasw
-   1126	042E			     @PUSHW2:
-   1127				       W2
-1  1128	042E  AF		       scasw
+   1084	0424			     l@Nfnd:
+   1085	0424  8B F3		       MOV   SI,BX
+   1086	0426  8A 0D		       mov   cl,[di]
+   1087	0428  E3 08		       jcxz  xfnd?
+   1088	042A  41		       INC   CX
+   1089	042B  F3> A6		       repe  cmpsb
+   1090	042D  75 F2		       jNZ   Nfnd
+   1091	042F			     YFND:
+   1092	042F  8B 35		       MOV   SI,[DI]
+   1093	0431  41		       inc   cx
+   1094	0432			     xFND?:
+   1095	0432  C3		       ret
+   1096
+   1097	0433			     MFND:	 ; COMPILE MODE	SEARCH
+   1098	0433  57		       push  di
+   1099	0434  FE 07		       inc   pb	[BX]
+   1100	0436  E8 FFE5		       call  Zfnd
+   1101	0439  FE 0F		       dec   pb	[BX]
+   1102	043B  5F		       pop   di
+   1103	043C  E3 01		       jCXZ  Dfnd
+   1104	043E  C3		       RET
+   1105
+   1106	043F			     dfnd:
+   1107	043F  E8 FFDC		       call  ZFND
+   1108	0442  41		       inc   cx
+   1109	0443  41		       inc   cx
+   1110	0444  C3		       ret
+   1111
+   1112				     ;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   1113
+   1114
+   1115				     ;------------  MAIN LOOP  INNER INTERPRETTER ----
+   1116				     ;vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+   1117
+   1118	0445			     @_RLD@:
+   1119				       TDUP
+1  1120	0445  E8 FDBC			     CALL  @TOPDUP
+   1121	0448  B7 00		       MOV   TOPH,0
+   1122	044A			     @_RST@:
+   1123				       R_TO  CX
+1  1124	044A  59		       POP    CX
+   1125	044B  87 CF		       XCHG  CX,W
+   1126	044D  FF D1		       CALL  CX
+   1127				       SKIPA
+1  1128	044F  3D			     DB	   03DH
    1129
-   1130	042F			     @PUSHW:
-   1131				       to_r  W
-1  1132	042F  57		       PUSH   W
-   1133				       JMPS  @1
-1  1134	0430  EB 45			       jmp  SHORT @1
-   1135
-   1136	0432			     @_RLD@:
-   1137				       TDUP
-1  1138	0432  E8 FD99			     CALL  @TOPDUP
-   1139	0435  B7 00		       MOV   TOPH,0
-   1140	0437			     @_RST@:
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 21
+   1130	0450			     @PUSHW3:
+   1131				       W2
+1  1132	0450  AF		       scasw
+   1133	0451			     @PUSHW2:
+   1134				       W2
+1  1135	0451  AF		       scasw
+   1136
+   1137	0452			     @PUSHW:
+   1138				       to_r  W
+1  1139	0452  57		       PUSH   W
+   1140				       JMPS  @1
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 21
 NF7.asm
 
 
 
-   1141				       R_TO  CX
-1  1142	0437  59		       POP    CX
-   1143	0438  87 CF		       XCHG  CX,W
-   1144	043A  FF D1		       CALL  CX
-   1145				       JMPS  @PUSHW
-1  1146	043C  EB F1			       jmp  SHORT @PUSHW
-   1147
-   1148	043E			     @_IJ:
-   1149	043E  8B 3D		       MOV   W,[W]
-   1150	0440  03 FC		       ADD   W,rSP
-   1151				       SKIPA
-1  1152	0442  3D			     DB	   03DH
-   1153
-   1154	0443			     @_CONS3:
-   1155				       W2
-1  1156	0443  AF		       scasw
-   1157	0444			     @_CONS2:
-   1158				       W2
-1  1159	0444  AF		       scasw
-   1160	0445			     @_CONS:
-   1161	0445  8B 3D		       MOV   W,[W]
-   1162	0447			     @_VAR:
-   1163				       tDUP
-1  1164	0447  E8 FD84			     CALL  @TOPDUP
-   1165	044A			     @ADR:
-   1166	044A  8B DF		       MOV   top,W
-   1167	044C  E9 00A3		       JMP   @MAIN
-   1168
-   1169	044F			     @_VAR3:
-   1170				       W2
-1  1171	044F  AF		       scasw
-   1172	0450			     @_VAR2:
-   1173				       W2
-1  1174	0450  AF		       scasw
-   1175				       skipA
-1  1176	0451  3D			     DB	   03DH
+1  1141	0453  EB 39			       jmp  SHORT @1
+   1142
+   1143
+   1144	0455			     @_IJ:
+   1145	0455  8B 3D		       MOV   W,[W]
+   1146	0457  03 FC		       ADD   W,rSP
+   1147				       SKIPA
+1  1148	0459  3D			     DB	   03DH
+   1149
+   1150	045A			     @_CONS3:
+   1151				       W2
+1  1152	045A  AF		       scasw
+   1153	045B			     @_CONS2:
+   1154				       W2
+1  1155	045B  AF		       scasw
+   1156	045C			     @_CONS:
+   1157	045C  8B 3D		       MOV   W,[W]
+   1158	045E			     @_VAR:
+   1159				       tDUP
+1  1160	045E  E8 FDA3			     CALL  @TOPDUP
+   1161	0461			     @ADR:
+   1162	0461  8B DF		       MOV   top,W
+   1163	0463  E9 00A3		       JMP   @MAIN
+   1164
+   1165	0466			     @_VAR3:
+   1166				       W2
+1  1167	0466  AF		       scasw
+   1168	0467			     @_VAR2:
+   1169				       W2
+1  1170	0467  AF		       scasw
+   1171				       skipA
+1  1172	0468  3D			     DB	   03DH
+   1173
+   1174	0469			     @over:
+   1175				       TO_R  NR
+1  1176	0469  52		       PUSH   NR
    1177
-   1178	0452			     @over:
-   1179				       TO_R  NR
-1  1180	0452  52		       PUSH   NR
-   1181
-   1182				     ; RETURN STACK COMMANDS  POP PUSH XCHG
-   1183
-   1184	0453			     @POP:
-   1185				       r_to  W
-1  1186	0453  5F		       POP    W
-   1187				       JMPS  @_VAR
-1  1188	0454  EB F1			       jmp  SHORT @_VAR
-   1189
-   1190	0456			     @DROPX:
-   1191	0456  5E		       POP   IP
-   1192				       JMPS  @DROP
-1  1193	0457  EB 06			       jmp  SHORT @DROP
-   1194
-   1195	0459			     @_SETVAR2:
-   1196				       W2
-1  1197	0459  AF		       scasw
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 22
+   1178				     ; RETURN STACK COMMANDS  POP PUSH XCHG
+   1179
+   1180	046A			     @POP:
+   1181				       r_to  W
+1  1182	046A  5F		       POP    W
+   1183				       JMPS  @_VAR
+1  1184	046B  EB F1			       jmp  SHORT @_VAR
+   1185
+   1186	046D			     @DROPX:
+   1187	046D  5E		       POP   IP
+   1188				       JMPS  @DROP
+1  1189	046E  EB 06			       jmp  SHORT @DROP
+   1190
+   1191	0470			     @_SETVAR2:
+   1192				       W2
+1  1193	0470  AF		       scasw
+   1194				       SKIPA
+1  1195	0471  3D			     DB	   03DH
+   1196
+   1197				       __XT  _ST,@_DROP
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 22
 NF7.asm
 
 
 
-   1198				       SKIPA
-1  1199	045A  3D			     DB	   03DH
-   1200
-   1201				       __XT  _ST,@_DROP
-1  1202					     __XALIGN _ST
-2  1203	      =MYCSEG:045B	     _ST    =	   $
-1  1204	045B  01A3r			     DW	     @_DROP
-   1205	045D			     @_SETVAR:
-   1206	045D  89 1D		       MOV   [W],top
-   1207	045F			     @DROP:
-   1208				       tDROP
-1  1209	045F  E8 FD46			     CALL  @TOPDROP
-   1210				       JMPS  @1
-1  1211	0462  EB 13			       jmp  SHORT @1
-   1212
-   1213	0464			     @_SWAP_NIP:
-   1214	0464  87 D3		       XCHG  NR,TOP
-   1215				       SKIPA
-1  1216	0466  3D			     DB	   03DH
-   1217
-   1218	0467			     @_NIPX:
-   1219				       R_TO  IP
-1  1220	0467  5E		       POP    IP
-   1221				       SKIPA
-1  1222	0468  3D			     DB	   03DH
-   1223
-   1224	0469			     @_NIP:
-   1225	0469  FF D7		       CALL  W
-   1226	046B			     @NIP:
-   1227				       D_TO  NR
-1  1228				       X
-2  1229	046B  94		       xchg Rsp,DSP
-1  1230	046C  5A		       POP    NR
-1  1231				       X
-2  1232	046D  94		       xchg Rsp,DSP
-   1233				       JMPS  @1
-1  1234	046E  EB 07			       jmp  SHORT @1
-   1235
-   1236	0470			     @_2P_DUP:
-   1237	0470  43		       INC   TOP
-   1238	0471			     @_1P_DUP:
-   1239	0471  43		       INC   TOP
-   1240	0472			     @_DUP:
-   1241				       tDUP
-1  1242	0472  E8 FD59			     CALL  @TOPDUP
-   1243	0475			     @_CALL:
-   1244	0475  FF D7		       CALL  W
-   1245	0477			     @1:
-   1246				       JMPS  @MAIN
-1  1247	0477  EB 79			       jmp  SHORT @MAIN
-   1248
-   1249				       __XT  _FOR,@_FOR	       ; (FOR
-1  1250					     __XALIGN _FOR
-2  1251	      =MYCSEG:0479	     _FOR    =	    $
-1  1252	0479  01A0r			     DW	     @_FOR
-   1253	047B  78 09		       JS    @SKIP
-   1254	047D  8B 34		       MOV   IP,[IP]
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 23
+1  1198					     __XALIGN _ST
+2  1199	      =MYCSEG:0472	     _ST    =	   $
+1  1200	0472  01D9r			     DW	     @_DROP
+   1201	0474			     @_SETVAR:
+   1202	0474  89 1D		       MOV   [W],top
+   1203	0476			     @DROP:
+   1204				       tDROP
+1  1205	0476  E8 FD65			     CALL  @TOPDROP
+   1206				       JMPS  @1
+1  1207	0479  EB 13			       jmp  SHORT @1
+   1208
+   1209	047B			     @_SWAP_NIP:
+   1210	047B  87 D3		       XCHG  NR,TOP
+   1211				       SKIPA
+1  1212	047D  3D			     DB	   03DH
+   1213
+   1214	047E			     @_NIPX:
+   1215				       R_TO  IP
+1  1216	047E  5E		       POP    IP
+   1217				       SKIPA
+1  1218	047F  3D			     DB	   03DH
+   1219
+   1220	0480			     @_NIP:
+   1221	0480  FF D7		       CALL  W
+   1222	0482			     @NIP:
+   1223				       D_TO  NR
+1  1224				       X
+2  1225	0482  94		       xchg Rsp,DSP
+1  1226	0483  5A		       POP    NR
+1  1227				       X
+2  1228	0484  94		       xchg Rsp,DSP
+   1229				       JMPS  @1
+1  1230	0485  EB 07			       jmp  SHORT @1
+   1231
+   1232	0487			     @_2P_DUP:
+   1233	0487  43		       INC   TOP
+   1234	0488			     @_1P_DUP:
+   1235	0488  43		       INC   TOP
+   1236	0489			     @_DUP:
+   1237				       tDUP
+1  1238	0489  E8 FD78			     CALL  @TOPDUP
+   1239	048C			     @_CALL:
+   1240	048C  FF D7		       CALL  W
+   1241	048E			     @1:
+   1242				       JMPS  @MAIN
+1  1243	048E  EB 79			       jmp  SHORT @MAIN
+   1244
+   1245				       __XT  _FOR,@_FOR	       ; (FOR
+1  1246					     __XALIGN _FOR
+2  1247	      =MYCSEG:0490	     _FOR    =	    $
+1  1248	0490  01D6r			     DW	     @_FOR
+   1249	0492  78 09		       JS    @SKIP
+   1250	0494  8B 34		       MOV   IP,[IP]
+   1251
+   1252	0496			     @RDROP:
+   1253				       r_to  W
+1  1254	0496  5F		       POP    W
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 23
 NF7.asm
 
 
 
-   1255
-   1256	047F			     @RDROP:
-   1257				       r_to  W
-1  1258	047F  5F		       POP    W
-   1259				       JMPS  @MAIN
-1  1260	0480  EB 70			       jmp  SHORT @MAIN
-   1261
-   1262				       __XT  _IF,@_DROP	      ;	(IF
-1  1263					     __XALIGN _IF
-2  1264	      =MYCSEG:0482	     _IF    =	   $
-1  1265	0482  01A3r			     DW	     @_DROP
-   1266	0484  74 08		       JE    @JUMP
-   1267
-   1268	0486			     @SKIP:
-   1269				       wiP2
-1  1270	0486  A7		       cmpsw
-   1271				       JMPS  @MAIN
-1  1272	0487  EB 69			       jmp  SHORT @MAIN
-   1273
-   1274	0489			     @NEXT:    ; (NEXT
-   1275				       r_to  W
-1  1276	0489  5F		       POP    W
-   1277	048A  47		       INC   W
-   1278	048B  74 F9		       JE    @SKIP
-   1279				       to_r W
-1  1280	048D  57		       PUSH   W
-   1281
-   1282	048E			     @JUMP:    ; (JUMP
-   1283	048E  8B 34		       MOV   IP,[IP]
-   1284				       JMPS  @MAIN
-1  1285	0490  EB 60			       jmp  SHORT @MAIN
-   1286
-   1287	0492			     @_POINT:
-   1288	0492  8B 7D 02		       MOV   W,[W+2]
-   1289				       JMPS  @NEST
-1  1290	0495  EB 58			       jmp  SHORT @NEST
-   1291
-   1292				       __XT  _ZEX,@_DROP       ; 0;
-1  1293					     __XALIGN _ZEX
-2  1294	      =MYCSEG:0497	     _ZEX    =	    $
-1  1295	0497  01A3r			     DW	     @_DROP
-   1296	0499  75 57		       JNE   @MAIN
-   1297				       SKIPA
-1  1298	049B  3D			     DB	   03DH
-   1299
-   1300	049C			     @_setpnt:
-   1301	049C  89 35		       MOV   [W],IP
-   1302				       JMPS  @RETURN
-1  1303	049E  EB 51			       jmp  SHORT @RETURN
-   1304
-   1305	04A0			     @_PARAM1:
-   1306				       TDUP
-1  1307	04A0  E8 FD2B			     CALL  @TOPDUP
-   1308	04A3			     @_PARAM2:
-   1309				       TDUP
-1  1310	04A3  E8 FD28			     CALL  @TOPDUP
-   1311	04A6			     @_PARAM3:
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 24
+   1255				       JMPS  @MAIN
+1  1256	0497  EB 70			       jmp  SHORT @MAIN
+   1257
+   1258				       __XT  _IF,@_DROP	      ;	(IF
+1  1259					     __XALIGN _IF
+2  1260	      =MYCSEG:0499	     _IF    =	   $
+1  1261	0499  01D9r			     DW	     @_DROP
+   1262	049B  74 08		       JE    @JUMP
+   1263
+   1264	049D			     @SKIP:
+   1265				       wiP2
+1  1266	049D  A7		       cmpsw
+   1267				       JMPS  @MAIN
+1  1268	049E  EB 69			       jmp  SHORT @MAIN
+   1269
+   1270	04A0			     @NEXT:    ; (NEXT
+   1271				       r_to  W
+1  1272	04A0  5F		       POP    W
+   1273	04A1  47		       INC   W
+   1274	04A2  74 F9		       JE    @SKIP
+   1275				       to_r W
+1  1276	04A4  57		       PUSH   W
+   1277
+   1278	04A5			     @JUMP:    ; (JUMP
+   1279	04A5  8B 34		       MOV   IP,[IP]
+   1280				       JMPS  @MAIN
+1  1281	04A7  EB 60			       jmp  SHORT @MAIN
+   1282
+   1283	04A9			     @_POINT:
+   1284	04A9  8B 7D 02		       MOV   W,[W+2]
+   1285				       JMPS  @NEST
+1  1286	04AC  EB 58			       jmp  SHORT @NEST
+   1287
+   1288				       __XT  _ZEX,@_DROP       ; 0;
+1  1289					     __XALIGN _ZEX
+2  1290	      =MYCSEG:04AE	     _ZEX    =	    $
+1  1291	04AE  01D9r			     DW	     @_DROP
+   1292	04B0  75 57		       JNE   @MAIN
+   1293				       SKIPA
+1  1294	04B2  3D			     DB	   03DH
+   1295
+   1296	04B3			     @_setpnt:
+   1297	04B3  89 35		       MOV   [W],IP
+   1298				       JMPS  @RETURN
+1  1299	04B5  EB 51			       jmp  SHORT @RETURN
+   1300
+   1301	04B7			     @_PARAM1:
+   1302				       TDUP
+1  1303	04B7  E8 FD4A			     CALL  @TOPDUP
+   1304	04BA			     @_PARAM2:
+   1305				       TDUP
+1  1306	04BA  E8 FD47			     CALL  @TOPDUP
+   1307	04BD			     @_PARAM3:
+   1308	04BD  56		       PUSH  IP
+   1309	04BE  8B CA		       MOV   CX,NR
+   1310				       D_TO  SI
+1  1311				       X
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 24
 NF7.asm
 
 
 
-   1312	04A6  56		       PUSH  IP
-   1313	04A7  8B CA		       MOV   CX,NR
-   1314				       D_TO  SI
-1  1315				       X
-2  1316	04A9  94		       xchg Rsp,DSP
-1  1317	04AA  5E		       POP    SI
-1  1318				       X
-2  1319	04AB  94		       xchg Rsp,DSP
-   1320	04AC  87 FB		       XCHG  W,TOP
-   1321	04AE  FF D3		       CALL  TOP
-   1322	04B0  FC		       CLD
-   1323	04B1			     @2DROPX:
-   1324				       DROP2 TOP,NR
+2  1312	04C0  94		       xchg Rsp,DSP
+1  1313	04C1  5E		       POP    SI
+1  1314				       X
+2  1315	04C2  94		       xchg Rsp,DSP
+   1316	04C3  87 FB		       XCHG  W,TOP
+   1317	04C5  FF D3		       CALL  TOP
+   1318	04C7  FC		       CLD
+   1319	04C8			     @2DROPX:
+   1320				       DROP2 TOP,NR
+1  1321				       X
+2  1322	04C8  94		       xchg Rsp,DSP
+1  1323	04C9  5B		       POP   TOP
+1  1324	04CA  5A		       POP   NR
 1  1325				       X
-2  1326	04B1  94		       xchg Rsp,DSP
-1  1327	04B2  5B		       POP   TOP
-1  1328	04B3  5A		       POP   NR
-1  1329				       X
-2  1330	04B4  94		       xchg Rsp,DSP
-   1331				       JMPS  @RETURN
-1  1332	04B5  EB 3A			       jmp  SHORT @RETURN
-   1333
-   1334				       __XT  _PUSH,@_PUSH	; PUSH
-1  1335					     __XALIGN _PUSH
-2  1336	      =MYCSEG:04B7	     _PUSH    =	     $
-1  1337	04B7  01A2r			     DW	     @_PUSH
-   1338				       JMPS  @MAIN
-1  1339	04B9  EB 37			       jmp  SHORT @MAIN
-   1340
-   1341				     ; CONTROL	    COMMANDS
-   1342
-   1343	04BB			     @_DEFERO:
-   1344	04BB  FF 06 0156r	       INC   PW	[AT_+_CNTC]
-   1345				       SKIPA
-1  1346	04BF  3D			     DB	   03DH
-   1347	04C0			     @_DEFER3:
-   1348				       W2
-1  1349	04C0  AF		       scasw
-   1350	04C1			     @_DEFER2:
-   1351				       W2
-1  1352	04C1  AF		       scasw
-   1353	04C2			     @_DEFER:
-   1354	04C2  8B 3D		       MOV   W,[W]
-   1355	04C4			     @EXEC:
-   1356	04C4  0B FF		       OR    W,W
-   1357	04C6  74 2A		       JZ    @MAIN
-   1358				       W2
-1  1359	04C8  AF		       scasw
-   1360	04C9  FF 65 FE		       JMP   [W-2]
-   1361
-   1362	04CC			     @nest5:
-   1363				       w2
-1  1364	04CC  AF		       scasw
-   1365	04CD			     @nest4:
-   1366				       w2
-1  1367	04CD  AF		       scasw
-   1368	04CE			     @nest3:
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 25
+2  1326	04CB  94		       xchg Rsp,DSP
+   1327				       JMPS  @RETURN
+1  1328	04CC  EB 3A			       jmp  SHORT @RETURN
+   1329
+   1330				       __XT  _PUSH,@_PUSH	; PUSH
+1  1331					     __XALIGN _PUSH
+2  1332	      =MYCSEG:04CE	     _PUSH    =	     $
+1  1333	04CE  01D8r			     DW	     @_PUSH
+   1334				       JMPS  @MAIN
+1  1335	04D0  EB 37			       jmp  SHORT @MAIN
+   1336
+   1337				     ; CONTROL	    COMMANDS
+   1338
+   1339	04D2			     @_DEFERO:
+   1340	04D2  FF 06 0156r	       INC   PW	[AT_+_CNTC]
+   1341				       SKIPA
+1  1342	04D6  3D			     DB	   03DH
+   1343	04D7			     @_DEFER3:
+   1344				       W2
+1  1345	04D7  AF		       scasw
+   1346	04D8			     @_DEFER2:
+   1347				       W2
+1  1348	04D8  AF		       scasw
+   1349	04D9			     @_DEFER:
+   1350	04D9  8B 3D		       MOV   W,[W]
+   1351	04DB			     @EXEC:
+   1352	04DB  0B FF		       OR    W,W
+   1353	04DD  74 2A		       JZ    @MAIN
+   1354				       W2
+1  1355	04DF  AF		       scasw
+   1356	04E0  FF 65 FE		       JMP   [W-2]
+   1357
+   1358	04E3			     @nest5:
+   1359				       w2
+1  1360	04E3  AF		       scasw
+   1361	04E4			     @nest4:
+   1362				       w2
+1  1363	04E4  AF		       scasw
+   1364	04E5			     @nest3:
+   1365				       w2
+1  1366	04E5  AF		       scasw
+   1367	04E6			     @nest2:
+   1368				       w2
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 25
 NF7.asm
 
 
 
-   1369				       w2
-1  1370	04CE  AF		       scasw
-   1371	04CF			     @nest2:
-   1372				       w2
-1  1373	04CF  AF		       scasw
-   1374				       skipa		     ; >nest  !!!
-1  1375	04D0  3D			     DB	   03DH
-   1376
-   1377				       __XT  _EXECUTE,@_DROP	  ; EXECUTE
-1  1378					     __XALIGN _EXECUTE
-2  1379	      =MYCSEG:04D1	     _EXECUTE	 =	$
-1  1380	04D1  01A3r			     DW	     @_DROP
-   1381				       JMPS  @NEST
-1  1382	04D3  EB 1A			       jmp  SHORT @NEST
-   1383
-   1384				       __XT  _EXEC,@_DROP	; EXEC
-1  1385					     __XALIGN _EXEC
-2  1386	      =MYCSEG:04D5	     _EXEC    =	     $
-1  1387	04D5  01A3r			     DW	     @_DROP
-   1388				       jmps  @EXEC
-1  1389	04D7  EB EB			       jmp  SHORT @EXEC
-   1390
-   1391				       __XT  _PERFORM,@_DROP	; @EXEC
-1  1392					     __XALIGN _PERFORM
-2  1393	      =MYCSEG:04D9	     _PERFORM	 =	$
-1  1394	04D9  01A3r			     DW	     @_DROP
-   1395				       jmps  @_DEFER
-1  1396	04DB  EB E5			       jmp  SHORT @_DEFER
-   1397
-   1398	04DD			     @_WARY:
-   1399	04DD  D1 E3		       SHL   top,1
-   1400	04DF			     @_BARY:
-   1401	04DF  03 DF		       ADD   top,W
-   1402				       JMPS  @MAIN
-1  1403	04E1  EB 0F			       jmp  SHORT @MAIN
-   1404
-   1405				     ; MAIN  LOOP
-   1406
-   1407				       __XT _rPAR,@_state	       ; ]
-1  1408					     __XALIGN _rPAR
-2  1409	      =MYCSEG:04E3	     _rPAR    =	     $
-1  1410	04E3  0332r			     DW	     @_state
-   1411
-   1412				       __XT _does,@_var2
-1  1413					     __XALIGN _does
-2  1414	      =MYCSEG:04E5	     _does    =	     $
-1  1415	04E5  0450r			     DW	     @_var2
-   1416	04E7			     @DOES3:
-   1417				       W2
-1  1418	04E7  AF		       scasw
-   1419	04E8			     @DOES2:
-   1420				       W2
-1  1421	04E8  AF		       scasw
-   1422	04E9			     @DOES:
-   1423				       tDUP
-1  1424	04E9  E8 FCE2			     CALL  @TOPDUP
-   1425	04EC  8B DF		       MOV   top,W
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 26
+1  1369	04E6  AF		       scasw
+   1370				       skipa		     ; >nest  !!!
+1  1371	04E7  3D			     DB	   03DH
+   1372
+   1373				       __XT  _EXECUTE,@_DROP	  ; EXECUTE
+1  1374					     __XALIGN _EXECUTE
+2  1375	      =MYCSEG:04E8	     _EXECUTE	 =	$
+1  1376	04E8  01D9r			     DW	     @_DROP
+   1377				       JMPS  @NEST
+1  1378	04EA  EB 1A			       jmp  SHORT @NEST
+   1379
+   1380				       __XT  _EXEC,@_DROP	; EXEC
+1  1381					     __XALIGN _EXEC
+2  1382	      =MYCSEG:04EC	     _EXEC    =	     $
+1  1383	04EC  01D9r			     DW	     @_DROP
+   1384				       jmps  @EXEC
+1  1385	04EE  EB EB			       jmp  SHORT @EXEC
+   1386
+   1387				       __XT  _PERFORM,@_DROP	; @EXEC
+1  1388					     __XALIGN _PERFORM
+2  1389	      =MYCSEG:04F0	     _PERFORM	 =	$
+1  1390	04F0  01D9r			     DW	     @_DROP
+   1391				       jmps  @_DEFER
+1  1392	04F2  EB E5			       jmp  SHORT @_DEFER
+   1393
+   1394	04F4			     @_WARY:
+   1395	04F4  D1 E3		       SHL   top,1
+   1396	04F6			     @_BARY:
+   1397	04F6  03 DF		       ADD   top,W
+   1398				       JMPS  @MAIN
+1  1399	04F8  EB 0F			       jmp  SHORT @MAIN
+   1400
+   1401				     ; MAIN  LOOP
+   1402
+   1403				       __XT _rPAR,@_state	       ; ]
+1  1404					     __XALIGN _rPAR
+2  1405	      =MYCSEG:04FA	     _rPAR    =	     $
+1  1406	04FA  034Ar			     DW	     @_state
+   1407
+   1408				       __XT _does,@_var2
+1  1409					     __XALIGN _does
+2  1410	      =MYCSEG:04FC	     _does    =	     $
+1  1411	04FC  0467r			     DW	     @_var2
+   1412	04FE			     @DOES3:
+   1413				       W2
+1  1414	04FE  AF		       scasw
+   1415	04FF			     @DOES2:
+   1416				       W2
+1  1417	04FF  AF		       scasw
+   1418	0500			     @DOES:
+   1419				       tDUP
+1  1420	0500  E8 FD01			     CALL  @TOPDUP
+   1421	0503  8B DF		       MOV   top,W
+   1422	0505			     @EX:
+   1423				       r_to  W
+1  1424	0505  5F		       POP    W
+   1425	0506			     @NEST:
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 26
 NF7.asm
 
 
 
-   1426	04EE			     @EX:
-   1427				       r_to  W
-1  1428	04EE  5F		       POP    W
-   1429	04EF			     @NEST:
-   1430				       to_r  IP
-1  1431	04EF  56		       PUSH   IP
-   1432	04F0			     @LBL:
-   1433				       to_r  W
-1  1434	04F0  57		       PUSH   W
-   1435	04F1			     @RETURN:
-   1436				       r_to  IP
-1  1437	04F1  5E		       POP    IP
-   1438	04F2			     @MAIN:
-   1439	04F2  8B 3C		       MOV   W,[IP]
-   1440				       wiP2
-1  1441	04F4  A7		       cmpsw
-   1442	04F5  FF 65 FE		       JMP   [W-2]
-   1443
-   1444				     ;
-   1445				     ;-----------------------------------------------
-   1446
-   1447	04F8			     freemem:
-   1448	04F8  0006		       DW ENDMEM-FREEMEM-2
-   1449				       __ENTRY	'=:',_ENTRY
-1  1450					     __nam  '=:'
-2  1451	04FA  02		       db    ??0001-$-1
-2  1452	04FB  3D 3A		       db    '=:'
-2  1453	04FD			     ??0001  label   byte
-1  1454	04FD  02E0r			     DW	   _ENTRY
-   1455				     ; __ENTRY	'CR',_CR
-   1456				     ; __ENTRY	'=,',_ENTRYC
-   1457				     ; __ENTRY	'EMIT',_EMIT
-   1458				     ; __ENTRY	':',_COLON
-   1459				     ; __ENTRY	';`',_SEMICO
-   1460				     ; __ENTRY	'[`',_LPAR
-   1461				     ; __ENTRY	']',_RPAR
-   1462				     ; __ENTRY	',',_COMMA
-   1463				     ; __ENTRY	'@',_LD
-   1464				     ; __ENTRY	'!',_ST
-   1465				     ; __ENTRY	'+',_ADD
-   1466				     ; __ENTRY	'-',_SUB
-   1467				     ; __ENTRY	'H.',_HEXP
-   1468				     ; __ENTRY	'.',_HP
-   1469				     ; __ENTRY	'SGN?',_SGN?
-   1470				     ; __ENTRY	'HERE',_HERE
-   1471				     ; __ENTRY	'''',_LOCATE
-   1472				     ; __ENTRY	'ALPHA',_ALPHA
-   1473	04FF  00		       DB 0
-   1474	0500			     EndMem:
-   1475
-   1476	      =0000		     lastw = ppppp
-   1477
-   1478	0500			     MyCseg  ends
-   1479					     end  Start
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 27
+   1426				       to_r  IP
+1  1427	0506  56		       PUSH   IP
+   1428	0507			     @LBL:
+   1429				       to_r  W
+1  1430	0507  57		       PUSH   W
+   1431	0508			     @RETURN:
+   1432				       r_to  IP
+1  1433	0508  5E		       POP    IP
+   1434	0509			     @MAIN:
+   1435	0509  8B 3C		       MOV   W,[IP]
+   1436				       wiP2
+1  1437	050B  A7		       cmpsw
+   1438	050C  FF 65 FE		       JMP   [W-2]
+   1439
+   1440				     ;
+   1441
+   1442				     ;freemem:
+   1443				     ;	DW ENDMEM-FREEMEM-2
+   1444				     ;	__ENTRY	 '=:',_ENTRY
+   1445				     ;	DB 0
+   1446				     ;EndMem:
+   1447				     ;
+   1448				     ;lastw = ppppp
+   1449				     ;
+   1450				     ;MyCseg  ends
+   1451				     ;	      end  Start
+   1452				     ;
+   1453				     ;-----------------------------------------------
+   1454				     ;	TEST
+   1455				     ;
+   1456
+   1457					__RVAR _XDROP
+1  1458					     __XALIGN _XDROP
+2  1459	      =MYCSEG:050F	     _XDROP    =      $
+1  1460	050F  0452r			     DW	 @PUSHW
+   1461	0511  0532r			     DW	_DROPX
+   1462
+   1463				       __CONST _LF,10
+1  1464					     __XALIGN _LF
+2  1465	      =MYCSEG:0513	     _LF    =	   $
+1  1466	0513  045Cr 000A		     DW	   @_cons,10
+   1467				       __CONST _1H,16
+1  1468					     __XALIGN _1H
+2  1469	      =MYCSEG:0517	     _1H    =	   $
+1  1470	0517  045Cr 0010		     DW	   @_cons,16
+   1471				       __CONST _1,1
+1  1472					     __XALIGN _1
+2  1473	      =MYCSEG:051B	     _1	   =	  $
+1  1474	051B  045Cr 0001		     DW	   @_cons,1
+   1475				       __CONST _LT0,'0'
+1  1476					     __XALIGN _LT0
+2  1477	      =MYCSEG:051F	     _LT0    =	    $
+1  1478	051F  045Cr 0030		     DW	   @_cons,'0'
+   1479
+   1480	0523			     @ABS:
+   1481	0523  0B DB		       OR    TOP,TOP
+   1482	0525  79 E2		       JNS   @MAIN
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 27
+NF7.asm
+
+
+
+   1483	0527			     @NEG:
+   1484	0527  4B		       DEC   TOP
+   1485	0528			     @NOT:
+   1486	0528  F7 D3		       NOT   TOP
+   1487				       JMPS  @MAIN
+1  1488	052A  EB DD			       jmp  SHORT @MAIN
+   1489
+   1490				       __XT  _ABS,@ABS
+1  1491					     __XALIGN _ABS
+2  1492	      =MYCSEG:052C	     _ABS    =	    $
+1  1493	052C  0523r			     DW	     @ABS
+   1494				       __XT  _NEG,@NEG
+1  1495					     __XALIGN _NEG
+2  1496	      =MYCSEG:052E	     _NEG    =	    $
+1  1497	052E  0527r			     DW	     @NEG
+   1498				       __XT  _NOT,@NOT
+1  1499					     __XALIGN _NOT
+2  1500	      =MYCSEG:0530	     _NOT    =	    $
+1  1501	0530  0528r			     DW	     @NOT
+   1502
+   1503				       __XT  _DROPX,@DROPX
+1  1504					     __XALIGN _DROPX
+2  1505	      =MYCSEG:0532	     _DROPX    =      $
+1  1506	0532  046Dr			     DW	     @DROPX
+   1507
+   1508				     ; __XT  _RLDP,@_RLD	; @R+
+   1509				     ;	     JMP  @PUSHW2
+   1510
+   1511				       __XT  _BRK,@_CALL
+1  1512					     __XALIGN _BRK
+2  1513	      =MYCSEG:0534	     _BRK    =	    $
+1  1514	0534  048Cr			     DW	     @_CALL
+   1515	0536  CC		       INT 3
+   1516	0537  C3		       RET
+   1517
+   1518				       __XT  _I,@_IJ
+1  1519					     __XALIGN _I
+2  1520	      =MYCSEG:0538	     _I	   =	  $
+1  1521	0538  0455r			     DW	     @_IJ
+   1522	053A  0000			     DW	0
+   1523
+   1524				       __COL _TWICE
+1  1525					     __XALIGN _TWICE
+2  1526	      =MYCSEG:053C	     _TWICE    =      $
+1  1527	053C  0506r			     DW	 @NEST
+   1528	053E  0538r 04CEr 02BAr		     DW	_I,_PUSH,_EXIT
+   1529
+   1530				       __COL _HEXP
+1  1531					     __XALIGN _HEXP
+2  1532	      =MYCSEG:0544	     _HEXP    =	     $
+1  1533	0544  0506r			     DW	 @NEST
+   1534	0546  0534r 05C0r 0215r	  +	     DW	_BRK,_XSPC,_LIT,256,_DIV,_TWICE
+   1535	      0100 060Er 053Cr
+   1536	0552  0517r 060Er 053Cr	  +	     DW	_1H,_DIV,_TWICE,_DIGP,_EXIT
+   1537	      05A8r 02BAr
+   1538
+   1539				       __COL _ALPHA  ; : ALPHA	LF OVER	U< 7 AND + '0 +	;
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 28
+NF7.asm
+
+
+
+1  1540					     __XALIGN _ALPHA
+2  1541	      =MYCSEG:055C	     _ALPHA    =      $
+1  1542	055C  0506r			     DW	 @NEST
+   1543	055E  0513r 0200r 0629r	  +	     DW	_LF,_OVER,_ULESS,_LIT,7,_AND,_ADD,_LT0,_ADD,_EXIT
+   1544	      0215r 0007 0231r	  +
+   1545	      0240r 051Fr 0240r	  +
+   1546	      02BAr
+   1547
+   1548				       __COL  _SGN?
+1  1549					     __XALIGN _SGN?
+2  1550	      =MYCSEG:0572	     _SGN?    =	     $
+1  1551	0572  0506r			     DW	 @NEST
+   1552	0574  0202r 0630r 04AEr	  +	     DW	_DUP,_SGN,_ZEX,_LIT,'-',_EMIT,_ABS,_EXIT
+   1553	      0215r 002D 010Cr	  +
+   1554	      052Cr 02BAr
+   1555
+   1556				       __COL _ZSKIP
+1  1557					     __XALIGN _ZSKIP
+2  1558	      =MYCSEG:0584	     _ZSKIP    =      $
+1  1559	0584  0506r			     DW	 @NEST
+   1560	0586  0202r 0245r 04AEr	  +	     DW	_DUP,_ZEQ,_ZEX,_DROP,_RLDP,_DROPX
+   1561	      01FEr 01EBr 0532r
+   1562
+   1563				       __COL _HP
+1  1564					     __XALIGN _HP
+2  1565	      =MYCSEG:0592	     _HP    =	   $
+1  1566	0592  0506r			     DW	 @NEST
+   1567	0594  0534r 05C0r 0572r	  +	     DW	_BRK,_XSPC,_SGN?,_SKIP
+   1568	      02B6r
+   1569				       __COL _HP2
+1  1570					     __XALIGN _HP2
+2  1571	      =MYCSEG:059C	     _HP2    =	    $
+1  1572	059C  0506r			     DW	 @NEST
+   1573	059E  0513r 060Er 0584r	  +	     DW	_LF,_DIV,_ZSKIP,_HP2,_SKIP
+   1574	      059Cr 02B6r
+   1575				       __COL _DIGP
+1  1576					     __XALIGN _DIGP
+2  1577	      =MYCSEG:05A8	     _DIGP    =	     $
+1  1578	05A8  0506r			     DW	 @NEST
+   1579	05AA  055Cr 010Cr 02BAr		     DW	_ALPHA,_EMIT,_EXIT
+   1580
+   1581
+   1582				       __COL _LOCATE
+1  1583					     __XALIGN _LOCATE
+2  1584	      =MYCSEG:05B0	     _LOCATE	=      $
+1  1585	05B0  0506r			     DW	 @NEST
+   1586	05B2  0318r 027Ar 051Br	  +	     DW	_TOKEN?,_FIND,_1,_AND,_BRK,_Z??,_EXIT
+   1587	      0231r 0534r 033Ar	  +
+   1588	      02BAr
+   1589
+   1590				     ;	__RVAR2	_XEMIT
+   1591				       __RVAR2 _XSPC
+1  1592					     __XALIGN _XSPC
+2  1593	      =MYCSEG:05C0	     _XSPC    =	     $
+1  1594	05C0  0451r			     DW	 @PUSHW2
+   1595				       __COL   _SPACE
+1  1596					     __XALIGN _SPACE
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 29
+NF7.asm
+
+
+
+2  1597	      =MYCSEG:05C2	     _SPACE    =      $
+1  1598	05C2  0506r			     DW	 @NEST
+   1599	05C4  0130r 010Cr 02BAr		    DW _BL,_EMIT,_EXIT
+   1600
+   1601
+   1602				       __COL _CR
+1  1603					     __XALIGN _CR
+2  1604	      =MYCSEG:05CA	     _CR    =	   $
+1  1605	05CA  0506r			     DW	 @NEST
+   1606	05CC  05FAr			    DW _STYPE
+   1607	05CE  02 0D 0A			    DB 2,13,10
+   1608	05D1  012Cr 0154r 02BAr		    DW _0,TO_+_CNTC,_EXIT
+   1609
+   1610				      __COL _@OK
+1  1611					     __XALIGN _@OK
+2  1612	      =MYCSEG:05D7	     _@OK    =	    $
+1  1613	05D7  0506r			     DW	 @NEST
+   1614	05D9  05FAr			    DW _STYPE
+   1615					    __NAM " Ok"
+1  1616	05DB  03		       db    ??0001-$-1
+1  1617	05DC  20 4F 6B		       db    " Ok"
+1  1618	05DF			     ??0001  label   byte
+   1619	05DF  05CAr			    DW _CR
+   1620	05E1  05FAr			    DW _STYPE
+   1621					    __NAM "> "
+1  1622	05E3  02		       db    ??0002-$-1
+1  1623	05E4  3E 20		       db    ">	"
+1  1624	05E6			     ??0002  label   byte
+   1625	05E6  02BAr			    DW _EXIT
+   1626
+   1627				       __COL _@ERROR
+1  1628					     __XALIGN _@ERROR
+2  1629	      =MYCSEG:05E8	     _@ERROR	=      $
+1  1630	05E8  0506r			     DW	 @NEST
+   1631	05EA  05CAr 0128r 05FCr	  +	    DW _CR,_TBUF,_TYPES,_SPACE,_STAT,_TYPES,_CR,_ABORT
+   1632	      05C2r 0158r 05FCr	  +
+   1633	      05CAr 02B8r
+   1634
+   1635				      __COL3 _STYPE
+1  1636					     __XALIGN _STYPE
+2  1637	      =MYCSEG:05FA	     _STYPE    =      $
+1  1638	05FA  04E5r			     DW	 @NEST3
+   1639				      __COL3 _TYPES
+1  1640					     __XALIGN _TYPES
+2  1641	      =MYCSEG:05FC	     _TYPES    =      $
+1  1642	05FC  04E5r			     DW	 @NEST3
+   1643				      __COL3 _TYPE
+1  1644					     __XALIGN _TYPE
+2  1645	      =MYCSEG:05FE	     _TYPE    =	     $
+1  1646	05FE  04E5r			     DW	 @NEST3
+   1647	0600  01F1r			    DW _ASTR
+   1648	0602  021Br			    DW _CSTR
+   1649	0604  050Fr 029Er 021Br	  +	    DW _XDROP,_LOOPS,_CSTR,_EMIT,_EXIT
+   1650	      010Cr 02BAr
+   1651
+   1652				       __XT _DIV,@_CALL
+1  1653					     __XALIGN _DIV
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 30
+NF7.asm
+
+
+
+2  1654	      =MYCSEG:060E	     _DIV    =	    $
+1  1655	060E  048Cr			     DW	     @_CALL
+   1656	0610  33 C9		       XOR   CX,CX
+   1657				       RCHG  CX
+1  1658	0612  91		       xchg  ax,CX
+   1659				       RCHG  NR
+1  1660	0613  92		       xchg  ax,NR
+   1661	0614  F7 F3		       DIV   TOP
+   1662				       RCHG  TOP
+1  1663	0616  93		       xchg  ax,TOP
+   1664				       RCHG  CX
+1  1665	0617  91		       xchg  ax,CX
+   1666	0618  C3		       RET
+   1667
+   1668				       __XT _MUL,@_NIP
+1  1669					     __XALIGN _MUL
+2  1670	      =MYCSEG:0619	     _MUL    =	    $
+1  1671	0619  0480r			     DW	     @_NIP
+   1672				       RCHG  TOP
+1  1673	061B  93		       xchg  ax,TOP
+   1674	061C  F7 E2		       MUL   NR
+   1675				       RCHG  TOP
+1  1676	061E  93		       xchg  ax,TOP
+   1677	061F  C3		       RET
+   1678
+   1679				       __XT  _add2D,@_CALL   ; +2/
+1  1680					     __XALIGN _add2D
+2  1681	      =MYCSEG:0620	     _add2D    =      $
+1  1682	0620  048Cr			     DW	     @_CALL
+   1683	0622  03 DA		       ADD   TOP,NR
+   1684	0624  8B D3		       MOV   NR,TOP
+   1685	0626  D1 DB		       RCR   TOP,1
+   1686	0628  C3		       RET
+   1687
+   1688				       __XT  _ULESS,@_NIP    ; U<
+1  1689					     __XALIGN _ULESS
+2  1690	      =MYCSEG:0629	     _ULESS    =      $
+1  1691	0629  0480r			     DW	     @_NIP
+   1692	062B  2B D3		       SUB   NR,TOP
+   1693	062D  E9 FC1A		       JMP   @CF
+   1694
+   1695				       __XT  _SGN,@_CALL     ; 0<
+1  1696					     __XALIGN _SGN
+2  1697	      =MYCSEG:0630	     _SGN    =	    $
+1  1698	0630  048Cr			     DW	     @_CALL
+   1699	0632  D1 E3		       SHL   TOP,1
+   1700	0634  E9 FC13		       JMP   @CF
+   1701
+   1702				     ;	w2
+   1703				     ;@nupw:
+   1704				     ;	to_D  W
+   1705				     ;	JMP   @MAIN
+   1706
+   1707				     ;	__XT  _TUCK,@_DROP
+   1708				     ;@TUCKW:
+   1709				     ;	CALL  @PUSH_DC
+   1710				     ;	JMPS  @ADR
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 31
+NF7.asm
+
+
+
+   1711
+   1712
+   1713				     ;@2m:
+   1714				     ;	DEC   top
+   1715				     ;@1m:
+   1716				     ;	DEC   top
+   1717				     ;	JMPS  @1
+   1718
+   1719				     ;@_RDLD:
+   1720				     ;	TO_R  TOP
+   1721				     ;@_RLD:
+   1722				     ;	TDUP
+   1723				     ;	R_TO  TOP
+   1724				     ;@_LD@:
+   1725				     ;	to_r  W
+   1726				     ;	MOV   W,top
+   1727				     ;	MOV   top,[W]
+   1728				     ;	RET
+   1729
+   1730				     ;_RLDBP  DW @_RLD	      ;	C@R+
+   1731				     ;	XOR   topH,topH
+   1732				     ;@PUSH1P:
+   1733				     ;	INC   W
+   1734				     ;	JMPS  @PUSHW
+   1735
+   1736	0637			     freemem:
+   1737	0637  0066		       DW ENDMEM-FREEMEM-2
+   1738				       __ENTRY	'=:',_ENTRY
+1  1739					     __nam  '=:'
+2  1740	0639  02		       db    ??0003-$-1
+2  1741	063A  3D 3A		       db    '=:'
+2  1742	063C			     ??0003  label   byte
+1  1743	063C  02F8r			     DW	   _ENTRY
+   1744				       __ENTRY	'CR',_CR
+1  1745					     __nam  'CR'
+2  1746	063E  02		       db    ??0004-$-1
+2  1747	063F  43 52		       db    'CR'
+2  1748	0641			     ??0004  label   byte
+1  1749	0641  05CAr			     DW	   _CR
+   1750				       __ENTRY	'=,',_ENTRYC
+1  1751					     __nam  '=,'
+2  1752	0643  02		       db    ??0005-$-1
+2  1753	0644  3D 2C		       db    '=,'
+2  1754	0646			     ??0005  label   byte
+1  1755	0646  02F4r			     DW	   _ENTRYC
+   1756				       __ENTRY	'EMIT',_EMIT
+1  1757					     __nam  'EMIT'
+2  1758	0648  04		       db    ??0006-$-1
+2  1759	0649  45 4D 49 54	       db    'EMIT'
+2  1760	064D			     ??0006  label   byte
+1  1761	064D  010Cr			     DW	   _EMIT
+   1762				       __ENTRY	':',_COLON
+1  1763					     __nam  ':'
+2  1764	064F  01		       db    ??0007-$-1
+2  1765	0650  3A		       db    ':'
+2  1766	0651			     ??0007  label   byte
+1  1767	0651  0288r			     DW	   _COLON
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 32
+NF7.asm
+
+
+
+   1768				       __ENTRY	';`',_SEMICO
+1  1769					     __nam  ';`'
+2  1770	0653  02		       db    ??0008-$-1
+2  1771	0654  3B 60		       db    ';`'
+2  1772	0656			     ??0008  label   byte
+1  1773	0656  028Er			     DW	   _SEMICO
+   1774				       __ENTRY	'[`',_LPAR
+1  1775					     __nam  '[`'
+2  1776	0658  02		       db    ??0009-$-1
+2  1777	0659  5B 60		       db    '[`'
+2  1778	065B			     ??0009  label   byte
+1  1779	065B  022Fr			     DW	   _LPAR
+   1780				       __ENTRY	']',_RPAR
+1  1781					     __nam  ']'
+2  1782	065D  01		       db    ??000A-$-1
+2  1783	065E  5D		       db    ']'
+2  1784	065F			     ??000A  label   byte
+1  1785	065F  04FAr			     DW	   _RPAR
+   1786				       __ENTRY	',',_COMMA
+1  1787					     __nam  ','
+2  1788	0661  01		       db    ??000B-$-1
+2  1789	0662  2C		       db    ','
+2  1790	0663			     ??000B  label   byte
+1  1791	0663  02C4r			     DW	   _COMMA
+   1792				       __ENTRY	'@',_LD
+1  1793					     __nam  '@'
+2  1794	0665  01		       db    ??000C-$-1
+2  1795	0666  40		       db    '@'
+2  1796	0667			     ??000C  label   byte
+1  1797	0667  022Ar			     DW	   _LD
+   1798				       __ENTRY	'!',_ST
+1  1799					     __nam  '!'
+2  1800	0669  01		       db    ??000D-$-1
+2  1801	066A  21		       db    '!'
+2  1802	066B			     ??000D  label   byte
+1  1803	066B  0472r			     DW	   _ST
+   1804				       __ENTRY	'+',_ADD
+1  1805					     __nam  '+'
+2  1806	066D  01		       db    ??000E-$-1
+2  1807	066E  2B		       db    '+'
+2  1808	066F			     ??000E  label   byte
+1  1809	066F  0240r			     DW	   _ADD
+   1810				       __ENTRY	'-',_SUB
+1  1811					     __nam  '-'
+2  1812	0671  01		       db    ??000F-$-1
+2  1813	0672  2D		       db    '-'
+2  1814	0673			     ??000F  label   byte
+1  1815	0673  023Br			     DW	   _SUB
+   1816				       __ENTRY	'H.',_HEXP
+1  1817					     __nam  'H.'
+2  1818	0675  02		       db    ??0010-$-1
+2  1819	0676  48 2E		       db    'H.'
+2  1820	0678			     ??0010  label   byte
+1  1821	0678  0544r			     DW	   _HEXP
+   1822				       __ENTRY	'.',_HP
+1  1823					     __nam  '.'
+2  1824	067A  01		       db    ??0011-$-1
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 33
+NF7.asm
+
+
+
+2  1825	067B  2E		       db    '.'
+2  1826	067C			     ??0011  label   byte
+1  1827	067C  0592r			     DW	   _HP
+   1828				       __ENTRY	'SGN?',_SGN?
+1  1829					     __nam  'SGN?'
+2  1830	067E  04		       db    ??0012-$-1
+2  1831	067F  53 47 4E 3F	       db    'SGN?'
+2  1832	0683			     ??0012  label   byte
+1  1833	0683  0572r			     DW	   _SGN?
+   1834				       __ENTRY	'HERE',_HERE
+1  1835					     __nam  'HERE'
+2  1836	0685  04		       db    ??0013-$-1
+2  1837	0686  48 45 52 45	       db    'HERE'
+2  1838	068A			     ??0013  label   byte
+1  1839	068A  013Ar			     DW	   _HERE
+   1840				       __ENTRY	'OK.',_OK
+1  1841					     __nam  'OK.'
+2  1842	068C  03		       db    ??0014-$-1
+2  1843	068D  4F 4B 2E		       db    'OK.'
+2  1844	0690			     ??0014  label   byte
+1  1845	0690  0118r			     DW	   _OK
+   1846				       __ENTRY	'''',_LOCATE
+1  1847					     __nam  ''''
+2  1848	0692  01		       db    ??0015-$-1
+2  1849	0693  27		       db    ''''
+2  1850	0694			     ??0015  label   byte
+1  1851	0694  05B0r			     DW	   _LOCATE
+   1852				       __ENTRY	'ALPHA',_ALPHA
+1  1853					     __nam  'ALPHA'
+2  1854	0696  05		       db    ??0016-$-1
+2  1855	0697  41 4C 50 48 41	       db    'ALPHA'
+2  1856	069C			     ??0016  label   byte
+1  1857	069C  055Cr			     DW	   _ALPHA
+   1858	069E  00		       DB 0
+   1859
+   1860	069F			     EndMem:
+   1861
+   1862	      =0000		     lastw = ppppp
+   1863
+   1864	069F			     MyCseg  ends
+   1865					     end  Start
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 34
 Symbol Table
 
 
@@ -1615,345 +2036,415 @@ Symbol Table
 
 Symbol Name		Type   Value			   Cref	(defined at #)
 
-??0000			Byte   MYCSEG:0330		   863	#865
-??0001			Byte   MYCSEG:04FD		   1451	 #1453
-??DATE			Text   "04/28/15"
+??0000			Byte   MYCSEG:0348		   858	#860
+??0001			Byte   MYCSEG:05DF		   1616	 #1618
+??0002			Byte   MYCSEG:05E6		   1622	 #1624
+??0003			Byte   MYCSEG:063C		   1740	 #1742
+??0004			Byte   MYCSEG:0641		   1746	 #1748
+??0005			Byte   MYCSEG:0646		   1752	 #1754
+??0006			Byte   MYCSEG:064D		   1758	 #1760
+??0007			Byte   MYCSEG:0651		   1764	 #1766
+??0008			Byte   MYCSEG:0656		   1770	 #1772
+??0009			Byte   MYCSEG:065B		   1776	 #1778
+??000A			Byte   MYCSEG:065F		   1782	 #1784
+??000B			Byte   MYCSEG:0663		   1788	 #1790
+??000C			Byte   MYCSEG:0667		   1794	 #1796
+??000D			Byte   MYCSEG:066B		   1800	 #1802
+??000E			Byte   MYCSEG:066F		   1806	 #1808
+??000F			Byte   MYCSEG:0673		   1812	 #1814
+??0010			Byte   MYCSEG:0678		   1818	 #1820
+??0011			Byte   MYCSEG:067C		   1824	 #1826
+??0012			Byte   MYCSEG:0683		   1830	 #1832
+??0013			Byte   MYCSEG:068A		   1836	 #1838
+??0014			Byte   MYCSEG:0690		   1842	 #1844
+??0015			Byte   MYCSEG:0694		   1848	 #1850
+??0016			Byte   MYCSEG:069C		   1854	 #1856
+??DATE			Text   "04/29/15"
 ??FILENAME		Text   "NF7	"
-??TIME			Text   "20:33:48"
+??TIME			Text   "10:36:34"
 ??VERSION		Number 0314
-@1			Near   MYCSEG:0477		   1134	 1211  1234  #1245
-@2DROPX			Near   MYCSEG:04B1		   #1323
-@2P			Near   MYCSEG:019D		   398	421  #429
-@@END?			Near   MYCSEG:036F		   #920	 932  962
-@@ERNUM			Near   MYCSEG:0373		   #923	 940  945
-@@ESCAPE		Near   MYCSEG:038F		   934	#946
-@@EXNUM			Near   MYCSEG:0374		   #925	 953
-@@GETC			Near   MYCSEG:0397		   922	#954
-@@LP1			Word   MYCSEG:028C		   709	#709
-@@LP2			Word   MYCSEG:0294		   708	#711
-@@N1			Near   MYCSEG:035A		   899	#903  961
-@@N2			Near   MYCSEG:0362		   905	#909
-@@N3			Near   MYCSEG:0376		   910	#929
-@@N4			Near   MYCSEG:037F		   931	#936
-@@NUMINI		Near   MYCSEG:0367		   896	#913
-@@NUMZ			Near   MYCSEG:0355		   #898	 901
-@@SETBAS		Near   MYCSEG:036A		   907	#916
-@@SGN			Near   MYCSEG:039A		   897	#959
-@@SKIPX			Near   MYCSEG:03BA		   982	983  985  #988
-@@TON2			Near   MYCSEG:0389		   938	#942
-@@WEX			Near   MYCSEG:03C2		   990	993  #996
-@ABORT			Near   MYCSEG:0165		   #376	 732
-@ADR			Near   MYCSEG:044A		   #1165
-@CF			Near   MYCSEG:0214		   #611
+@1			Near   MYCSEG:048E		   1141	 1207  1230  #1241
+@2DROPX			Near   MYCSEG:04C8		   #1319
+@2P			Near   MYCSEG:01D3		   414	437  #445
+@@END?			Near   MYCSEG:0387		   #915	 927  957
+@@ERNUM			Near   MYCSEG:038B		   #918	 935  940
+@@ESCAPE		Near   MYCSEG:03A7		   929	#941
+@@EXNUM			Near   MYCSEG:038C		   #920	 948
+@@GETC			Near   MYCSEG:03AF		   917	#949
+@@LP1			Word   MYCSEG:02A4		   708	#708
+@@LP2			Word   MYCSEG:02AC		   707	#710
+@@N1			Near   MYCSEG:0372		   894	#898  956
+@@N2			Near   MYCSEG:037A		   900	#904
+@@N3			Near   MYCSEG:038E		   905	#924
+@@N4			Near   MYCSEG:0397		   926	#931
+@@NUMINI		Near   MYCSEG:037F		   891	#908
+@@NUMZ			Near   MYCSEG:036D		   #893	 896
+@@SETBAS		Near   MYCSEG:0382		   902	#911
+@@SGN			Near   MYCSEG:03B2		   892	#954
+@@SKIPX			Near   MYCSEG:03D2		   977	978  980  #983
+@@TON2			Near   MYCSEG:03A1		   933	#937
+@@WEX			Near   MYCSEG:03DA		   985	988  #991
+@ABORT			Near   MYCSEG:0165		   #376	 731
+@ABS			Near   MYCSEG:0523		   #1480  1493
+@ADR			Near   MYCSEG:0461		   #1161
+@CF			Near   MYCSEG:024A		   #627	 1693  1700
 @CPU			Text   0101H
 @CURSEG			Text   MYCSEG			   #277
-@DOES			Near   MYCSEG:04E9		   883	887  #1422
-@DOES2			Near   MYCSEG:04E8		   #1419
-@DOES3			Near   MYCSEG:04E7		   869	#1416
-@DOEVAL			Word   MYCSEG:0250		   #668	 670
-@DOS_DX			Near   MYCSEG:0223		   632	#639
-@DROP			Near   MYCSEG:045F		   498	1193  #1207
-@DROPX			Near   MYCSEG:0456		   #1190
-@EX			Near   MYCSEG:04EE		   742	#1426
-@EXEC			Near   MYCSEG:04C4		   #1355  1389
-@FILENAME		Text   NF7
-@JUMP			Near   MYCSEG:048E		   724	1266  #1282
-@LBL			Near   MYCSEG:04F0		   878	#1432
-@LDB			Near   MYCSEG:01EF		   548	#561
-@LDP			Near   MYCSEG:019B		   #427
-@MAIN			Near   MYCSEG:04F2		   1167	 1247  1260  1272  1285	 1296  1339  1357  1403	 #1438
-@MAINLP			Near   MYCSEG:0176		   #384	 385
-@NEST			Near   MYCSEG:04EF		   650	665  676  684  707  761	 767  773  780	787  811  1290	1382	  +
-							   #1429
-@NEST2			Near   MYCSEG:04CF		   #1371
-@NEST3			Near   MYCSEG:04CE		   795	799  803  854  858  #1368
-@NEST4			Near   MYCSEG:04CD		   818	822  826  830  #1365
-@NEST5			Near   MYCSEG:04CC		   #1362
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 28
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 35
 Symbol Table
 
 
 
-@NEXT			Near   MYCSEG:0489		   716	#1274
-@NIP			Near   MYCSEG:046B		   #1226
-@NUM			Near   MYCSEG:034F		   #895	 1014
-@OVER			Near   MYCSEG:0452		   503	#1178
-@POP			Near   MYCSEG:0453		   747	#1184
-@PUSHW			Near   MYCSEG:042F		   844	#1130  1146
-@PUSHW2			Near   MYCSEG:042E		   757	#1126
-@PUSHW3			Near   MYCSEG:042D		   850	#1123
-@PUSH_DC		Near   MYCSEG:03EF		   1018	 #1051
-@PUSH_SC		Near   MYCSEG:03F9		   1005	 #1067
-@RDROP			Near   MYCSEG:047F		   720	#1256
-@RETURN			Near   MYCSEG:04F1		   379	738  1303  1332	 #1435
+@DOES			Near   MYCSEG:0500		   878	882  #1418
+@DOES2			Near   MYCSEG:04FF		   #1415
+@DOES3			Near   MYCSEG:04FE		   864	#1412
+@DOEVAL			Word   MYCSEG:0196		   #396	 402
+@DOS_DX			Near   MYCSEG:0265		   642	#653
+@DROP			Near   MYCSEG:0476		   514	1189  #1203
+@DROPX			Near   MYCSEG:046D		   #1186  1506
+@EX			Near   MYCSEG:0505		   739	#1422
+@EXEC			Near   MYCSEG:04DB		   #1351  1385
+@FILENAME		Text   NF7
+@JUMP			Near   MYCSEG:04A5		   723	1262  #1278
+@LBL			Near   MYCSEG:0507		   873	#1428
+@LDB			Near   MYCSEG:0225		   564	#577  646
+@LDP			Near   MYCSEG:01D1		   #443
+@MAIN			Near   MYCSEG:0509		   1163	 1243  1256  1268  1281	 1292  1335  1353  1399	 #1434	1482  1488
+@MAINLP			Near   MYCSEG:017E		   #385	 386
+@NEG			Near   MYCSEG:0527		   #1483  1497
+@NEST			Near   MYCSEG:0506		   393	675  683  706  756  762	 768  775  782	806  1286  1378	 #1425	  +
+							   1527	 1533  1542  1551  1559	 1566  1572  1578  1585	 1598  1605  1613 +
+							   1630
+@NEST2			Near   MYCSEG:04E6		   #1367
+@NEST3			Near   MYCSEG:04E5		   790	794  798  849  853  #1364  1638	 1642  1646
+@NEST4			Near   MYCSEG:04E4		   813	817  821  825  #1361
+@NEST5			Near   MYCSEG:04E3		   #1358
+@NEXT			Near   MYCSEG:04A0		   715	#1270
+@NIP			Near   MYCSEG:0482		   #1222
+@NOT			Near   MYCSEG:0528		   #1485  1501
+@NUM			Near   MYCSEG:0367		   #890	 1009
+@OVER			Near   MYCSEG:0469		   519	#1174
+@POP			Near   MYCSEG:046A		   743	#1180
+@PUSHW			Near   MYCSEG:0452		   839	#1137  1460
+@PUSHW2			Near   MYCSEG:0451		   752	#1133  1594
+@PUSHW3			Near   MYCSEG:0450		   845	#1130
+@PUSH_DC		Near   MYCSEG:0407		   1013	 #1046
+@PUSH_SC		Near   MYCSEG:0411		   1000	 #1062
+@RDROP			Near   MYCSEG:0496		   719	#1252
+@RETURN			Near   MYCSEG:0508		   379	735  1299  1328	 #1431
 @R_TOP			Number -0400			   #285	 286  377
-@SKIP			Near   MYCSEG:0486		   728	1253  #1268  1278
+@SKIP			Near   MYCSEG:049D		   727	1249  #1264  1274
 @S_TOP			Number -0800			   #286	 287  378
 @TBUF			Number -0100			   #283	 284  331
 @TIB			Number -0200			   #284	 285  327
-@TOPDROP		Near   MYCSEG:01A8		   #444	 462  1209
-@TOPDUP			Near   MYCSEG:01CE		   #509	 1138  1164  1242  1307	 1310  1424
+@TOPDROP		Near   MYCSEG:01DE		   #460	 478  1205
+@TOPDUP			Near   MYCSEG:0204		   #525	 1120  1160  1238  1303	 1306  1420
 @VOCTOP			Number -2800			   #287	 360
 @WORDSIZE		Text   2			   #277
-@_1P_DUP		Near   MYCSEG:0471		   545	#1238
-@_2P_DUP		Near   MYCSEG:0470		   529	#1236
-@_BARY			Near   MYCSEG:04DF		   #1400
-@_CALL			Near   MYCSEG:0475		   395	403  508  522  560  569	 609  #1243
-@_COMMA			Near   MYCSEG:0343		   689	695  #882
-@_CONS			Near   MYCSEG:0445		   323	327  331  335  339  #1160
-@_CONS2			Near   MYCSEG:0444		   348	352  356  360  364  368	 #1157
-@_CONS3			Near   MYCSEG:0443		   #1154
-@_DEFER			Near   MYCSEG:04C2		   304	308  312  316  #1353  1396
-@_DEFER2		Near   MYCSEG:04C1		   #1350
-@_DEFER3		Near   MYCSEG:04C0		   #1347
-@_DEFERO		Near   MYCSEG:04BB		   300	#1343
-@_DROP			Near   MYCSEG:01A3		   #439	 1204  1265  1295  1380	 1387  1394
-@_DUP			Near   MYCSEG:0472		   426	536  553  #1240
-@_FOR			Near   MYCSEG:01A0		   #434	 1252
-@_IJ			Near   MYCSEG:043E		   701	#1148
-@_MAKER			Near   MYCSEG:0348		   683	#886
-@_NIP			Near   MYCSEG:0469		   410	418  581  588  602  #1224
-@_NIPX			Near   MYCSEG:0467		   752	#1218
-@_PARAM1		Near   MYCSEG:04A0		   #1305
-@_PARAM2		Near   MYCSEG:04A3		   1010	 #1308
-@_PARAM3		Near   MYCSEG:04A6		   976	1025  1042  1065  #1311
-@_POINT			Near   MYCSEG:0492		   344	#1287
-@_PUSH			Near   MYCSEG:01A2		   #436	 1337
-@_RLD@			Near   MYCSEG:0432		   467	476  #1136
-@_RST@			Near   MYCSEG:0437		   458	486  #1140
-@_SETPNT		Near   MYCSEG:049C		   344	#1300
-@_SETVAR		Near   MYCSEG:045D		   348	352  356  360  364  368	 #1205
-@_SETVAR2		Near   MYCSEG:0459		   #1195
-@_STATE			Near   MYCSEG:0332		   576	#868  1410
-@_SWAP_NIP		Near   MYCSEG:0464		   595	629  637  #1213
-@_VAR			Near   MYCSEG:0447		   #1162  1188
-@_VAR2			Near   MYCSEG:0450		   #1172  1415
-@_VAR3			Near   MYCSEG:044F		   #1169
-@_WARY			Near   MYCSEG:04DD		   293	#1398
-AT_			Number 0004			   #9  1344
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 29
+@_1P_DUP		Near   MYCSEG:0488		   561	#1234
+@_2P_DUP		Near   MYCSEG:0487		   545	#1232
+@_BARY			Near   MYCSEG:04F6		   #1396
+@_CALL			Near   MYCSEG:048C		   411	419  524  538  576  585	 625  637  #1239  1514	1655  1682  1698
+@_COMMA			Near   MYCSEG:035B		   688	694  #877
+@_CONS			Near   MYCSEG:045C		   323	327  331  335  339  #1156  1466	 1470  1474  1478
+@_CONS2			Near   MYCSEG:045B		   348	352  356  360  364  368	 #1153
+@_CONS3			Near   MYCSEG:045A		   #1150
+@_DEFER			Near   MYCSEG:04D9		   304	308  314  318  #1349  1392
+@_DEFER2		Near   MYCSEG:04D8		   #1346
+@_DEFER3		Near   MYCSEG:04D7		   #1343
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 36
 Symbol Table
 
 
 
-DFND			Near   MYCSEG:0427		   1108	 #1111
-DSP			Number AX			   #246	 378  449  452	512  515  1002	1033  1036  1054  1058	1070  1074+
-							   1229	 1232  1316  1319  1326	 1330
-ENDMEM			Near   MYCSEG:0500		   1448	 #1474
-FND			Near   MYCSEG:0402		   #1079
-FNDZ			Near   MYCSEG:03FE		   1066	 #1076
-FREEMEM			Near   MYCSEG:04F8		   348	#1447  1448
-IP			Number SI			   #244	 537  1191  1220  1254	1254  1283  1283  1301	1312  1431  1437  +
-							   1439
-L@NFND			Near   MYCSEG:040C		   1082	 #1089
-LASTW			Number 0000			   #1476
-MFND			Near   MYCSEG:041B		   1078	 #1102
-NACC			Number DI			   #259	 912  915  915	948  951  952  965
-NBASE			Number BX			   #258	 918  919  944	949
-NFND			Near   MYCSEG:0409		   #1086  1095
-NR			Number DX			   #251	 419  428  445	450  513  516  523  582	 589  596  603	1180  1214+
-							   1230	 1313  1328
+@_DEFERO		Near   MYCSEG:04D2		   300	#1339
+@_DROP			Near   MYCSEG:01D9		   #455	 1200  1261  1291  1376	 1383  1390
+@_DUP			Near   MYCSEG:0489		   442	552  569  #1236
+@_FOR			Near   MYCSEG:01D6		   #450	 1248
+@_IJ			Near   MYCSEG:0455		   700	#1144  1521
+@_MAKER			Near   MYCSEG:0360		   682	#881
+@_NIP			Near   MYCSEG:0480		   426	434  597  604  618  #1220  1671	 1691
+@_NIPX			Near   MYCSEG:047E		   747	#1214
+@_PARAM1		Near   MYCSEG:04B7		   #1301
+@_PARAM2		Near   MYCSEG:04BA		   1005	 #1304
+@_PARAM3		Near   MYCSEG:04BD		   971	1020  1037  1060  #1307
+@_POINT			Near   MYCSEG:04A9		   344	#1283
+@_PUSH			Near   MYCSEG:01D8		   #452	 1333
+@_RLD@			Near   MYCSEG:0445		   483	492  #1118
+@_RST@			Near   MYCSEG:044A		   474	502  #1122
+@_SETPNT		Near   MYCSEG:04B3		   344	#1296
+@_SETVAR		Near   MYCSEG:0474		   348	352  356  360  364  368	 #1201
+@_SETVAR2		Near   MYCSEG:0470		   #1191
+@_STATE			Near   MYCSEG:034A		   592	#863  1406
+@_SWAP_NIP		Near   MYCSEG:047B		   611	651  #1209
+@_VAR			Near   MYCSEG:045E		   #1158  1184
+@_VAR2			Near   MYCSEG:0467		   #1168  1411
+@_VAR3			Near   MYCSEG:0466		   #1165
+@_WARY			Near   MYCSEG:04F4		   293	#1394
+AT_			Number 0004			   #9  1340
+DFND			Near   MYCSEG:043F		   1103	 #1106
+DSP			Number AX			   #246	 378  465  468	528  531  997  1028  1031  1049	 1053  1065  1069 +
+							   1225	 1228  1312  1315  1322	 1326
+ENDMEM			Near   MYCSEG:069F		   1737	 #1860
+FND			Near   MYCSEG:041A		   #1074
+FNDZ			Near   MYCSEG:0416		   1061	 #1071
+FREEMEM			Near   MYCSEG:0637		   348	#1736  1737
+IP			Number SI			   #244	 553  1187  1216  1250	1250  1279  1279  1297	1308  1427  1433  +
+							   1435
+L@NFND			Near   MYCSEG:0424		   1077	 #1084
+LASTW			Number 0000			   #1862
+MFND			Near   MYCSEG:0433		   1073	 #1097
+NACC			Number DI			   #259	 907  910  910	943  946  947  960
+NBASE			Number BX			   #258	 913  914  939	944
+NFND			Near   MYCSEG:0421		   #1081  1090
+NR			Number DX			   #251	 435  444  461	466  529  532  539  598	 605  612  619	1176  1210+
+							   1226	 1309  1324  1660  1674	 1683  1684  1692
 NRH			Number DH			   #253
-NRL			Number DL			   #252	 411
-NR_NIP			Near   MYCSEG:01AA		   #446
-PB			Text   byte  ptr		   #6  1048  1104  1106
+NRL			Number DL			   #252	 427
+NR_NIP			Near   MYCSEG:01E0		   #462
+PB			Text   byte  ptr		   #6  1043  1099  1101
 PD			Text   dword ptr		   #4
-PPPPP			Number 0000			   #93	1476
-PW			Text   word  ptr		   #5  1344
+PPPPP			Number 0000			   #93	1862
+PW			Text   word  ptr		   #5  1340
 QQQQQ			Number 0000			   #92	93
-RSP			Number SP			   #247	 377  449  452	512  515  1002	1033  1036  1054  1058	1070  1074+
-							   1150	 1229  1232  1316  1319	 1326  1330
+RSP			Number SP			   #247	 377  465  468	528  531  997  1028  1031  1049	 1053  1065  1069 +
+							   1146	 1225  1228  1312  1315	 1322  1326
 SELF0			Near   MYCSEG:015E		   291	#372
-START			Byte   MYCSEG:0100		   #289	 1479
-TOP			Number BX			   #248	 396  404  411	412  419  428  430  431	 435  438  440	440  443  +
-							   445	468  478  479  487  516	 523  530  530	537  546  562  570  570	  +
-							   582	589  596  603  610  613	 613  1166  1206  1214	1237  1239  1320  +
-							   1321	 1327  1399  1401  1425
-TOPH			Number BH			   #250	 563  1139
-TOPL			Number BL			   #249	 459  477  562
-TO_			Number 0002			   #8  658  659	 666  666  781	788  812  838  870
+START			Byte   MYCSEG:0100		   #289	 1865
+TOP			Number BX			   #248	 412  420  427	428  435  444  446  447	 451  454  456	456  459  +
+							   461	484  494  495  503  532	 539  546  546	553  562  578  586  586	  +
+							   598	605  612  619  626  629	 629  1162  1202  1210	1233  1235  1316  +
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 37
+Symbol Table
+
+
+
+							   1317	 1323  1395  1397  1421	 1481  1481  1484  1486	 1661  1663  1673 +
+							   1676	 1683  1684  1685  1692	 1699
+TOPH			Number BH			   #250	 579  1121
+TOPL			Number BL			   #249	 475  493  578
+TO_			Number 0002			   #8  394  394	 668  669  776	783  807  833  865  1608
 VL_			Number 0006			   #10
-W			Number DI			   #245	 442  443  459	460  468  477  479  487	 1132  1143  1149  1149	  +
-							   1150	 1161  1161  1166  1186	 1206  1225  1244  1258	 1276  1277  1280 +
-							   1288	 1288  1301  1320  1354	 1354  1356  1356  1360	 1401  1425  1428 +
-							   1434	 1439  1442
-XFND?			Near   MYCSEG:041A		   1092	 #1099
-YFND			Near   MYCSEG:0417		   #1096
-ZFND			Near   MYCSEG:0406		   #1083  1105	1112
-_0			Number MYCSEG:012C		   #334	 659
-_1P			Number MYCSEG:0189		   #402	 651
-_3P			Number MYCSEG:0184		   #394	 804
-_??			Number MYCSEG:0324		   774	#857
-_@EMIT			Number MYCSEG:021E		   300	#636
-_@_INI			Near   MYCSEG:0236		   344	#656
-_ABORT			Number MYCSEG:02A0		   #731	 788
-_ABORT?			Number MYCSEG:02D0		   #786	 861
-_ACC			Number MYCSEG:0228		   308	#649
-_ACCEPT			Number MYCSEG:0114		   #307	 385
-_ACCZ			Number MYCSEG:0217		   #628	 651
-_ADD			Number MYCSEG:020A		   #601	 666  804
-_AND			Number MYCSEG:01FB		   #580
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 30
+W			Number DI			   #245	 458  459  475	476  484  493  495  503	 1125  1139  1145  1145	  +
+							   1146	 1157  1157  1162  1182	 1202  1221  1240  1254	 1272  1273  1276 +
+							   1284	 1284  1297  1316  1350	 1350  1352  1352  1356	 1397  1421  1424 +
+							   1430	 1435  1438
+XFND?			Near   MYCSEG:0432		   1087	 #1094
+YFND			Near   MYCSEG:042F		   #1091
+ZFND			Near   MYCSEG:041E		   #1078  1100	1107
+_0			Number MYCSEG:012C		   #334	 669  1608
+_1			Number MYCSEG:051B		   #1473  1586
+_1H			Number MYCSEG:0517		   #1469  1536
+_1P			Number MYCSEG:01BF		   #418
+_3P			Number MYCSEG:01BA		   #410	 799
+_??			Number MYCSEG:033C		   769	#852
+_@EMIT			Number MYCSEG:0260		   300	#650
+_@ERROR			Number MYCSEG:05E8		   318	#1629
+_@OK			Number MYCSEG:05D7		   314	#1612
+_@_INI			Near   MYCSEG:026A		   344	#666
+_ABORT			Number MYCSEG:02B8		   #730	 783  1631
+_ABORT?			Number MYCSEG:02E8		   #781	 856
+_ABS			Number MYCSEG:052C		   #1492  1552
+_ACC			Number MYCSEG:024D		   308	#636
+_ACCEPT			Number MYCSEG:0114		   #307	 386  398
+_ADD			Number MYCSEG:0240		   394	#617  799  1543	 1543  1809
+_ADD2D			Number MYCSEG:0620		   #1681
+_ALPHA			Number MYCSEG:055C		   #1541  1579	1857
+_AND			Number MYCSEG:0231		   #596	 1543  1586
+_ASTR			Number MYCSEG:01F1		   #491	 783  1647
+_BL			Number MYCSEG:0130		   #338	 827  1599
+_BRK			Number MYCSEG:0534		   380	396  #1513  1534  1567	1586
+_CLIT			Number MYCSEG:0294		   #693	 763
+_CNTC			Number MYCSEG:0152		   #363	 1340  1608
+_COLON			Number MYCSEG:0288		   #681	 1767
+_COMMA			Number MYCSEG:02C4		   295	695  #755  874	1791
+_COMMAER		Number MYCSEG:0351		   #872	 879  883
+_COMP_NUM		Number MYCSEG:02CC		   295	#761
+_CR			Number MYCSEG:05CA		   398	398  #1604  1619  1631	1631  1749
+_CSTR			Number MYCSEG:021B		   383	#560  769  799	1648  1649
+_DICT			Number MYCSEG:014C		   #359	 676  807  807
+_DIGP			Number MYCSEG:05A8		   1536	 #1577
+_DIV			Number MYCSEG:060E		   1534	 1536  1573  #1654
+_DLDB			Number MYCSEG:0220		   #568	 799  854
+_DOES			Number MYCSEG:04FC		   676	#1410
+_DPUSH			Number MYCSEG:030E		   667	#805
+_DROP			Number MYCSEG:01FE		   #513	 1560
+_DROPX			Number MYCSEG:0532		   1461	 #1505	1560
+_DUP			Number MYCSEG:0202		   394	#523  1552  1560
+_EMIT			Number MYCSEG:010C		   #299	 380  1552  1579  1599	1649  1761
+_ENTRY			Number MYCSEG:02F8		   #797	 1743
+_ENTRYC			Number MYCSEG:02F4		   #789	 1755
+_ENTRYH			Number MYCSEG:02F6		   #793	 883
+_ERROR			Number MYCSEG:011C		   #317	 783
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 38
 Symbol Table
 
 
 
-_ASTR			Number MYCSEG:01BB		   #475	 788
-_BL			Number MYCSEG:0130		   #338	 832
-_CLIT			Number MYCSEG:027C		   #694	 768
-_CNTC			Number MYCSEG:0152		   #363	 1344
-_COLON			Number MYCSEG:0270		   #682
-_COMMA			Number MYCSEG:02AC		   295	696  #760  879
-_COMMAER		Number MYCSEG:0339		   #877	 884  888
-_COMP_NUM		Number MYCSEG:02B4		   295	#766
-_CSTR			Number MYCSEG:01E5		   382	#544  651  774	804
-_DICT			Number MYCSEG:014C		   #359	 677  812  812
-_DLDB			Number MYCSEG:01EA		   #552	 804  859
-_DOES			Number MYCSEG:04E5		   677	#1414
-_DPUSH			Number MYCSEG:02F6		   657	#810
-_DROP			Number MYCSEG:01C8		   #497
-_DUP			Number MYCSEG:01CC		   #507	 666
-_EMIT			Number MYCSEG:010C		   #299
-_ENTRY			Number MYCSEG:02E0		   #802	 1454
-_ENTRYC			Number MYCSEG:02DC		   #794
-_ENTRYH			Number MYCSEG:02DE		   #798	 888
-_ERROR			Number MYCSEG:011C		   #315	 788
-_ETIB			Number MYCSEG:0140		   304	#351  666
-_EVAL			Number MYCSEG:0246		   385	#664
-_EX			Number MYCSEG:02A4		   #741	 781
-_EXEC			Number MYCSEG:04D5		   294	#1386
-_EXECUTE		Number MYCSEG:04D1		   709	#1379
-_EXIT			Number MYCSEG:02A2		   651	659  677  690  711  #737  762  768  774	 781  812  839	866  870  +
-							   879
-_FIND			Number MYCSEG:0262		   668	#675
-_FND			Number MYCSEG:03F4		   677	#1064
-_FOR			Number MYCSEG:0479		   708	#1251
-_HERE			Number MYCSEG:013A		   #347	 657  781  781	804
-_HEREX			Number MYCSEG:02C6		   762	#779
-_IF			Number MYCSEG:0482		   #1264
-_INIT			Number MYCSEG:0134		   #343	 382  382  658
-_J			Number MYCSEG:0282		   #700	 709
-_JUMP			Number MYCSEG:029C		   385	670  #723
-_LD			Number MYCSEG:01F4		   #568
-_LDB			Number MYCSEG:01ED		   #559	 668
-_LDP			Number MYCSEG:0199		   #425
-_LIT			Number MYCSEG:01DF		   #535	 696
-_LOOPS			Number MYCSEG:0286		   #706
-_LPAR			Number MYCSEG:01F9		   #575	 659  690
-_LTIB			Number MYCSEG:0146		   #355	 659  666  836	838
-_MPUSH			Number MYCSEG:03D6		   812	#1024
-_MSTR			Number MYCSEG:03E3		   845	#1041
-_NEXT			Number MYCSEG:0298		   709	#715
-_NIPX			Number MYCSEG:02A8		   #751	 845
-_NUM			Number MYCSEG:03CB		   774	#1009
-_NUMBER			Number MYCSEG:02BC		   294	768  #772
-_OK			Number MYCSEG:0118		   #311	 385
-_OPERATION		Word   MYCSEG:0102		   #293	 670
-_OVER			Number MYCSEG:01CA		   #502	 651
-_PARS			Number MYCSEG:03A7		   837	#975
-_PARSE			Number MYCSEG:0306		   #829
-_PERFORM		Number MYCSEG:04D9		   670	879  #1393
-_POP			Number MYCSEG:02A6		   #746
-_PUSH			Number MYCSEG:04B7		   #1336
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 31
+_ETIB			Number MYCSEG:0140		   304	#351  394
+_EVAL			Number MYCSEG:018C		   386	#392
+_EX			Number MYCSEG:02BC		   #738	 776
+_EXEC			Number MYCSEG:04EC		   294	#1382
+_EXECUTE		Number MYCSEG:04E8		   708	#1375
+_EXIT			Number MYCSEG:02BA		   669	676  689  710  #734  757  763  769  776	 807  834  861	865  874  +
+							   1528	 1536  1543  1552  1579	 1586  1599  1608  1625	 1649
+_FIND			Number MYCSEG:027A		   401	#674  1586
+_FND			Number MYCSEG:040C		   676	#1059
+_FOR			Number MYCSEG:0490		   707	#1247
+_HERE			Number MYCSEG:013A		   #347	 667  776  776	799  1839
+_HEREX			Number MYCSEG:02DE		   757	#774
+_HEXP			Number MYCSEG:0544		   #1532  1821
+_HP			Number MYCSEG:0592		   #1565  1827
+_HP2			Number MYCSEG:059C		   #1571  1573
+_I			Number MYCSEG:0538		   #1520  1528
+_IF			Number MYCSEG:0499		   #1260
+_INIT			Number MYCSEG:0134		   #343	 383  383  668
+_J			Number MYCSEG:029A		   #699	 708
+_JUMP			Number MYCSEG:02B4		   386	402  #722
+_LD			Number MYCSEG:022A		   #584	 1797
+_LDB			Number MYCSEG:0223		   396	#575
+_LDP			Number MYCSEG:01CF		   #441
+_LF			Number MYCSEG:0513		   #1465  1543	1573
+_LIT			Number MYCSEG:0215		   380	#551  695  1534	 1543  1552
+_LOCATE			Number MYCSEG:05B0		   #1584  1851
+_LOOPS			Number MYCSEG:029E		   #705	 1649
+_LPAR			Number MYCSEG:022F		   #591	 669  689  1779
+_LT0			Number MYCSEG:051F		   #1477  1543
+_LTIB			Number MYCSEG:0146		   #355	 394  669  831	833
+_MPUSH			Number MYCSEG:03EE		   807	#1019
+_MSTR			Number MYCSEG:03FB		   840	#1036
+_MUL			Number MYCSEG:0619		   #1670
+_NEG			Number MYCSEG:052E		   #1496
+_NEXT			Number MYCSEG:02B0		   708	#714
+_NIPX			Number MYCSEG:02C0		   #746	 840
+_NOT			Number MYCSEG:0530		   #1500
+_NUM			Number MYCSEG:03E3		   769	#1004
+_NUMBER			Number MYCSEG:02D4		   294	763  #767
+_OK			Number MYCSEG:0118		   #313	 386  1845
+_OPERATION		Word   MYCSEG:0102		   #293	 402
+_OVER			Number MYCSEG:0200		   #518	 1543
+_PARS			Number MYCSEG:03BF		   832	#970
+_PARSE			Number MYCSEG:031E		   #824
+_PERFORM		Number MYCSEG:04F0		   402	874  #1389
+_POP			Number MYCSEG:02BE		   #742
+_PUSH			Number MYCSEG:04CE		   #1332  1528
+_RDROP			Number MYCSEG:02B2		   710	#718
+_RLDP			Number MYCSEG:01EB		   #482	 1560
+_RPAR			Number MYCSEG:04FA		   683	#1405  1785
+_RSTBP			Number MYCSEG:01E4		   #473
+_SEMICO			Number MYCSEG:028E		   #687	 1773
+_SGN			Number MYCSEG:0630		   1552	 #1697
+_SGN?			Number MYCSEG:0572		   #1550  1567	1833
+_SKIP			Number MYCSEG:02B6		   #726	 802  1567  1573
+_SOURCE			Number MYCSEG:0110		   #303	 830
+_SPACE			Number MYCSEG:05C2		   398	#1597  1631
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 39
 Symbol Table
 
 
 
-_RDROP			Number MYCSEG:029A		   711	#719
-_RLDP			Number MYCSEG:01B5		   #466
-_RPAR			Number MYCSEG:04E3		   684	#1409
-_RSTBP			Number MYCSEG:01AE		   #457
-_SEMICO			Number MYCSEG:0276		   #688
-_SKIP			Number MYCSEG:029E		   #727	 807
-_SOURCE			Number MYCSEG:0110		   #303	 835
-_ST			Number MYCSEG:045B		   651	804  #1203
-_STAT			Number MYCSEG:0158		   #367	 677  788  870
-_STBP			Number MYCSEG:018D		   #409
-_STP			Number MYCSEG:0193		   #417	 762
-_SUB			Number MYCSEG:0205		   #594	 677
-_SWAP			Number MYCSEG:01D4		   #521
-_TBL			Number MYCSEG:0120		   #322	 382  385
-_TBUF			Number MYCSEG:0128		   #330	 668  804  845
-_TIB			Number MYCSEG:0124		   #326	 385
-_TOKEN			Number MYCSEG:0302		   668	#821
-_TOKEN?			Number MYCSEG:0300		   804	#817
-_WORD			Number MYCSEG:0304		   #825
-_WSTR			Number MYCSEG:01D9		   #528	 657  879
-_XCHG			Number MYCSEG:01C3		   #485
-_XCOMMA			Number MYCSEG:02AA		   #756	 804
-_XOR			Number MYCSEG:0200		   #587
-_XSETSTR		Number MYCSEG:0318		   833	#843
-_XTOK?			Number MYCSEG:0320		   831	#849
-_Z??			Number MYCSEG:0322		   #853
-_ZEQ			Number MYCSEG:020F		   #608	 860
-_ZEX			Number MYCSEG:0497		   668	788  #1294
+_ST			Number MYCSEG:0472		   799	#1199  1803
+_STAT			Number MYCSEG:0158		   #367	 676  783  865	1631
+_STBP			Number MYCSEG:01C3		   #425
+_STP			Number MYCSEG:01C9		   #433	 757
+_STYPE			Number MYCSEG:05FA		   398	1606  1614  1620  #1637
+_SUB			Number MYCSEG:023B		   #610	 676  1815
+_SWAP			Number MYCSEG:020A		   #537
+_TBL			Number MYCSEG:0120		   #322	 383  386  398	398
+_TBUF			Number MYCSEG:0128		   #330	 398  401  799	840  1631
+_TIB			Number MYCSEG:0124		   #326	 386
+_TOKEN			Number MYCSEG:031A		   396	#816
+_TOKEN?			Number MYCSEG:0318		   799	#812  1586
+_TWICE			Number MYCSEG:053C		   #1526  1534	1536
+_TYPE			Number MYCSEG:05FE		   #1645
+_TYPES			Number MYCSEG:05FC		   1631	 1631  #1641
+_ULESS			Number MYCSEG:0629		   1543	 #1690
+_WORD			Number MYCSEG:031C		   #820
+_WSTR			Number MYCSEG:020F		   #544	 667  874
+_XCHG			Number MYCSEG:01F9		   #501
+_XCOMMA			Number MYCSEG:02C2		   #751	 799
+_XDROP			Number MYCSEG:050F		   #1459  1649
+_XOR			Number MYCSEG:0236		   #603
+_XSETSTR		Number MYCSEG:0330		   828	#838
+_XSPC			Number MYCSEG:05C0		   1534	 1567  #1593
+_XTOK?			Number MYCSEG:0338		   826	#844
+_Z??			Number MYCSEG:033A		   #848	 1586
+_ZEQ			Number MYCSEG:0245		   #624	 855  1560
+_ZEX			Number MYCSEG:04AE		   396	783  #1290  1552  1560
+_ZSKIP			Number MYCSEG:0584		   #1558  1573
 
 Macro Name						   Cref	(defined at #)
 
-CF_TO							   #70	612
-DROP2							   #85	1324
-DUP2							   #78	1052  1068
-D_TO							   #48	447  1227  1314
-JMPS							   #12	290  397  420  461  547	 631  900  933	1004  1017  1081  1133	  +
-							   1145	 1187  1192  1210  1233	 1246  1259  1271  1284	 1289  1302  1331 +
-							   1338	 1381  1388  1395  1402
-RCHG							   #74	640  643  911  947  950
-R_TO							   #38	1015  1049  1141  1185	1219  1257  1275  1427	1436
-SKIPA							   #16	480  554  1151	1175  1198  1215  1221	1297  1345  1374
+CF_TO							   #70	628
+DROP2							   #85	1320
+DUP2							   #78	1047  1063
+D_TO							   #48	463  1223  1310
+JMPS							   #12	290  413  436  477  563	 895  928  999	1012  1076  1140  1183	  +
+							   1188	 1206  1229  1242  1255	 1267  1280  1285  1298	 1327  1334  1377 +
+							   1384	 1391  1398  1487
+RCHG							   #74	654  657  906  942  945	 1657  1659  1662  1664	 1672  1675
+R_TO							   #38	1010  1044  1123  1181	1215  1253  1271  1423	1432
+SKIPA							   #16	496  570  1127	1147  1171  1194  1211	1217  1293  1341  1370
 SKIPB							   #20
 SKIPR							   #24
-TDROP							   #58	1208
-TDUP							   #54	1137  1163  1241  1306	1309  1423
-TO_D							   #42	510  1031
-TO_R							   #34	437  441  1011	1043  1131  1179  1279	1430  1433
-W2							   #62	469  1124  1127	 1155  1158  1170  1173	 1196  1348  1351  1358	  +
-							   1363	 1366  1369  1372  1417	 1420
-WIP2							   #66	538  1269  1440
-X							   #30	448  451  511  514  1001  1032	1035  1053  1057  1069	1073  1228+
-							   1231	 1315  1318  1325  1329
+TDROP							   #58	1204
+TDUP							   #54	1119  1159  1237  1302	1305  1419
+TO_D							   #42	526  1026
+TO_R							   #34	453  457  1006	1038  1138  1175  1275	1426  1429
+W2							   #62	485  1131  1134	 1151  1154  1166  1169	 1192  1344  1347  1354	  +
+							   1359	 1362  1365  1368  1413	 1416
+WIP2							   #66	554  1265  1436
+X							   #30	464  467  527  530  996	 1027  1030  1048  1052	 1064  1068  1224 +
+							   1227	 1311  1314  1321  1325
 __ALIGN							   #109
-__COL							   #147	 647  662  673	704  758  764  770  777	 784  808
+__COL							   #147	 390  672  703	753  759  765  772  779	 803  1524  1530  1539	  +
+							   1548	 1556  1563  1569  1575	 1582  1595  1602  1610	 1627
 __COL2							   #142
-__COL3							   #137	 792  796  800	851  855
-__COL4							   #132	 815  819  823	827
-Turbo Assembler	 Version 3.2	    04/28/15 20:33:48	    Page 32
+Turbo Assembler	 Version 3.2	    04/29/15 10:36:34	    Page 40
 Symbol Table
 
 
 
+__COL3							   #137	 787  791  795	846  850  1635	1639  1643
+__COL4							   #132	 810  814  818	822
 __COL5							   #127
 __COLGO							   #122
-__CONST							   #217	 320  324  328	332  336
-__DEFER							   #192	 301  305  309	313
+__CONST							   #217	 320  324  328	332  336  1463	1467  1471  1475
+__DEFER							   #192	 301  305  311	315
 __DEFERO						   #187	 297
-__ENTRY							   #229	 1449
-__LBL							   #167	 875
+__ENTRY							   #229	 1738  1744  1750  1756	 1762  1768  1774  1780	 1786  1792  1798 +
+							   1804	 1810  1816  1822  1828	 1834  1840  1846  1852
+__LBL							   #167	 870
 __LN							   #102
 __MCONS							   #222
-__NAM							   #95	862  1450
+__NAM							   #95	857  1615  1621	 1739  1745  1751  1757	 1763  1769  1775  1781	  +
+							   1787	 1793  1799  1805  1811	 1817  1823  1829  1835	 1841  1847  1853
 __POINT							   #202	 341
 __QUAN							   #207
-__RVAR							   #162	 841
-__RVAR2							   #157	 754
-__RVAR3							   #152	 847
+__RVAR							   #162	 836  1457
+__RVAR2							   #157	 749  1591
+__RVAR3							   #152	 842
 __VALUE							   #182	 345  349  353	357  361  365
 __VAR							   #172
 __VECTOR						   #197
-__XALIGN						   #117	 298  302  306	310  314  321  325  329	 333  337  342	346  350  +
-							   354	358  362  366  393  401	 408  416  424	456  465  474  484  496	  +
-							   501	506  520  527  534  543	 551  558  567	574  579  586  593  600	  +
-							   607	627  635  648  663  674	 681  687  693	699  705  714  718  722	  +
-							   726	730  736  740  745  750	 755  759  765	771  778  785  793  797	  +
-							   801	809  816  820  824  828	 842  848  852	856  876  974  1008  1023 +
-							   1040	 1063  1202  1250  1263	 1293  1335  1378  1385	 1392  1408  1413
-__XT							   #177	 392  400  407	415  423  455  464  473	 483  495  500	505  519  +
-							   526	533  542  550  557  566	 573  578  585	592  599  606  626  634	  +
-							   680	686  692  698  713  717	 721  725  729	735  739  744  749  973	  +
-							   1007	 1022  1039  1062  1201	 1249  1262  1292  1334	 1377  1384  1391 +
-							   1407	 1412
+__XALIGN						   #117	 298  302  306	312  316  321  325  329	 333  337  342	346  350  +
+							   354	358  362  366  391  409	 417  424  432	440  472  481  490  500	  +
+							   512	517  522  536  543  550	 559  567  574	583  590  595  602  609	  +
+							   616	623  635  649  673  680	 686  692  698	704  713  717  721  725	  +
+							   729	733  737  741  745  750	 754  760  766	773  780  788  792  796	  +
+							   804	811  815  819  823  837	 843  847  851	871  969  1003	1018  1035+
+							   1058	 1198  1246  1259  1289	 1331  1374  1381  1388	 1404  1409  1458 +
+							   1464	 1468  1472  1476  1491	 1495  1499  1504  1512	 1519  1525  1531 +
+							   1540	 1549  1557  1564  1570	 1576  1583  1592  1596	 1603  1611  1628 +
+							   1636	 1640  1644  1653  1669	 1680  1689  1696
+__XT							   #177	 408  416  423	431  439  471  480  489	 499  511  516	521  535  +
+							   542	549  558  566  573  582	 589  594  601	608  615  622  634  648	  +
+							   679	685  691  697  712  716	 720  724  728	732  736  740  744  968	  +
+							   1002	 1017  1034  1057  1197	 1245  1258  1288  1330	 1373  1380  1387 +
+							   1403	 1408  1490  1494  1498	 1503  1511  1518  1652	 1668  1679  1688 +
+							   1695
 
 Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
 
-MYCSEG			16  0500 Para	none		   #277	 279  279  279	279
+MYCSEG			16  069F Para	none		   #277	 279  279  279	279
 

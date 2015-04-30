@@ -92,22 +92,34 @@ SELF0:
   MOV   RSP,@R_TOP
   MOV   DSP,@S_TOP
   CALL  @RETURN
-  DW    _BRK,_LIT,'?',_EMIT
+  ;DW    _BRK,_LIT,'?',_EMIT
+  DW    _DEBUG
+  __NAM " INIT ! "
 
   DW    _INIT,_INIT,_TBL,_cstr
 @MAINLP:
   DW _EVAL,_OK,_TIB,_TBL,_ACCEPT,_JUMP,@MAINLP
+
+  __COL _EVAL                           ; EVAL
+        DW _dup,to_+_LTIB,_add,to_+_ETIB
+@DoEval DW _BRK,_TOKEN,_LDB,_ZEX
+        DW _TBUF,_CR,_SPACE,_STYPE,_TBL,_TBL,_ACCEPT,_CR
+        DW _tbuf,_FIND
+        DW _OPERATION,_PERFORM,_JUMP,@DoEval
 
 ;------------------------------------
 ; LOGICAL      COMMANDS  XOR AND
 
   __XT  _3P,@_CALL      ; 3+
   inc   top
-  JMPS  @2P
-
-  __XT  _1P,@_CALL      ; 1+
-  INC   TOP
+@2p:
+  inc   top
+  inc   top
   RET
+
+; __XT  _1P,@_CALL      ; 1+
+; INC   TOP
+; RET
 
   __XT  _STBP,@_NIP     ; C!+
   MOV   [Top],NRL
@@ -121,10 +133,7 @@ SELF0:
   __XT  _LDP,@_DUP      ; @+
 @LDP:
   MOV   NR,[Top]
-@2p:
-  inc   top
-  inc   top
-  RET
+  JMPS  @2P
 
 @_FOR:
   NEG   TOP
@@ -231,9 +240,16 @@ NR_NIP:
 
   ;--------------------   IO  ---------------
 
-  __XT  _ACCZ,@_SWAP_NIP ; RETURNS 1 PARAM
-  MOV   dI,0A00H        ; DOS ACCEPT FUNCTION NUMBER
-  JMPS  @DOS_DX
+  __XT  _ACC,@_CALL     ; RETURNS 2 PARAM
+  PUSH  BX
+  MOV   BX,DX
+  POP   PW [BX]
+  MOV   DI,0A00H        ; DOS ACCEPT FUNCTION NUMBER
+  CALL  @DOS_DX
+  INC   DX
+  MOV   BL,[BX+2]
+  MOV   BH,0
+  RET
 
   __XT  _@EMIT,@_SWAP_NIP     ; (EMIT
   MOV   DI,200h  ; dos function number EMIT
@@ -243,8 +259,8 @@ NR_NIP:
   RCHG  DI
   RET
 
-  __COL _ACC
-        DW _OVER,_ST,_ACCZ,_1P,_CSTR,_EXIT
+; __COL _ACC
+;       DW _OVER,_ST,_ACCZ,_1P,_CSTR,_EXIT
 
 ;------------------------------------
 
@@ -252,11 +268,6 @@ _@_INI:
         DW  _HERE,_WSTR,_DPUSH
         DW  to_+_INIT
         DW  _LPAR,_0,to_+_LTIB,_EXIT
-
-  __COL _EVAL                           ; EVAL
-        DW _dup,to_+_LTIB,_add,to_+_ETIB
-@DoEval DW _TOKEN,_LDB,_ZEX,_tbuf,_FIND
-        DW _OPERATION,_PERFORM,_JUMP,@DoEval
 
   __col _find                           ; FIND  with status
         DW _stat,_DOES,_SUB,_dict,_FND,_EXIT
@@ -759,6 +770,18 @@ dfnd:
   JMP   [W-2]
 
 ;
+
+;freemem:
+;  DW ENDMEM-FREEMEM-2
+;  __ENTRY  '=:',_ENTRY
+;  DB 0
+;EndMem:
+;
+;lastw = ppppp
+;
+;MyCseg  ends
+;        end  Start
+;
 ;-----------------------------------------------
 ;  TEST
 ;
@@ -796,11 +819,15 @@ dfnd:
   __XT  _I,@_IJ
         DW 0
 
+  __COL _DEBUG
+        DW _CR,_I,_HEXP,_ASTR,_STYPE,_BRK,_EXIT
+
+
   __COL _TWICE
         DW _I,_PUSH,_EXIT
 
   __COL _HEXP
-        DW _XSPC,_LIT,256,_DIV,_TWICE
+        DW _BRK,_XSPC,_LIT,256,_DIV,_TWICE
         DW _1H,_DIV,_TWICE,_DIGP,_EXIT
 
   __COL _ALPHA  ; : ALPHA  LF OVER U< 7 AND + '0 + ;
@@ -813,7 +840,7 @@ dfnd:
         DW _DUP,_ZEQ,_ZEX,_DROP,_RLDP,_DROPX
 
   __COL _HP
-        DW _XSPC,_SGN?,_SKIP
+        DW _BRK,_XSPC,_SGN?,_SKIP
   __COL _HP2
         DW _LF,_DIV,_ZSKIP,_HP2,_SKIP
   __COL _DIGP
@@ -823,9 +850,9 @@ dfnd:
   __COL _LOCATE
         DW _TOKEN?,_FIND,_1,_AND,_BRK,_Z??,_EXIT
 
-  __COL2 _SPACE
-  __RVAR  _XSPC
-  __RVAR2 _XEMIT
+;  __RVAR2 _XEMIT
+  __RVAR2 _XSPC
+  __COL   _SPACE
        DW _BL,_EMIT,_EXIT
 
 
@@ -915,9 +942,6 @@ dfnd:
 ;  INC   W
 ;  JMPS  @PUSHW
 
-
-;-----------------------------------------------
-
 freemem:
   DW ENDMEM-FREEMEM-2
   __ENTRY  '=:',_ENTRY
@@ -937,9 +961,11 @@ freemem:
   __ENTRY  '.',_HP
   __ENTRY  'SGN?',_SGN?
   __ENTRY  'HERE',_HERE
+  __ENTRY  'OK.',_OK
   __ENTRY  '''',_LOCATE
   __ENTRY  'ALPHA',_ALPHA
   DB 0
+
 EndMem:
 
 lastw = ppppp
@@ -949,9 +975,13 @@ MyCseg  ends
 
 ;____________________________________________
 
+
+;-----------------------------------------------
+
 NF7      OUT     1725   1-30-15   5:38p
 NF7      SN      4968   4-14-15   3:48p
 NF7      SN1     4968   4-14-15   5:01p
 NF7      SN2     5579   4-15-15  12:55p
 NF7      SRT     1683  12-11-14  10:55p
+
 
