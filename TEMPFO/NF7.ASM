@@ -63,10 +63,10 @@ _OPERATION DW @_WARY
   __DEFERO _EMIT,_@EMIT
   __DEFER  _SOURCE,_ETIB
   __DEFER  _ACCEPT,_ACC
-;  __DEFER  _OK,0
-;  __DEFER  _ERROR,0
-  __DEFER  _OK,_@OK
-  __DEFER  _ERROR,_@ERROR
+  __DEFER  _OK,0
+  __DEFER  _ERROR,0
+;  __DEFER  _OK,_@OK
+;  __DEFER  _ERROR,_@ERROR
 
   __CONST  _TBL,80H
   __CONST  _TIB,@TIB
@@ -107,15 +107,12 @@ SELF0:
 @DoEval DW _TOKEN
         ;DW _DEBUG
         ;__NAM "AFTER TOKEN"
-        DW _LDB,_BRK,_ZEX
-        DW _CR,_SPACE,_TBUF,_STYPE
-        DW _BRK
+        DW _LDB,_ZEX
+        ;DW _CR,_SPACE,_TBUF,_STYPE
+        ;DW _BRK
 
         DW _tbuf,_FIND
         DW _OPERATION,_PERFORM,_JUMP,@DoEval
-
-  __COL _WAIT
-        DW _SPACE,_LIT,5CH,_LIT,30,_ACCEPT,_DROP,_DROP,_EXIT
 
 ;------------------------------------
 ; LOGICAL      COMMANDS  XOR AND
@@ -331,7 +328,9 @@ _@_INI:
   __COL3 _ENTRYC                        ; =,    CODE,
   __COL3 _ENTRYH                        ; =H    HEADER
   __COL3 _ENTRY                         ; =:    ALIAS
-        DW _XCOMMA,_HERE,_TOKEN?,_CSTR,_ADD,_ST,_TBUF,_DLDB,_3P
+        DW _XCOMMA,_HERE,_TOKEN?,_CSTR
+        ;DW _BRK
+        DW _ADD,_ST,_TBUF,_DLDB,_3P
         DW _SKIP
   __COL   _DPUSH                        ; >DICT
         DW  _DICT,_MPUSH,To_+_DICT,_EXIT
@@ -352,7 +351,7 @@ _@_INI:
         ;DW _DEBUG
         ;__NAM "PARSE2"
         DW to_+_LTIB
-        DW _BRK
+        ;DW _BRK
         DW _EXIT
 
   __RVAR _XSETSTR                       ; ;S!
@@ -493,7 +492,7 @@ _@_INI:
   JMPS  @PUSH_sC+1
 
   __XT  _num,@_PARAM2           ;= (ATOI
-  INT 3
+  ;INT 3
   to_r  ax
   MOV   AL,10   ; BASE 10
   CALL  @NUM
@@ -790,19 +789,19 @@ dfnd:
   wiP2
   JMP   [W-2]
 
-;
 
-;freemem:
-;  DW ENDMEM-FREEMEM-2
-;  __ENTRY  '=:',_ENTRY
-;  DB 0
-;EndMem:
-;
-;lastw = ppppp
-;
-;MyCseg  ends
-;        end  Start
-;
+
+freemem:
+  DW ENDMEM-FREEMEM-2
+  __ENTRY  '=:',_ENTRY
+  DB 0
+EndMem:
+
+lastw = ppppp
+
+MyCseg  ends
+        end  Start
+
 ;-----------------------------------------------
 ;  TEST
 ;
@@ -834,7 +833,7 @@ dfnd:
 ;       JMP  @PUSHW2
 
   __XT  _BRK,@_CALL
-  INT 3
+  ;INT 3
   RET
 
   __XT  _I,@_IJ
@@ -937,6 +936,9 @@ dfnd:
   __XT  _SP,@_DUP
   MOV   TOP,DSP
   RET
+
+  __COL _WAIT
+        DW _SPACE,_LIT,5CH,_LIT,30,_ACCEPT,_DROP,_DROP,_EXIT
 
 ;  w2
 ;@nupw:
