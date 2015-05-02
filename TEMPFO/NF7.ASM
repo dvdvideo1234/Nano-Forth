@@ -363,7 +363,7 @@ _@_INI:
         DW _DLDB        ; DUP C@
         DW _ZEQ         ; LOGICAL INVERT -> #0 IS OK
         DW _ABORT?      ; ZERO ? 0 / FALSE IS OK
-     __NAM " ? "
+     __NAM "?"
         DW _EXIT
 
 @_state:
@@ -674,6 +674,10 @@ dfnd:
   r_to  W
   JMPS  @MAIN
 
+  __PRIM _DUP_IF
+  OR    TOP,TOP
+  SKIPR CX
+
   __XT  _IF,@_DROP       ; (IF
   JE    @JUMP
 
@@ -693,7 +697,8 @@ dfnd:
   JMPS  @MAIN
 
 @_POINT:
-  MOV   W,[W+2]
+  W2
+  MOV   W,[W]
   JMPS  @NEST
 
   __XT  _ZEX,@_DROP       ; 0;
@@ -790,29 +795,25 @@ dfnd:
   JMP   [W-2]
 
 
-
-freemem:
-  DW ENDMEM-FREEMEM-2
-  __ENTRY  '=:',_ENTRY
-  DB 0
-EndMem:
-
-lastw = ppppp
-
-MyCseg  ends
-        end  Start
-
+;
+;freemem:
+;  DW ENDMEM-FREEMEM-2
+;  __ENTRY  '=:',_ENTRY
+;  DB 0
+;EndMem:
+;
+;lastw = ppppp
+;
+;MyCseg  ends
+;        end  Start
+;
 ;-----------------------------------------------
 ;  TEST
 ;
 
-   __RVAR _XDROP
-        DW _DROPX
-
-  __CONST _LF,10
-  __CONST _1H,16
-  __CONST _1,1
-  __CONST _LT0,'0'
+;     : C,  ;HERE C!+ ;
+  __COL BCOMMA
+        DW _HEREX,_STBP,_EXIT
 
 @ABS:
   OR    TOP,TOP
@@ -822,6 +823,14 @@ MyCseg  ends
 @NOT:
   NOT   TOP
   JMPS  @MAIN
+
+   __RVAR _XDROP
+        DW _DROPX
+
+  __CONST _LF,10
+  __CONST _1H,16
+  __CONST _1,1
+  __CONST _LT0,'0'
 
   __XT  _ABS,@ABS
   __XT  _NEG,@NEG

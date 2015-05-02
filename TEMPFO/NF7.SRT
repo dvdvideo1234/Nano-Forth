@@ -1,101 +1,131 @@
 
-$10C =: EMIT    $1BE =: :       $223 =: ;HERE   $408 =: C!+     $1C4 =: ;`
-: C,  ;HERE C!+ ;       $439 =: !       $209 =: ,       $13A =: HERE
-HERE $C90B , $9E79 ,  HERE $49 C,  HERE $D1F7 , $99EB ,  =, NOT  =, NEG  =, ABS
+$2C2 =: ;HERE   $272 =:  ;`     $26C =:  :      $1A6 =: C!+     $13A =:  HERE
+: C, ;HERE C!+ ;  $2D8 =: =,    $222 =:  +      $21D =:  -      $20C =:  @
+HERE $DB0B , $EE79 ,  HERE $4B C,  HERE $D3F7 , $E9EB ,  =, NOT  =, NEG  =, ABS
+$44F =, DROP;   $300 =: WORD    $4E5 =: #DOES   $205 =: C@      $1E4 =: DUP
+$211 =: ,<`     $4E3 =: >,      $434 =, ;DROP >, DROP; ,<
+HERE $E8 C, #DOES HERE 2 + - , >, C@ WORD DROP; ,<  DUP =, \ 0 C,  =, { '} C,
+\ : ALLOT ;HERE + ;       \ NOW WE HAVE COMMENTS
+$1D3 =: (ASTR      \ _ASTR  - PRIMITIVE
+$282 =:  LOOPS     \ _LOOPS
+$10C =:  EMIT      \ _EMIT
+$1FD =:  CSTR      \ _CSTR
+$4CE               \ @NEST3
+DUP  =, (."        \ COMPILETIME STRING LITERAL EMITER
+DUP  =, ".         \ RUNTIME STRING LITERAL EMITER FUNCTION
+=, TYPE  >, (ASTR CSTR ;DROP LOOPS CSTR EMIT ;
+$2CC =: ("ABORT?   \ _ABORT?  IF 0 <>  -> ERROR TYPE STRING AFTER
+: (" (ASTR ;       \ STRING LITERAL
 
-: CR 13 EMIT  10 EMIT ;
-$130 =: bl      HERE    : OK bl EMIT 'O EMIT 'k EMIT CR ;       $11A !
-
-$140 =: ETIB
-$194 =: EVAL
-$377 =: (FND
-$42B =: PUSH
-$263 =: PARSE
-$4C6 =: @EXEC
-$1F3 =: ABORT
-$1CA =: #,`
-$1D0 =: J
-$23B =: =H
-$1E8 =: DUP
-$1FB =: DROP
-$4C2 =: EXEC
-$1F5 =: EXIT
-$4BE =: EXECUTE
-$449 =: (FOR
-$452 =: (IF
-$1EF =: (JUMP
-$1EB =: (NEXT
-$1FF =: NIP;
-$118 =: vOK
-$11C =: vERROR
-$261 =: WORD
-$1B0 =: FIND
-$25D =: TOKEN?
-$27F =: #??
-$1F1 =: SKIP
-$4CA =: ,<`
-$493 =: >,
-$1D4 =: LOOPS
-$1F7 =: EX
-
-$201 =: LIT
-$12C =: 0
-
-$253 =: >DICT
-$416 =: (STR
-$351 =: CSTR
-$152 =: CNTC
-$207 =: ;,
-$3F6 =: STR
-$495 =: #DOES
-$14C =: DICT
-$48F =: @
-$48A =: C@
-$4DE =: +
-$4D8 =: -
-$4D2 =: XOR
-$4CC =: AND
-
-$239 =: =,
-
-HERE  $484 =, DROP;  $424 =, ;DROP ,
-$1C4 @ =, :` >, SKIP : ,<
-: W, STR , ;
-: (." (STR
-: ". CSTR
-: TYPE ;DROP LOOPS CSTR EMIT ;
-: (" (STR ;
-$1E7 =, CELL+
-: ', ;,
+$1F1 =:   STR      \ _WSTR
+: W, STR , ;       \ READ , COMPILE WORD & POSITION TO NEXT
+$1A0 =:  3+        \ _3P
+$29A =:  SKIP      \ _SKIP
+$213 =:  AND       \ _AND
+$31E =: #??        \ _Z??
+$25E =:  FIND      \ _FIND
+$2FC =:  TOKEN?    \ _TOKEN?
 : ' TOKEN? FIND 1 AND #?? ;
-: LIKE ' @ ;
-: META '
-: IS ' CELL+ ! ;
-: CR (." ,< 2 C, 13 C, 10 C, >, 0 ,< ' CNTC CELL+ , >, ;
-0 =, BYE
-$405 =, POP
+: LIKE ' @ ;    : ', ' , ;
+
+\ $440 =, @_VAR         \ @_VAR
+$130 =:  bl             \ RETURNS ASCII CODE OF SPACE CHARACTER
+LIKE : =, CREATE  $440 ,  0 ,           \ ONLY ADDRESS NOTHING MORE
+LIKE : =, CONST   LIKE bl ,  >, , ,<    \ COMPILES VALUE BY ","
+LIKE ;` =, :` ', SKIP ', :              \ COMPILER VERSION OF ":"
+' \ =: \`       \ COMPILING VERSION
+' { =: {`       \ COMPILING VERSION
+LIKE 3+ =, CELL+  ' 3+   3+ W, C@ C,    \ CELL+ :=: 2 +
+
+$118 =: vOK.       \ _OK     - DEFER RESPONCE
+$152 =:  CNTC      \ _CNTC   - COUNT OF EMITTED CHARS ON OUTPUT STREEM
+$12C =:  0         \ _0
+: META '        : IS ' CELL+ ! ;
+: CR (." ,< 2 C, 13 C, 10 C, >, 0 ,< ' CNTC CELL+ , >, ;        META  CR vOK.
+
+
+$433 =, ;SPC    \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
+: SPACE bl EMIT ;  \ EMIT BLANK SPACE
+: ID. ;SPC ". ;
+
+$11C =: vERR       \ _ERROR  - DEFER ERROR
+$128 =:  TBUF      \ _TBUF
+$29C =:  ABORT     \ _ABORT
+: (ERR          \ SHOW ERROR ROUTINE
+      CR  TBUF ID.  STATE ".  CR ABORT ,<   \ DOES NOT RETURN
+META (ERR vERR
+
+$320 =:  ??        \ _??
+$244 =:  (EMIT     \ EMIT BY DOS FN $02
+$24E =:   aINIT    \ _@_INI
+$22F =: (ACC       \ _ACC    ACCEPT LINE FROM INPUT STREEM DOS FN $A
+$114 =:  ACCEPT    \ _ACCEPT  DEFER (_ACC)
+$278 =:     #,     \ _CLIT   - COMPILE NUMBER INLINE
+$2A8 =:  ,         \ _COMMA  - MAIN COMPILING ROUTINE
+$333 =: (COMMAER   \ _COMMAER
+$2B0 =:  NUM,      \ _COMP_NUM  - PARSE & COMPILE STRINGS
+$14C =:  DICT      \ _DICT   - DICTIONARY POINTER
+$202 =:  .C@       \ _DLDB   - DUP & C@
+$2F2 =: >DICT      \ _DPUSH  - ADR CNT ADR2
+$1E0 =:  DROP      \ _DROP
+$47C =:    (#IF    \ _DUP_IF - NON DROPPING IF
+$2DA =:  =H        \ _ENTRYH - :=: HERE =:
+$140 =:  ETIB      \ _ETIB   - END OF TIB BUFFER
+$184 =:  EVAL      \ _EVAL   - EVALUATES MEMORY BUFFER -> ADR CNT
+$2A0 =:  EX        \ _EX     - CALL CALLER
+$4D5 =:  EXEC      \ _EXEC
+$4D1 =:  EXECUTE   \ _EXECUTE
+$29E =:  EXIT      \ _EXIT
+$3EE =: (FND       \ _FND   - PRIMITIVE
+$473 =: (FOR       \ _FOR   - PRIMITIVE
+$481 =: (IF        \ _IF    - PRIMITIVE
+$134 =: pINIT      \ _INIT
+$27E =:  J         \ _J
+$298 =: (JUMP      \ _JUMP  - PRIMITIVE
+$1B2 =:  @+        \ _LDP
+$1F7 =:  LIT       \ _LIT
+$146 =:  LTIB      \ _LTIB
+$3D0 =: (MPUSH     \ _MPUSH - PRIMITIVE
+$3DD =: (MSTR      \ _MSTR  - PRIMITIVE
+$294 =: (NEXT      \ _NEXT  - PRIMITIVE
+$2A4 =:  NIP;      \ _NIPX
+$3C5 =: (NUM       \ _NUM   - PRIMITIVE
+$2B8 =:  NUMBER    \ _NUMBER
+$102 =:  OP[]      \ _OPERATION
+$1E2 =:  OVER      \ _OVER
+$3A1 =: (PARS      \ _PARS
+$302 =:  PARSE     \ _PARSE
+$4D9 =:  @EXEC     \ _PERFORM
+$2A2 =:  POP       \ _POP
+$4B7 =:  PUSH      \ _PUSH
+$296 =:  RDROP     \ _RDROP
+$1CD =: @R+        \ _RLDP
+$1C6 =:  C!R+      \ _RSTBP
+$110 =:  SOURCE    \ _SOURCE
+$455 =:  !         \ _ST
+$158 =:  STATE     \ _STAT
+$1AC =:  !+        \ _STP
+$1EC =:  SWAP      \ _SWAP
+$120 =:  TBL       \ _TBL
+$124 =:  TIB       \ _TIB
+$2FE =:  TOKEN     \ _TOKEN
+$1DB =:  XCHG      \ _XCHG
+$2A6 =:  ;,        \ _XCOMMA
+$218 =:  XOR       \ _XOR
+$314 =:  XSETSTR   \ _XSETSTR
+$31C =:   TOK?     \ _XTOK?
+$227 =: 0=         \ _ZEQ
+$497 =: 0;         \ _ZEX
+
+;--------------------------------------------------
 
 : LATEST DICT CSTR + @ ;
 : ;code POP LATEST ! ;
-: RECURCE` LATEST , ;
+: RECURCE` LATEST , ;   \ REFERENCE TO SELF IN SAME WORD
 HERE $E8 C, #DOES HERE CELL+ - , >, C@ C, ;
-DUP  =, #CAL, $E8 ,  =, #JMP, $E9 ,
-: DOES>` LIT ;code ,
-: DOES, #DOES
-: CALL, #CAL,
-: R, HERE CELL+ - , ;
-LIKE : =, CREATE  $3EE ,  0 ,           LIKE : =, CONST   $3EC , >, , ,<
-
-$3B1 =, @R+  #JMP, $423 R,
-: COMPILE @R+ , ;
-$1E6 =, 3+
-
-: ;SPC EX  : SPACE BL EMIT ;
-: @ERR  CR TBUF ". SPACE  STATE ". CR ABORT ,<
-' @ERR  IS vERROR
-
-HERE DOES, >, C@ WORD DROP; ,<
-DUP  =, \  0 C,   =, { '} C,  \ COMMENTS & {}
+DUP =, #CAL, $E8 ,   DUP =, #JMP, $E9 ,   =, RET, $C3 ,
+: DOES, #DOES   : CALL, #CAL,   : R, HERE CELL+ - , ;
+LIKE ;` =, DOES>` >, ;code DOES, ,<   \ WE HAVE DOES !
 
 \ CONSTANTS   VARIABLES VALUES  & DEFERS
 16 CONST 1H        10 CONST lf       '0 CONST '0'     3 CONST 3
@@ -104,91 +134,32 @@ DUP  =, \  0 C,   =, { '} C,  \ COMMENTS & {}
 : 2* DUP + ;
 : B>W &BYTE AND ;
 : >IP+ NOT 3  AND 2* POP + PUSH ;
-: (,) CREATE , DOES>
-: @, @ , ;         \ commaers  & --V MAKERS
+: (,) CREATE , DOES>    : @, @ , ;      \ commaers  & --V MAKERS
 : (:) CREATE DUP C, >IP+ , , , ',  DOES> CSTR =H >IP+ W, W, W, @EXEC ;
 
-$4AF { DEFER}   1 (:) DEFER
-$43B { SETVAR}  $3EB { CONS2}   2 (:) VALUE ,
-$43B { SETVAR}  $4AE { DEFER2}  2 (:) VECTOR ,
-$46C { SETPNT}  $462 { POINT}   2 (:) POINT
-$3EE { VAR}     $437 { SETVAR2} $3EA { CONS3}  3 (:) QUAN ,
+\ $440 =, @_VAR         \ @_VAR
+\ $4C2 =, @_DEFER    \ @_DEFER
+\ $457 =, @_SETVAR   \ @_SETVAR
+\ $453 =, @_SETVAR2  \ @_SETVAR2
+\ $43D =, @_CONS2    \ @_CONS2
+\ $43C =, @_CONS3    \ @_CONS3
+\ $49C =, @_SETPNT   \ @_SETPNT
+\ $492 =, @_POINT    \ @_POINT
+\ $4C1 =, @_DEFER2   \ @_DEFER2
+\ $4C0 =, @_DEFER3   \ @_DEFER3
+$4C2 { DEFER}   1 (:) DEFER
+$457 { SETVAR}  $43D { CONS2}   2 (:) VALUE ,
+$457 { SETVAR}  $4C1 { DEFER2}  2 (:) VECTOR ,
+$49C { SETPNT}  $492 { POINT}   2 (:) POINT  ,
+$440 { VAR}     $453 { SETVAR2} $43C { CONS3}  3 (:) QUAN ,
 
 
-$40F =: !+         \ _STP
-$487 =: .C@        \ _DLDB
-$355 =: (MPUSH      \ _MPUSH
-$275 =: ;S!        \ _XSETSTR
-$364 =: (S!   { _MSTR}
-
-$296 =: (COMMAER    \ _COMMAER
-$211 =: (CNUM       \ _COMP_NUM
-$158 =: STATE      \ _STAT
-
-$184 =: _@_INI      \ _@_INI
-$134 =: vINIT       \ _INIT
-$102 =: aOPER       \ _OPERATION
-
-$328 =: (NUM        \ _NUM
-$219 =: NUMBER     \ _NUMBER
-$306 =: (PARS       \ _PARS
-$110 =: SOURCE     \ _SOURCE
-$120 =: TBL        \ _TBL
-$128 =: ^BUF       \ _TBUF
-$124 =: TIB        \ _TIB
-$146 =: LTIB       \ _LTIB
-$25F =: TOKEN      \ _TOKEN
-
-$345 =: @EMIT      \ _@EMIT
-$333 =: ACC        \ _ACC
-$114 =: ACCEPT     \ _ACCEPT
-
-$27D =: ;TOK?      \ _XTOK?
-$281 =: ??         \ _??
-$22D =: (A"         \ _ABORT?
-
-$467 =: 0;         \ _ZEX
-$3FA =: SWAP       \ _SWAP
-$1ED =: RDROP      \ _RDROP
-$1F9 =: XCHG       \ _XCHG
-
-$1FD =: 0=         \ _ZEQ
-$4EE =: U<         \ _ULESS
-$3E0 =: (U*        \ _MUL
-$3D4 =: (UM/MOD    \ _DIV
-$3D1 =: U/MOD      \ _DIVINI
 
 \ searching
-LIKE ' DUP      =, 'TO  2 C,   =, 'AT  4 C, \ ADDRESS OF XT+2 / XT+4
-HERE DOES, >, (' EXEC ; DUP =, TO  2 C,     =,  AT  4 C, \ EXECUTES XT+2 / XT+4
-HERE DOES, >, (' , ;    DUP =, ',  0 C, DUP =, TO`  2 C, =, AT` 4 C, \ COMPILES
-
-\ STRING COMPILING
-: (",)  '"  WORD                        \ PARSE & COMPILE STR
-: CSTR, CSTR                            \ COUNTED STRING COMPILE
-: STR, ;HERE (S! DROP; ,<               \ ADR COUNT STRING COMPILE
-: (" (STR ;
-: (=)  =H COMPILE ,< LIKE ;` , >, , , ; \ DOERS
-' (",) ' ("   (=) "`    \ STRING LITERALS  COMPILER
-' (",) ' (A"  (=) A"`   \ STRING ERROR MESSAGES  COMPILER
-' (",) ' (."  (=) ."`   \ STRING LITERALS OUTPUT COMPILER
-\ : CR (."  ,<  2 C, 13 C, 10 C,  >,   0 TO CNTC ;
-: @OK ."  Ok" CR ." > " ;  ' @OK IS vOK
-
-\ MEMORY
-\ STACK
-\ MATH & LOGIC        + - AND XOR NEG NOT ABS
-\ ERROR CHECKING
-\ IO
-\ PARSER
-\ NUMOUT
-LIKE J  =, I 0 ,        : TWICE I PUSH ;
-
-: ALPHA  DUP LF U< 0= 7 AND + '0' + ;
-: H. ;SPC 1B  U/MOD TWICE  1H U/MOD  TWICE : DIG. ALPHA EMIT ;
-: SGN? DUP 0< 0; '- EMIT ABS ;
-: 0?SKIP DUP 0= 0; DROP @R+ DROP; ,<
-: . SGN?  : U. ;SPC LF U/MOD 0?SKIP RECURCE DIG. ;
+HERE DOES, >, : (' C@ ' + ;
+ DUP =, 'TO  2 C,   =, 'AT  4 C, \ ADDRESS OF XT+2 / XT+4
+HERE DOES, >, (' EXEC ; DUP =, TO   2 C,  =, AT  4 C, \ EXECUTES XT+2 / XT+4
+HERE DOES, >, (' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
 
 \ CONTINUE EXTENDING COMPILER
 : DXEP DUP : XEP XCHG EXECUTE POP ;     : (CALL @R+ PUSH ;
@@ -202,262 +173,113 @@ LIKE J  =, I 0 ,        : TWICE I PUSH ;
 ' MARK>       ' (IF (=) IF`             ' MARK>     ' (JUMP (=) AHEAD`
 ' MARK>     ' (CALL (=) CALL`           ' <RELEASE  ' (JUMP (=) AGAIN`
 ' <RELEASE    ' (IF (=) UNTIL`          , RELEASE>  ' EXIT  (=) ;THEN`
+' MARK>      ' (#IF (=) #IF`
 
-$440 =, @1          \ @1
-$434 =, @1M         \ @1M
-$431 =, @1P         \ @1P
-$433 =, @2M         \ @2M
-$430 =, @2P         \ @2P
-$42F =, @3P         \ @3P
-$165 =, @ABORT      \ @ABORT
-$508 =, @ABS        \ @ABS
-$4E3 =, @ADD        \ @ADD
-$3F1 =, @ADR        \ @ADR
-$40C =, @ADR1P      \ @ADR1P
-$413 =, @ADR2       \ @ADR2
-$4EA =, @CF         \ @CF
-$3D9 =, @DM         \ @DM
-$499 =, @DOES       \ @DOES
-$498 =, @DOES2      \ @DOES2
-$497 =, @DOES3      \ @DOES3
-$19E =, @DOEVAL     \ @DOEVAL
-$34A =, @DOS_DX     \ @DOS_DX
-$43D =, @DROP       \ @DROP
-$49E =, @EX         \ @EX
-$4B1 =, @EXEC       \ @EXEC
-$45E =, @JUMP       \ @JUMP
-$4A0 =, @LBL        \ @LBL
-$4A2 =, @MAIN       \ @MAIN
-$176 =, @MAINLP     \ @MAINLP
-$50C =, @NEG        \ @NEG
-$49F =, @NEST       \ @NEST
-$4BC =, @NEST2      \ @NEST2
-$4BB =, @NEST3      \ @NEST3
-$4BA =, @NEST4      \ @NEST4
-$4B9 =, @NEST5      \ @NEST5
-$459 =, @NEXT       \ @NEXT
-$428 =, @NIP        \ @NIP
-$427 =, @NIPX       \ @NIPX
-$50D =, @NOT        \ @NOT
-$2AC =, @NUM        \ @NUM
-$3FC =, @NUPW       \ @NUPW
-$3E7 =, @OVER       \ @OVER
-$424 =, @PUSHW      \ @PUSHW
-$423 =, @PUSHW2     \ @PUSHW2
-$422 =, @PUSHW3     \ @PUSHW3
-$372 =, @PUSH_DC    \ @PUSH_DC
-$37C =, @PUSH_SC    \ @PUSH_SC
-$44F =, @RDROP      \ @RDROP
-$4A1 =, @RETURN     \ @RETURN
-$4F4 =, @SGN        \ @SGN
-$456 =, @SKIP       \ @SKIP
-$41E =, @XCHG       \ @XCHG
-$4E7 =, @ZEQ        \ @ZEQ
-$4E3 =, @_BARY      \ @_BARY
-$445 =, @_CALL      \ @_CALL
-$2A0 =, @_COMMA     \ @_COMMA
-$3EC =, @_CONS      \ @_CONS
-$3EB =, @_CONS2     \ @_CONS2
-$3EA =, @_CONS3     \ @_CONS3
-$4AF =, @_DEFER     \ @_DEFER
-$4AE =, @_DEFER2    \ @_DEFER2
-$4AD =, @_DEFER3    \ @_DEFER3
-$4A8 =, @_DEFERO    \ @_DEFERO
-$3C2 =, @_DROP      \ @_DROP
-$442 =, @_DUP       \ @_DUP
-$3BB =, @_D_DROP    \ @_D_DROP
-$3BF =, @_FOR       \ @_FOR
-$3CB =, @_IJ        \ @_IJ
-$3B5 =, @_LD@       \ @_LD@
-$2A5 =, @_MAKER     \ @_MAKER
-$470 =, @_PARAM1    \ @_PARAM1
-$473 =, @_PARAM2    \ @_PARAM2
-$476 =, @_PARAM3    \ @_PARAM3
-$462 =, @_POINT     \ @_POINT
-$3C1 =, @_PUSH      \ @_PUSH
-$3B0 =, @_RDLD      \ @_RDLD
-$46C =, @_SETPNT    \ @_SETPNT
-$43B =, @_SETVAR    \ @_SETVAR
-$437 =, @_SETVAR2   \ @_SETVAR2
-$28F =, @_STATE     \ @_STATE
+\ STRING COMPILING
+: (",)  '"  WORD                        \ PARSE & COMPILE STR
+: CSTR, CSTR                            \ COUNTED STRING COMPILE
+: STR, ;HERE (S! DROP; ,<               \ ADR COUNT STRING COMPILE
+: `,, , , ;
+LIKE ;` DUP =, (=) ,  ', `,,            \ DOERS
+' (",) ' ("   (=) "`    \ STRING LITERALS  COMPILER
+' (",) ' (A"  (=) A"`   \ STRING ERROR MESSAGES  COMPILER
+' (",) ' (."  (=) ."`   \ STRING LITERALS OUTPUT COMPILER
+: @OK ."  Ok" CR ." > " ;
+META  @OK vOK
 
-$3EE =, @_VAR       \ @_VAR
-$403 =, @_VAR2      \ @_VAR2
-$402 =, @_VAR3      \ @_VAR3
-$4E1 =, @_WARY      \ @_WARY
+LIKE J  =, I 0 ,        : TWICE I PUSH ;
+$4B1 =, 2DROP;    \ @2DROPX
+
+: ALPHA  CALL '0' + ;THEN 9 OVER U< 0; 7 + ;
+: 0?SKIP #IF ;THEN @R+ 2DROP; ,<
+: H. ;SPC 1B  U/MOD TWICE  1H U/MOD  TWICE : DIG. ALPHA EMIT ;
+: SGN? DUP 0< 0; '- EMIT ABS ;
+: . SGN?  : U. ;SPC : `U. LF U/MOD 0?SKIP RECURCE DIG. ;
+
 ;-------------------------------------
+$471 =, @1         \ @1
+$1A3 =, @2P        \ @2P
+$369 =, @@END?     \ @@END?
+$36D =, @@ERNUM    \ @@ERNUM
+$389 =, @@ESCAPE   \ @@ESCAPE
+$36E =, @@EXNUM    \ @@EXNUM
+$391 =, @@GETC     \ @@GETC
+$288 =, @@LP1      \ @@LP1
+$290 =, @@LP2      \ @@LP2
+$354 =, @@N1       \ @@N1
+$35C =, @@N2       \ @@N2
+$370 =, @@N3       \ @@N3
+$379 =, @@N4       \ @@N4
+$361 =, @@NUMINI   \ @@NUMINI
+$34F =, @@NUMZ     \ @@NUMZ
+$364 =, @@SETBAS   \ @@SETBAS
+$394 =, @@SGN      \ @@SGN
+$3B4 =, @@SKIPX    \ @@SKIPX
+$383 =, @@TON2     \ @@TON2
+$3BC =, @@WEX      \ @@WEX
+$165 =, @ABORT     \ @ABORT
+$443 =, @ADR       \ @ADR
+$22C =, @CF        \ @CF
+$4E9 =, @DOES      \ @DOES
+$4E8 =, @DOES2     \ @DOES2
+$4E7 =, @DOES3     \ @DOES3
+$18E =, @DOEVAL    \ @DOEVAL
+$249 =, @DOS_DX    \ @DOS_DX
+$459 =, @DROP      \ @DROP
+$4EE =, @EX        \ @EX
+$4C4 =, @EXEC      \ @EXEC
+$48E =, @JUMP      \ @JUMP
+$4F0 =, @LBL       \ @LBL
+$207 =, @LDB       \ @LDB
+$1B4 =, @LDP       \ @LDP
+$4F2 =, @MAIN      \ @MAIN
+$176 =, @MAINLP    \ @MAINLP
+$4EF =, @NEST      \ @NEST
+$4CF =, @NEST2     \ @NEST2
+$4CE =, @NEST3     \ @NEST3
+$4CD =, @NEST4     \ @NEST4
+$4CC =, @NEST5     \ @NEST5
+$489 =, @NEXT      \ @NEXT
+$465 =, @NIP       \ @NIP
+$461 =, @NIPX      \ @NIPX
+$349 =, @NUM       \ @NUM
+$44B =, @OVER      \ @OVER
+$44C =, @POP       \ @POP
+$434 =, @PUSHW     \ @PUSHW
+$433 =, @PUSHW2    \ @PUSHW2
+$432 =, @PUSHW3    \ @PUSHW3
+$3E9 =, @PUSH_DC   \ @PUSH_DC
+$3F3 =, @PUSH_SC   \ @PUSH_SC
+$479 =, @RDROP     \ @RDROP
+$4F1 =, @RETURN    \ @RETURN
+$1BE =, @SETDROP   \ @SETDROP
+$485 =, @SKIP      \ @SKIP
+$1C0 =, @TOPDROP   \ @TOPDROP
+$1E6 =, @TOPDUP    \ @TOPDUP
+$46B =, @_1P_DUP   \ @_1P_DUP
+$46A =, @_2P_DUP   \ @_2P_DUP
+$4DF =, @_BARY     \ @_BARY
+$46F =, @_CALL     \ @_CALL
+$33D =, @_COMMA    \ @_COMMA
+$43E =, @_CONS     \ @_CONS
+$4BB =, @_DEFERO   \ @_DEFERO
+$1BB =, @_DROP     \ @_DROP
+$46C =, @_DUP      \ @_DUP
+$1B8 =, @_FOR      \ @_FOR
+$437 =, @_IJ       \ @_IJ
+$342 =, @_MAKER    \ @_MAKER
+$463 =, @_NIP      \ @_NIP
+$4A0 =, @_PARAM1   \ @_PARAM1
+$4A3 =, @_PARAM2   \ @_PARAM2
+$4A6 =, @_PARAM3   \ @_PARAM3
+$1BA =, @_PUSH     \ @_PUSH
+$427 =, @_RLD@     \ @_RLD@
+$42C =, @_RST@     \ @_RST@
+$452 =, @_SETVAR3  \ @_SETVAR3
+$32C =, @_STATE    \ @_STATE
+$45E =, @_SWAP_NIP \ @_SWAP_NIP
+$449 =, @_VAR2     \ @_VAR2
+$448 =, @_VAR3     \ @_VAR3
+$4DD =, @_WARY     \ @_WARY
 
-$12C =: _0
-$1A0 =: _3P
-$320 =: _??
-$244 =: _@EMIT
-$24E =: _@_INI
-$29C =: _ABORT
-$2CC =: _ABORT?
-$22F =: _ACC
-$114 =: _ACCEPT
-$222 =: _ADD
-$213 =: _AND
-$1D3 =: _ASTR
-$130 =: _BL
-$278 =: _CLIT
-$152 =: _CNTC
-$26C =: _COLON
-$2A8 =: _COMMA
-$335 =: _COMMAER
-$2B0 =: _COMP_NUM
-$1FD =: _CSTR
-$14C =: _DICT
-$202 =: _DLDB
-$4E2 =: _DOES
-$2F2 =: _DPUSH
-$1E0 =: _DROP
-$1E4 =: _DUP
-$10C =: _EMIT
-$2D8 =: =,
-$2DA =: =H
-$11C =: _ERROR
-$140 =: _ETIB
-$184 =: _EVAL
-$2A0 =: _EX
-$4D2 =: _EXEC
-$4CE =: _EXECUTE
-$29E =: _EXIT
-$25E =: _FIND
-$3F0 =: _FND
-$475 =: _FOR
-$13A =: _HERE
-$2C2 =: _HEREX
-$47E =: _IF
-$134 =: _INIT
-$27E =: _J
-$298 =: _JUMP
-$20C =: _LD
-$205 =: _LDB
-$1B2 =: _LDP
-$1F7 =: _LIT
-$282 =: _LOOPS
-$211 =: _LPAR
-$146 =: _LTIB
-$3D2 =: _MPUSH
-$3DF =: _MSTR
-$294 =: _NEXT
-$2A4 =: _NIPX
-$3C7 =: _NUM
-$2B8 =: _NUMBER
-$118 =: _OK
-$102 =: _OPERATION
-$1E2 =: _OVER
-$3A3 =: _PARS
-$302 =: _PARSE
-$4D6 =: _PERFORM
-$2A2 =: _POP
-$4B4 =: _PUSH
-$296 =: _RDROP
-$1CD =: _RLDP
-$4E0 =: _RPAR
-$1C6 =: _RSTBP
-$272 =: _SEMICO
-$29A =: _SKIP
-$110 =: _SOURCE
-$457 =: _ST
-$158 =: _STAT
-$1A6 =: _STBP
-$1AC =: _STP
-$21D =: _SUB
-$1EC =: _SWAP
-$120 =: _TBL
-$128 =: _TBUF
-$124 =: _TIB
-$2FE =: _TOKEN
-$2FC =: _TOKEN?
-$300 =: _WORD
-$1F1 =: _WSTR
-$1DB =: _XCHG
-$2A6 =: _XCOMMA
-$218 =: _XOR
-$314 =: _XSETSTR
-$31C =: _XTOK?
-$31E =: _Z??
-$227 =: _ZEQ
-$494 =: _ZEX
-
-$473 =, @1
-$4AE =, @2DROPX
-$1A3 =, @2P
-$165 =, @ABORT
-$445 =, @ADR
-$22C =, @CF
-$4E6 =, @DOES
-$4E5 =, @DOES2
-$4E4 =, @DOES3
-$18E =, @DOEVAL
-$249 =, @DOS_DX
-$45B =, @DROP
-$451 =, @DROPX
-$4EB =, @EX
-$4C1 =, @EXEC
-$48B =, @JUMP
-$4ED =, @LBL
-$207 =, @LDB
-$1B4 =, @LDP
-$4EF =, @MAIN
-$176 =, @MAINLP
-$4EC =, @NEST
-$4CC =, @NEST2
-$4CB =, @NEST3
-$4CA =, @NEST4
-$4C9 =, @NEST5
-$486 =, @NEXT
-$467 =, @NIP
-$463 =, @NIPX
-$34B =, @NUM
-$44D =, @OVER
-$44E =, @POP
-$436 =, @PUSHW
-$435 =, @PUSHW2
-$434 =, @PUSHW3
-$3EB =, @PUSH_DC
-$3F5 =, @PUSH_SC
-$47B =, @RDROP
-$4EE =, @RETURN
-$1BE =, @SETDROP
-$482 =, @SKIP
-$1C0 =, @TOPDROP
-$1E6 =, @TOPDUP
-$46D =, @_1P_DUP
-$46C =, @_2P_DUP
-$4DC =, @_BARY
-$471 =, @_CALL
-$33F =, @_COMMA
-$440 =, @_CONS
-$43F =, @_CONS2
-$43E =, @_CONS3
-$4BF =, @_DEFER
-$4BE =, @_DEFER2
-$4BD =, @_DEFER3
-$4B8 =, @_DEFERO
-$1BB =, @_DROP
-$46E =, @_DUP
-$1B8 =, @_FOR
-$439 =, @_IJ
-$344 =, @_MAKER
-$465 =, @_NIP
-$49D =, @_PARAM1
-$4A0 =, @_PARAM2
-$4A3 =, @_PARAM3
-$48F =, @_POINT
-$1BA =, @_PUSH
-$429 =, @_RLD@
-$42E =, @_RST@
-$499 =, @_SETPNT
-$459 =, @_SETVAR
-$455 =, @_SETVAR2
-$454 =, @_SETVAR3
-$32E =, @_STATE
-$460 =, @_SWAP_NIP
-$442 =, @_VAR
-$44B =, @_VAR2
-$44A =, @_VAR3
-$4DA =, @_WARY
 

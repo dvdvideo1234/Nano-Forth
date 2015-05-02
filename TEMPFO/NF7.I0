@@ -123,6 +123,11 @@ __colGO  macro  lbl,LBL2
         __LBL  LBL2
         endm
 
+__PRIM   macro  lbl
+        __XALIGN LBL
+        DW  $+2
+        endm
+
 __col5   macro  lbl
         __XALIGN LBL
         DW  @NEST5
