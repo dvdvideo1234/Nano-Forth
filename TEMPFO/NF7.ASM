@@ -18,6 +18,8 @@ toph = Bh
 NR   = DX
 NRL  = DL
 NRH  = DH
+TR   = CX
+
 ;ar   = bx       ; address  register
 ;tr   = dx       ; temp register
 ;trl  = dl
@@ -92,62 +94,35 @@ SELF0:
   MOV   RSP,@R_TOP
   MOV   DSP,@S_TOP
   CALL  @RETURN
-  ; DW    _BRK ; ,_LIT,'?',_EMIT
-  ;DW    _DEBUG
-  ;__NAM "INIT !"
-
-  DW    _INIT,_INIT,_TBL,_cstr
-@MAINLP:
-  DW _EVAL,_OK,_TIB,_TBL,_ACCEPT,_JUMP,@MAINLP
+@MAINLP DW _INIT,_EVAL,_OK,_JUMP,@MAINLP
 
   __COL _EVAL                           ; EVAL
         DW _dup,to_+_LTIB,_add,to_+_ETIB
-        ;,_DEBUG
-        ;__NAM " BEFORE TOKEN"
-@DoEval DW _TOKEN
-        ;DW _DEBUG
-        ;__NAM "AFTER TOKEN"
-        DW _LDB,_ZEX
-        ;DW _CR,_SPACE,_TBUF,_STYPE
-        ;DW _BRK
+@DoEval DW _TOKEN,_DLDB,_IF,@ABORTX
+;        DW _CR,_SPACE,_DUP,_STYPE ;DW _BRK
+        DW _FIND,_OPERATION,_PERFORM,_JUMP,@DoEval
 
-        DW _tbuf,_FIND
-        DW _OPERATION,_PERFORM,_JUMP,@DoEval
+  __COL _ERROR?                         ; (A"
+        DW _ASTR,_SWAP,_IF,@ABORTX
+        DW TO_+_STAT,_ERROR,_0,to_+_LTIB,_ABORT
+        ; ADDRESS OF ERROR MESSAGE IS IN _STAT
+
+   __RVAR _XDROP
+@ABORTX DW _DROPX
+
+  __XT  _DROPX,@DROPX
+
+_@_INI  DW  _HERE,_WSTR,_DPUSH,_TBL,_cstr,TO_+_INIT
+        DW  _TIB,_TBL,_ACCEPT,_EXIT
+
+  __RVAR2  _XDPUSH
+  __COL    _DPUSH                        ; >DICT
+        DW  _DICT,_MPUSH,To_+_DICT,_EXIT
 
 ;------------------------------------
 ; LOGICAL      COMMANDS  XOR AND
 
-  __XT  _3P,@_CALL      ; 3+
-  inc   top
-@2p:
-  inc   top
-  inc   top
-  RET
-
-; __XT  _1P,@_CALL      ; 1+
-; INC   TOP
-; RET
-
-  __XT  _STBP,@_NIP     ; C!+
-  MOV   [TOP],NRL
-  INC   TOP
-  RET
-
-  __XT  _STP,@_NIP      ; !+
-  MOV   [TOP],NR
-  JMPS  @2P
-
-  __XT  _LDP,@_DUP      ; @+
-@LDP:
-  MOV   NR,[Top]
-  JMPS  @2P
-
-@_FOR:
-  NEG   TOP
-@_PUSH:
-  TO_R  TOP
 @_DROP:
-  OR    top,top
   to_r  W
 @SETDROP:
   MOV   W,top
@@ -156,11 +131,6 @@ SELF0:
 NR_NIP:
   D_TO  NR
   RET
-
-  __XT  _RSTBP,@_RST@   ; C!R+
-  MOV   [W],TOPL
-  INC   W
-  JMPS  @TOPDROP
 
   __XT  _RLDP,@_RLD@    ; @R+
   MOV   TOP,[W]
@@ -177,45 +147,15 @@ NR_NIP:
   XCHG  TOP,W
   RET
 
-; __XT  _RST,@_RST
-; MOV   [W],TOP
-; W2
-; JMPS  @TOPDROP
-
-  __XT  _DROP,@DROP     ; DROP
-
-  __XT  _OVER,@OVER     ; OVER
-
   __XT  _DUP,@_CALL     ; dup
 @TOPDUP:
   TO_D  NR
   MOV   NR,TOP
   RET
 
-  __XT  _SWAP,@_CALL    ; SWAP
-  XCHG  TOP,NR
-  RET
-
-  __XT  _Wstr,@_2P_DUP  ; STR
-  MOV   TOP,[TOP-2]
-  RET
-
   __XT  _LIT,@_DUP       ; LIT
   MOV   TOP,[IP]
   wiP2
-  RET
-
-  __XT  _CSTR,@_1P_DUP  ; CSTR
-  DEC   TOP
-  JMPS  @LDB
-
-  __XT  _DLDB,@_DUP     ; DUP C@
-  SKIPA
-
-  __XT  _LDB,@_CALL     ; C@
-@LDB:
-  MOV   TOPL,[TOP]
-  MOV   TOPH,0
   RET
 
   __XT  _LD,@_CALL      ; @
@@ -224,59 +164,35 @@ NR_NIP:
 
   __XT  _LPAR,@_state   ; [`
 
-  __XT  _and,@_NIP      ; and
-  and   TOP,NR
+  __XT  _3P,@3P         ; 3+
+  __XT  _SWAP,@SWAP     ; SWAP
+  __XT  _DROP,@DROP     ; DROP
+  __XT  _OVER,@OVER     ; OVER
+  __XT  _SUB,@SUB
+  __XT  _ADD,@ADD
+; __XT  _and,@AND       ; and
+; __XT  _xor,@XOR       ; xor
+
+  __XT  _Wstr,@_DUP     ; STR
+  MOV   TOP,[TOP]
+  INC   NR
+  INC   NR
   RET
 
-  __XT  _xor,@_NIP      ; xor
-  xor   TOP,NR
+  __XT  _DLDB,@_DUP     ; DUP C@
+  SKIPA
+
+  __XT  _LDB,@_CALL     ; C@
+  JMPS  @LDB
+
+  __XT  _CSTR,@_DUP     ; CSTR
+  INC   NR
+@LDB:
+  MOV   TOPL,[TOP]
+  MOV   TOPH,0
   RET
-
-  __XT   _SUB,@_SWAP_NIP; -
-  SUB   TOP,NR
-  RET
-
-  __XT  _add,@_NIP      ; +
-  ADD   TOP,NR
-  RET
-
-  __XT  _ZEQ,@_CALL     ; 0=
-  SUB   top,1
-@CF:
-  cf_to top
-  RET
-
-  ;--------------------   IO  ---------------
-
-  __XT  _ACC,@_CALL     ; RETURNS 2 PARAM
-  PUSH  BX
-  MOV   BX,DX
-  POP   PW [BX]
-  MOV   DI,0A00H        ; DOS ACCEPT FUNCTION NUMBER
-  CALL  @DOS_DX
-  INC   DX
-  INC   DX
-  MOV   BL,[BX+1]
-  MOV   BH,0
-  RET
-
-  __XT  _@EMIT,@_SWAP_NIP     ; (EMIT
-  MOV   DI,200h  ; dos function number EMIT
-@DOS_DX:
-  RCHG  DI
-  INT   21H
-  RCHG  DI
-  RET
-
-; __COL _ACC
-;       DW _OVER,_ST,_ACCZ,_1P,_CSTR,_EXIT
 
 ;------------------------------------
-
-_@_INI:
-        DW  _HERE,_WSTR,_DPUSH
-        DW  to_+_INIT
-        DW  _LPAR,_0,to_+_LTIB,_EXIT
 
   __col _find                           ; FIND  with status
         DW _stat,_DOES,_SUB,_dict,_FND,_EXIT
@@ -292,11 +208,6 @@ _@_INI:
 
   __XT  _J,@_IJ
         DW 2
-
-  __COL _LOOPS                  ; LOOPS
-        DW _FOR,@@LP2
-@@LP1   DW _J,_EXECUTE,_NEXT,@@LP1
-@@LP2   DW _RDROP,_EXIT
 
   __XT  _NEXT,@NEXT             ; (NEXT
   __XT  _RDROP,@RDROP           ; RDROP
@@ -321,19 +232,11 @@ _@_INI:
   __COL _HEREX                          ; ;HERE
         DW _HERE,_EX,to_+_HERE,_EXIT
 
-  __COL _ABORT?                         ; (A"
-        DW _ASTR,TO_+_STAT,_ZEX,_ERROR,_ABORT
-        ; ADDRESS OF ERROR MESSAGE IS IN _STAT
-
   __COL3 _ENTRYC                        ; =,    CODE,
   __COL3 _ENTRYH                        ; =H    HEADER
   __COL3 _ENTRY                         ; =:    ALIAS
-        DW _XCOMMA,_HERE,_TOKEN?,_CSTR
-        ;DW _BRK
-        DW _ADD,_ST,_TBUF,_DLDB,_3P
-        DW _SKIP
-  __COL   _DPUSH                        ; >DICT
-        DW  _DICT,_MPUSH,To_+_DICT,_EXIT
+        DW _XCOMMA,_HERE,_XDPUSH,_TOKEN?
+        DW _CSTR,_ADD,_ST,_TBUF,_DLDB,_3P,_EXIT
 
   __COL4 _TOKEN?                        ; TOKEN?
   __COL4 _TOKEN                         ; TOKEN
@@ -342,17 +245,7 @@ _@_INI:
         DW _XTOK?       ; IS IT A TOKEN IN THE BUFFER ?
         DW _BL          ; SPACE IS DELIMITER
         DW _XSETSTR     ; SET TEXT TO BUF AFTER PARSING
-
-        DW _SOURCE
-        DW _LTIB
-;,_DEBUG
-        ;__NAM "PARSE1"
-        DW _PARS
-        ;DW _DEBUG
-        ;__NAM "PARSE2"
-        DW to_+_LTIB
-        ;DW _BRK
-        DW _EXIT
+        DW _SOURCE,_LTIB,_PARS,to_+_LTIB,_EXIT  ; PARSE
 
   __RVAR _XSETSTR                       ; ;S!
         dw _TBUF,_MSTR,_nipx
@@ -362,16 +255,13 @@ _@_INI:
   __COL3  _??                           ; ??
         DW _DLDB        ; DUP C@
         DW _ZEQ         ; LOGICAL INVERT -> #0 IS OK
-        DW _ABORT?      ; ZERO ? 0 / FALSE IS OK
+        DW _ERROR?      ; ZERO ? 0 / FALSE IS OK
      __NAM "?"
         DW _EXIT
 
 @_state:
   call  @does3
   dw to_+_stat,_exit
-
-;  __COL _BCOMMA,_BCOMMAL          ; C, >C,
-;        DW _HEREX,_STBP,_EXIT
 
   __LBL _COMMAER
   dw _Wstr,_comma,_perfORM,_exit
@@ -492,7 +382,6 @@ _@_INI:
   JMPS  @PUSH_sC+1
 
   __XT  _num,@_PARAM2           ;= (ATOI
-  ;INT 3
   to_r  ax
   MOV   AL,10   ; BASE 10
   CALL  @NUM
@@ -521,18 +410,33 @@ _@_INI:
   DUP2  DI,CX
   RET
 
+  ;--------------------   IO  ---------------
+
+  __XT  _ACC,@_PARAM2   ; RETURNS 2 PARAM
+  MOV   [SI],CX
+  MOV   DI,0A00H        ; DOS ACCEPT FUNCTION NUMBER
+  CALL  @DOS_DX
+  wiP2
+  MOV   CL,[SI-1]
+  MOV   CH,0
+  JMPS  @PUSH_SC
+
+  __XT  _@EMIT,@_PARAM1   ; (EMIT
+  MOV   DI,200h  ; dos function number EMIT
+@DOS_DX:
+  MOV   DX,SI
+  RCHG  DI
+  INT   21H
+  RCHG  DI
+  RET
+
   ; ------------ SEARCH  --------------
   __XT  _FND,@_PARAM3            ; (FIND
+  ;INT 3
   CALL  FNDZ
 @PUSH_SC:; RETURNS SI CX
   DUP2  SI,CX
   RET
-FNDZ:
-  MOV   BX,SI
-  jcxz  Mfnd
-fnd:
-  xor   cx,cx
-  jMPS  l@Nfnd
 ZFND:           ; SKIP FIRST WORD IN DICTIONARY
   MOV   CL,[DI] ; ON COMPILE ONLY
   INC   DI
@@ -552,8 +456,12 @@ YFND:
 xFND?:
   ret
 
-MFND:       ; COMPILE MODE SEARCH
-  push  di
+FNDZ:
+  xor   cx,cx
+  OR    DX,DX
+  MOV   BX,SI
+  jNZ   l@Nfnd
+  push  di      ; COMPILE MODE SEARCH
   inc   pb [BX]
   call  Zfnd
   dec   pb [BX]
@@ -573,24 +481,49 @@ dfnd:
 ;------------  MAIN LOOP  INNER INTERPRETTER ----
 ;vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-@_RLD@:
-  TDUP
-  MOV   TOPH,0
-@_RST@:
-  R_TO  CX
-  XCHG  CX,W
-  CALL  CX
+  __XT  _ST,@_DROP      ; !
+  JMPS  @_SETVAR
+
+@_2M:
+  DEC   TOP
+@_1M:
+  DEC   TOP
+@_TOP?:
+  TO_R  W
+  OR    TOP,TOP
+  RET
+
+@ROT:
+  D_TO  W
+  JMPS  @_VAR
+
+@over:
+  TO_R  NR
+
+; RETURN STACK COMMANDS  POP PUSH XCHG
+
+@POP:
+  r_to  W
+  skipA
+
+@_VAR3:
+  W2
+@_VAR2:
+  W2
+  JMPS  @_VAR
+
+@SUB:
+  NEG   TOP
+@add:
+  ADD   TOP,NR
+  JMPS  @NIP
+
+@AND:
+  and   TOP,NR
   SKIPA
-
-@PUSHW3:
-  W2
-@PUSHW2:
-  W2
-
-@PUSHW:
-  to_r  W
-  JMPS  @1
-
+@XOR:
+  xor   TOP,NR
+  JMPS  @NIP
 
 @_IJ:
   MOV   W,[W]
@@ -609,21 +542,6 @@ dfnd:
   MOV   top,W
   JMP   @MAIN
 
-@_VAR3:
-  W2
-@_VAR2:
-  W2
-  skipA
-
-@over:
-  TO_R  NR
-
-; RETURN STACK COMMANDS  POP PUSH XCHG
-
-@POP:
-  r_to  W
-  JMPS  @_VAR
-
 @DROPX:
   POP   IP
   JMPS  @DROP
@@ -632,82 +550,57 @@ dfnd:
   W2
 @_SETVAR2:
   W2
-  SKIPA
-
-  __XT  _ST,@_DROP
 @_SETVAR:
   MOV   [W],top
 @DROP:
-  tDROP
-  JMPS  @1
+  MOV   TOP,NR
+@NIP:
+  D_TO  NR
+  JMPS  @MAIN
 
-@_SWAP_NIP:
-  XCHG  NR,TOP
-  SKIPA
+  __PRIM _STBP            ; (C!+
+  MOV   [TOP],NRL
+  JMPS  @1P_NIP
+
+  __PRIM _STP              ; (!+
+  MOV   [TOP],NR
+
+@2P_NIP:
+  INC   TOP
+@1P_NIP:
+  INC   TOP
+  SKIPB
 
 @NIPX:
   R_TO  IP
+  JMPS  @NIP
+
+@_RLD@:
+  TDUP
+  MOV   TOPH,0
+@_RST@:
+  R_TO  TR
+  XCHG  TR,W
+  CALL  TR
   SKIPA
 
-@_NIP:
-  CALL  W
-@NIP:
-  D_TO  NR
-  JMPS  @1
+@PUSHW3:
+  W2
+@PUSHW2:
+  W2
 
-@_2P_DUP:
-  INC   TOP
-@_1P_DUP:
-  INC   TOP
+@PUSHW:
+  to_r  W
+  JMPS  @MAIN
+
+  __XT  _PUSH,@_DROP       ; PUSH
+  JMPS  @PUSHW
+
 @_DUP:
   tDUP
 @_CALL:
   CALL  W
-@1:
-  JMPS  @MAIN
-
-  __XT  _FOR,@_FOR        ; (FOR
-  JS    @SKIP
-  MOV   IP,[IP]
-
-@RDROP:
-  r_to  W
-  JMPS  @MAIN
-
-  __PRIM _DUP_IF
-  OR    TOP,TOP
-  SKIPR CX
-
-  __XT  _IF,@_DROP       ; (IF
-  JE    @JUMP
-
-@SKIP:
-  INC   SI
-  INC   SI
-  JMPS  @MAIN
-
-@NEXT:    ; (NEXT
-  r_to  W
-  INC   W
-  JE    @SKIP
-  to_r W
-
-@JUMP:    ; (JUMP
-  MOV   IP,[IP]
-  JMPS  @MAIN
-
-@_POINT:
-  W2
-  MOV   W,[W]
-  JMPS  @NEST
-
-  __XT  _ZEX,@_DROP       ; 0;
-  JNE   @MAIN
-  SKIPA
-
-@_setpnt:
-  MOV   [W],IP
-  JMPS  @RETURN
+  JMP   @MAIN
 
 @_PARAM1:
   TDUP
@@ -721,17 +614,17 @@ dfnd:
   CALL  TOP
   CLD
 @2DROPX:
+  R_TO  IP
+@2DROP:
   DROP2 TOP,NR
-  JMPS  @RETURN
-
-  __XT  _PUSH,@_PUSH       ; PUSH
   JMPS  @MAIN
 
 ; CONTROL      COMMANDS
 
 @_DEFERO:
   INC   PW [AT_+_CNTC]
-  SKIPA
+  JMPS  @_DEFER
+
 @_DEFER3:
   W2
 @_DEFER2:
@@ -763,15 +656,9 @@ dfnd:
   __XT  _PERFORM,@_DROP    ; @EXEC
   jmps  @_DEFER
 
-@_WARY:
-  SHL   top,1
-@_BARY:
-  ADD   top,W
-  JMPS  @MAIN
-
 ; MAIN  LOOP
 
-  __XT _rPAR,@_state              ; ]
+  __XT _RPAR,@_state              ; ]
 
   __XT _does,@_var2
 @DOES3:
@@ -794,29 +681,76 @@ dfnd:
   wiP2
   JMP   [W-2]
 
+@_POINT:
+  W2
+  MOV   W,[W]
+  JMPS  @NEST
 
-;
-;freemem:
-;  DW ENDMEM-FREEMEM-2
-;  __ENTRY  '=:',_ENTRY
-;  DB 0
-;EndMem:
-;
-;lastw = ppppp
-;
-;MyCseg  ends
-;        end  Start
-;
-;-----------------------------------------------
-;  TEST
-;
+@_setpnt:
+  MOV   [W],IP
+  JMPS  @RETURN
 
-;     : C,  ;HERE C!+ ;
-  __COL BCOMMA
-        DW _HEREX,_STBP,_EXIT
+@_LARY:
+  SHL   top,1
+@_WARY:
+  SHL   top,1
+@_BARY:
+  ADD   top,W
+  JMPS  @MAIN
 
-@ABS:
-  OR    TOP,TOP
+  __XT  _FOR,@_1M         ; (FOR
+  JS    @JUMPDR
+  TO_R  TOP
+  JMPS  @SKIPDR
+
+  __XT  _ZSKIP,@_TOP?
+  JNE   @MAIN
+@SKIPDR:
+  TDROP
+@SKIP:
+  wiP2
+  JMPS  @MAIN
+
+  __XT  _DUP_IF,@_TOP?
+  JE    @JUMP
+  JMPS  @SKIP
+
+  __XT  _IF,@_TOP?      ; (IF
+@IF:
+  JNE   @SKIPDR
+@JUMPDR:
+  TDROP
+
+@JUMP:    ; (JUMP
+  MOV   IP,[IP]
+  JMPS  @MAIN
+
+@NEXT:    ; (NEXT
+  R_TO  TR
+  JCXZ  @SKIP
+  DEC   TR
+  TO_R  TR
+  JMPS  @JUMP
+
+@SWAPX:
+  R_TO  IP
+@SWAP:
+  XCHG  TOP,NR
+  SKIPB
+
+@RDROP:
+  r_to  TR
+  JMPS  @MAIN
+
+@3P:
+  inc   top
+@2p:
+  inc   top
+@1p:
+  inc   top
+  JMPS  @MAIN
+
+  __XT  _ABS,@_TOP?
   JNS   @MAIN
 @NEG:
   DEC   TOP
@@ -824,25 +758,78 @@ dfnd:
   NOT   TOP
   JMPS  @MAIN
 
-   __RVAR _XDROP
-        DW _DROPX
+  __PRIM _ZEQ            ; 0=
+  SUB   top,1
+@CF:
+  cf_to top
+  JMPS  @MAIN
+
+freemem:
+  DW ENDMEM-FREEMEM-2
+  __ENTRY  '=:',_ENTRY
+  DB 0
+EndMem:
+
+lastw = ppppp
+
+MyCseg  ends
+        end  Start
+
+;-----------------------------------------------
+;  TEST
+
+; __XT  _1P,@_CALL      ; 1+
+; INC   TOP
+; RET
+
+;  __XT  _LDP,@_DUP      ; @+
+;@LDP:
+;  MOV   NR,[Top]
+;  JMPS  @2P
+
+; __XT  _RST,@_RST
+; MOV   [W],TOP
+; W2
+; JMPS  @TOPDROP
+
+; __XT  _RSTBP,@_RST@   ; C!R+
+; MOV   [W],TOPL
+; INC   W
+; JMPS  @TOPDROP
+
+;  __COL _BCOMMA,_BCOMMAL          ; C, >C,
+;        DW _HEREX,_STBP,_EXIT
+
+;     : C,  ;HERE C!+ ;
+
+  __COL BCOMMA
+        DW _HEREX,_STBP,_EXIT
+
+  __XT  _ULESS,@_DROP   ; U<
+  SUB   TOP,W
+  JMPS  @CF
+
+  __PRIM _SGN            ; 0<
+  SHL   TOP,1
+  JMPS  @CF
 
   __CONST _LF,10
   __CONST _1H,16
   __CONST _1,1
   __CONST _LT0,'0'
 
-  __XT  _ABS,@ABS
+  __XT  _AND,@AND
+  __XT  _XOR,@XOR
+; __XT  _ABS,@ABS
   __XT  _NEG,@NEG
   __XT  _NOT,@NOT
 
-  __XT  _DROPX,@DROPX
 
 ; __XT  _RLDP,@_RLD        ; @R+
 ;       JMP  @PUSHW2
 
   __XT  _BRK,@_CALL
-  ;INT 3
+  INT 3
   RET
 
   __XT  _I,@_IJ
@@ -858,24 +845,24 @@ dfnd:
         DW _I,_PUSH,_EXIT
 
   __COL _HEXP
-        DW _XSPC,_LIT,256,_DIV,_TWICE,_1H,_DIV,_TWICE,_DIGP,_EXIT
+        DW _XSPC,_LIT,256,_UDIV,_TWICE
+        DW _1H,_UDIV,_TWICE,_SKIP
+  __COL _DIGP
+        DW _ALPHA,_EMIT,_EXIT
 
   __COL _ALPHA  ; : ALPHA  LF OVER U< 7 AND + '0 + ;
         DW _DUP,_LF,_ULESS,_ZEQ,_LIT,7,_AND,_ADD,_LT0,_ADD,_EXIT
 
-  __COL  _SGN?
-        DW _DUP,_SGN,_ZEX,_LIT,'-',_EMIT,_ABS,_EXIT
-
-  __COL _ZSKIP
-        DW _DUP,_ZEQ,_ZEX,_DROP,_RLDP,_DROPX
+; __XT  _ZSKIP,@?SKIP
+;        DW @_DUP,_ZEQ,_ZEX,_DROP,_RLDP,_DROPX
 
   __COL _HP
-        DW _XSPC,_SGN?,_SKIP
+        DW _DUP,_SGN,_IF,@@NOSGN,_LIT,'-',_EMIT,_ABS
+@@NOSGN DW _SKIP
+  __COL _UNP
+        DW _XSPC,_SKIP
   __COL _HP2
-        DW _LF,_DIV,_ZSKIP,_HP2,_SKIP
-  __COL _DIGP
-        DW _ALPHA,_EMIT,_EXIT
-
+        DW _LF,_UDIV,_ZSKIP,_HP2,_DIGP,_EXIT
 
   __COL _LOCATE
         DW _TOKEN?,_FIND,_1,_AND,_Z??,_EXIT
@@ -887,6 +874,7 @@ dfnd:
 
 
   __COL _CR
+       ;DW _BRK
        DW _STRTYPE
        DB 2,13,10
        DW _0,TO_+_CNTC,_EXIT
@@ -900,7 +888,16 @@ dfnd:
        DW _EXIT
 
   __COL _@ERROR
-       DW _CR,_TBUF,_STYPE,_SPACE,_STAT,_STYPE,_CR,_ABORT
+       DW _CR,_TBUF,_STYPE,_SPACE,_STAT,_STYPE,_CR,_EXIT
+
+  __COL2 _SCOMMA
+  __COL2 _STRCOMMA
+        DW _CSTR,_HEREX,_MSTR,_DROPX
+
+  __COL _LOOPS                  ; LOOPS
+        DW _FOR,@RDROPX
+@@LP1   DW _J,_EXECUTE,_NEXT,@@LP1
+@RDROPX DW _RDROP,_EXIT
 
  __COL3 _STRTYPE
  __COL3 _STYPE
@@ -909,8 +906,9 @@ dfnd:
        DW _CSTR
        DW _XDROP,_LOOPS,_CSTR,_EMIT,_EXIT
 
-  __XT _DIV,@_CALL
+  __XT _UDIV,@_CALL
   XOR   CX,CX
+@UMDIV:
   RCHG  CX
   RCHG  NR
   DIV   TOP
@@ -918,9 +916,14 @@ dfnd:
   RCHG  CX
   RET
 
-  __XT _MUL,@_NIP
+  __XT _UMDIV,@_CALL
+  D_TO  CX
+  JMPS  @UMDIV
+
+  __XT _MUL,@_CALL
   RCHG  TOP
   MUL   NR
+  RCHG  NR
   RCHG  TOP
   RET
 
@@ -929,14 +932,6 @@ dfnd:
   MOV   NR,TOP
   RCR   TOP,1
   RET
-
-  __XT  _ULESS,@_NIP    ; U<
-  SUB   NR,TOP
-  JMP   @CF
-
-  __XT  _SGN,@_CALL     ; 0<
-  SHL   TOP,1
-  JMP   @CF
 
   __XT  _RP,@_DUP
   MOV   TOP,RSP
@@ -1000,7 +995,7 @@ freemem:
   __ENTRY  '-',_SUB
   __ENTRY  'H.',_HEXP
   __ENTRY  '.',_HP
-  __ENTRY  'SGN?',_SGN?
+  __ENTRY  'SGN',_SGN
   __ENTRY  'HERE',_HERE
   __ENTRY  'OK.',_OK
   __ENTRY  '''',_LOCATE
