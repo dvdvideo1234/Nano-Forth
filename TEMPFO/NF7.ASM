@@ -65,10 +65,10 @@ _OPERATION DW @_WARY
   __DEFERO _EMIT,_@EMIT
   __DEFER  _SOURCE,_ETIB
   __DEFER  _ACCEPT,_ACC
-  __DEFER  _OK,0
-  __DEFER  _ERROR,0
-;  __DEFER  _OK,_@OK
-;  __DEFER  _ERROR,_@ERROR
+;  __DEFER  _OK,0
+;  __DEFER  _ERROR,0
+  __DEFER  _OK,_@OK
+  __DEFER  _ERROR,_@ERROR
 
   __CONST  _TBL,80H
   __CONST  _TIB,@TIB
@@ -764,17 +764,17 @@ dfnd:
   cf_to top
   JMPS  @MAIN
 
-freemem:
-  DW ENDMEM-FREEMEM-2
-  __ENTRY  '=:',_ENTRY
-  DB 0
-EndMem:
-
-lastw = ppppp
-
-MyCseg  ends
-        end  Start
-
+;freemem:
+;  DW ENDMEM-FREEMEM-2
+;  __ENTRY  '=:',_ENTRY
+;  DB 0
+;EndMem:
+;
+;lastw = ppppp
+;
+;MyCseg  ends
+;        end  Start
+;
 ;-----------------------------------------------
 ;  TEST
 
@@ -920,7 +920,7 @@ MyCseg  ends
   D_TO  CX
   JMPS  @UMDIV
 
-  __XT _MUL,@_CALL
+  __XT _MUL,@_CALL      ; UM*
   RCHG  TOP
   MUL   NR
   RCHG  NR
@@ -986,8 +986,8 @@ freemem:
   __ENTRY  'EMIT',_EMIT
   __ENTRY  ':',_COLON
   __ENTRY  ';`',_SEMICO
-  __ENTRY  '[`',_LPAR
-  __ENTRY  ']',_RPAR
+  __ENTRY  ',<`',_LPAR
+  __ENTRY  '>,',_RPAR
   __ENTRY  ',',_COMMA
   __ENTRY  '@',_LD
   __ENTRY  '!',_ST
@@ -996,10 +996,17 @@ freemem:
   __ENTRY  'H.',_HEXP
   __ENTRY  '.',_HP
   __ENTRY  'SGN',_SGN
+  __ENTRY  'DUP',_DUP
+  __ENTRY  'WORD',_WORD
   __ENTRY  'HERE',_HERE
   __ENTRY  'OK.',_OK
+  __ENTRY  'C!+',_STBP
+  __ENTRY  'C@',_LDB
   __ENTRY  '''',_LOCATE
-  __ENTRY  'ALPHA',_ALPHA
+; __ENTRY  'ALPHA',_ALPHA
+; __ENTRY  ';HERE',_HEREX
+; __ENTRY  'DROP;',_DROPX
+; __ENTRY  '#DOES',_DOES
   DB 0
 
 EndMem:
@@ -1010,7 +1017,6 @@ MyCseg  ends
         end  Start
 
 ;____________________________________________
-
 
 ;-----------------------------------------------
 
