@@ -65,10 +65,10 @@ _OPERATION DW @_WARY
   __DEFERO _EMIT,_@EMIT
   __DEFER  _SOURCE,_ETIB
   __DEFER  _ACCEPT,_ACC
-;  __DEFER  _OK,0
-;  __DEFER  _ERROR,0
-  __DEFER  _OK,_@OK
-  __DEFER  _ERROR,_@ERROR
+  __DEFER  _OK,0
+  __DEFER  _ERROR,0
+;  __DEFER  _OK,_@OK
+;  __DEFER  _ERROR,_@ERROR
 
   __CONST  _TBL,80H
   __CONST  _TIB,@TIB
@@ -764,17 +764,17 @@ dfnd:
   cf_to top
   JMPS  @MAIN
 
-;freemem:
-;  DW ENDMEM-FREEMEM-2
-;  __ENTRY  '=:',_ENTRY
-;  DB 0
-;EndMem:
-;
-;lastw = ppppp
-;
-;MyCseg  ends
-;        end  Start
-;
+freemem:
+  DW ENDMEM-FREEMEM-2
+  __ENTRY  '=:',_ENTRY
+  DB 0
+EndMem:
+
+lastw = ppppp
+
+MyCseg  ends
+        end  Start
+
 ;-----------------------------------------------
 ;  TEST
 
