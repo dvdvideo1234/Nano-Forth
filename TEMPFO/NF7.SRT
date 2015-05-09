@@ -1,41 +1,18 @@
 $13A =: HERE    $3E2 =: !       $235 =: ;`      $10C =: EMIT    $22F =: :
-HERE : CR 13 EMIT 10 EMIT ; $11A !   HERE : ER '? EMIT '? EMIT ; $11E !
+$27D =: =,      $215 =: C@      $273 =: ;HERE   $424 =: C!+   : C, ;HERE C!+ ;
+$209 =: +       $207 =: -
+HERE  $4B C,   HERE  $4B C,  $EB C,  $4F4 2 +  HERE 1 + - C,  =, 1-  =, 2-
 
-$215 =: C@
-$273 =: ;HERE
-$424 =: C!+
-: C, ;HERE C!+ ;
-$259 =: ,
-$209 =: +
-$207 =: -
-$1AC =: DROP;
-$1EA =: DUP
-$1FD =: ,<`
-$48B =: >,
-$29D =: WORD
-$48D =: #DOES
-$1F8 =: @
-$27D =: =,
-HERE $E8 C, #DOES HERE 2 + - ,
->, C@ WORD DROP; ,<
-DUP =, \ 0 C,
-=, { '} C,
-$2BB =: #??
-$3FE =, AND
-$299 =: TOKEN?
-$221 =: FIND
+$259 =: ,       $1AC =: DROP;   $1EA =: DUP     $1FD =: ,<`     $48B =: >,
+$29D =: WORD    $48D =: #DOES   $1F8 =: @
+HERE $E8 C, #DOES HERE 2 + - ,  >, C@ WORD DROP; ,<  DUP =, \ 0 C,  =, { '} C,
+$2BB =: #??     $3FE =, AND     $299 =: TOKEN?  $221 =: FIND
 : ' TOKEN? FIND 1 AND #?? ;     : LIKE ' @ ;    : ,' ' , ;
 
-$24B =: SKIP
-$1A8 =: ;DROP
+\ HERE : CR 13 EMIT 10 EMIT ; $11A !   HERE : ER '? EMIT '? EMIT ; $11E !
 $130 =: bl              \ RETURNS ASCII CODE OF SPACE CHARACTER
-$245 =: (NEXT
-$4B1 =: (FOR
-$247 =: RDROP
-$444 =: PUSH
-$47F =: EXECUTE
-$241 =: J
-$20B =: STR        \ _WSTR
+$24B =: SKIP    $1A8 =: ;DROP   $245 =: (NEXT   $4B1 =: (FOR    $247 =: RDROP
+$444 =: PUSH    $47F =: EXECUTE $241 =: J       $20B =: STR        \ _WSTR
 $1DD =: (ASTR   \ _ASTR - STRING PRIMITIVE
 $219 =: CSTR    \ _CSTR - CSTRING > COUNT ADDRESS
 $194 =: (A"     \ _ABORT?  IF 0 <>  ->  TYPES WORD  TYPES "ERROR" & ABORTS
@@ -199,16 +176,16 @@ $40E =: `_VAR
 \ HERE : ERR '? EMIT '? EMIT '? EMIT ;     $11E !
 
 LIKE ;` =, :` ,' SKIP ,' :       \ ":" - NOW DEFINES WORDS ON COMPILE STATE
-' `2P  =, CELL+         ' `1P  =, 1+  : C,R HERE 1+ - C, ;
-HERE $E8 C, #DOES HERE CELL+ - , >, C@ C, ;
+' `2P  =, 2+            ' `1P  =, 1+  \ : C,R HERE 1+ - C, ;
+HERE $E8 C, #DOES HERE    2+ - , >, C@ C, ;
 DUP =, #CAL, $E8 ,    DUP =, #JMP, $E9 ,    DUP =, JMPS, $EB ,  =, RET, $C3 ,
-: DOES, #DOES           : CALL, #CAL,   : ,R HERE CELL+ - , ;
+: DOES, #DOES           : CALL, #CAL,   : ,R HERE    2+ - , ;
 
 LIKE ! =, U<
 $2B C, $DF C, #JMP, ' `CF ,R
 
-HERE 2 + =, 0<
-$D1 C, $E3 C, #JMP, ' `CF ,R
+: CODE: HERE 2+ =, ;
+CODE: 0<  $D1 C, $E3 C, #JMP, ' `CF ,R
 
 LIKE DUP =, U/MOD
 $33 C, $C9 C, $91 C, $92 C, $F7 C, $F3 C, $93 C, $91 C, RET,
@@ -216,15 +193,13 @@ $33 C, $C9 C, $91 C, $92 C, $F7 C, $F3 C, $93 C, $91 C, RET,
 LIKE DUP =, UM*
 $93 C, $F7 C, $E2 C, $92 C, $93 C, RET,
 
-: `2, , , ;
-' `XOR =, XOR
-' `NOT =, NOT
+' `XOR =, XOR     ' `NOT =, NOT      : COMPILE @R+ , ;
 LIKE :  =, CONST ' `_CONS , ,' , \ CONSTANTS
 LIKE :  =, CREATE ' `_VAR ,  0 , \ ONLY ADDRESS NOTHING MORE
-LIKE :  =, (=) LIKE ;` , ,' `2,  \ DOERS
+: (=) =H COMPILE ,< LIKE ;` , >, , , ;  \ DOERS
 
 : META '
-: IS ' CELL+ ! ;
+: IS '    2+ ! ;
 : TIMES PUSH
 : LOOPS (FOR  ,< HERE 10 + , >, J EXECUTE
         (NEXT ,< HERE 6 - , >, RDROP ;          \ LOOPS & TIMES FUNCTIONS
@@ -240,7 +215,7 @@ DUP  =, ".      \ RUNTIME STRING LITERAL EMITER FUNCTION
 ' \ =: \`       \ COMPILING VERSION
 ' { =: {`       \ COMPILING VERSION
 
-: CR (." ,< 2 C, 13 C, 10 C, >, 0 ,< ' CNTC CELL+ , >, ;
+: CR (." ,< 2 C, 13 C, 10 C, >, 0 ,< ' CNTC    2+ , >, ;
 \ META  CR vOK.
 
 LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
@@ -257,12 +232,12 @@ LIKE ;` =, DOES>` >, ;code DOES, ,<     \ WE HAVE DOES !
 \ CONSTANTS   VARIABLES VALUES  & DEFERS
  16 CONST 1H       10 CONST lf       '0 CONST '0'     3 CONST 3
 256 CONST 1B    $FC00 CONST FTOP    255 CONST &BYTE  13 CONST cr
-  8 CONST bs
+  8 CONST bs        1 CONST 1
 
 : 2* DUP + ;
 : B>W &BYTE AND ;
 : >IP+ NOT 3  AND 2* POP + PUSH ;
-: (,) CREATE , DOES>    : @, @ , ;      \ commaers  & --V MAKERS
+: (,) CREATE , DOES> @ , ;              \ commaers  & --V MAKERS
 : (:) CREATE DUP C, >IP+ , , , ,'  DOES> CSTR =H >IP+ W, W, W, @EXEC ;
 
 ' `_DEFER    1 (:) DEFER ,
@@ -281,18 +256,21 @@ HERE DOES, >, (' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
 : DXEP DUP : XEP XCHG EXECUTE POP ;     : (CALL @R+ PUSH ;
 -#20 CONST FTOP   FTOP VALUE  FSTACK    : ;FSTACK FSTACK EX TO FSTACK ;
 ' , =: <RELEASE     : F> FSTACK FTOP XOR #?? ;FSTACK : @+ STR SWAP ;
-: >F ;FSTACK : !- 2 - DXEP ! ; : <RELEASE> <RELEASE : RELEASE> HERE F> ! ;
+: >F ;FSTACK : !- 2- DXEP ! ; : <RELEASE> <RELEASE : RELEASE> HERE F> ! ;
 : MARK> HERE >F : Z, 0 , ;      : >MARK< MARK>  : <MARK HERE ;
+: CASE`  0 >F ;         ' XOR =: <>     : = <> 0= ;
 
-
-             ' RELEASE> =: THEN`                       '  <MARK =: BEGIN`
+' MARK>      '     (IF (=) IF`                       ' RELEASE> =: THEN`
+: (OF OVER <> @R+ SWAP IF XCHG SKIP THEN DROP DROP; ,<
+' RELEASE>   ' EXIT    (=) ;THEN`          '              <MARK =: BEGIN`
 ' >MARK<     '    (FOR (=) FOR`            ' <RELEASE> ' (NEXT (=) NEXT`
-' MARK>      '     (IF (=) IF`             ' MARK>     ' (JUMP (=) AHEAD`
 ' MARK>      '   (CALL (=) CALL`           ' <RELEASE  ' (JUMP (=) AGAIN`
-' <RELEASE   '     (IF (=) UNTIL`          ' RELEASE>  ' EXIT  (=) ;THEN`
-' MARK>      '    (#IF (=) #IF`
+' <RELEASE   '     (IF (=) UNTIL`          ' MARK>     ' (JUMP (=) AHEAD`
+' MARK>      '    (#IF (=) #IF`            ' MARK>     ' (OF   (=) OF`
 
-: ELSE` F> AHEAD` >F THEN` ;
+: REPEAT` AGAIN` THEN` ;                ' IF`   =: WHILE`
+: ELSE` F> AHEAD` >F THEN` ;   ' ELSE` =: ENDOF`
+: ENDCASE`  COMPILE DROP  BEGIN F> #IF >F THEN` REPEAT DROP ;
 
 \ STRING COMPILING
 : (",)  '"  WORD                        \ PARSE & COMPILE STR
@@ -303,11 +281,11 @@ HERE DOES, >, (' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
 ' (",) ' (A"  (=) A"`   \ STRING ERROR MESSAGES  COMPILER
 ' (",) ' (."  (=) ."`   \ STRING LITERALS OUTPUT COMPILER
 : @OK ."  Ok" CR ." > " ;
-\ META  @OK vOK
+\ META  @OK vOK.
 
 LIKE J  =, I 0 ,        : TWICE I PUSH ;
 
-: ALPHA  9 OVER U<  7 AND + '0' + ;
+: ALPHA  9 OVER U<  7 AND + '0' + ;           \  7 ALPHA EMIT
 : H. ;SPC 1B  U/MOD TWICE  1H U/MOD  TWICE
 : DIG. ALPHA EMIT ;
 : . DUP 0< IF '- EMIT ABS THEN
@@ -316,20 +294,33 @@ LIKE J  =, I 0 ,        : TWICE I PUSH ;
 
 \ -------------------------------------------------------------
 
-\ FUNC: EXPECT3 ( _ADR _CNT / _IND _K )
-\   BEGIN  KEY B>W DUP TO _K
-\    CASE
-\      cr OF  _IND  TO _CNT ENDOF
-\      bs OF _IND
-\        IF AT _IND 1-! bs EMIT SPACE bs EMIT THEN ENDOF
-\      #LEN _K U< IF _K  _ADR  AT _IND @1+! + C! _K EMIT THEN
-\    ENDCASE     _IND _CNT =
-\   UNTIL _IND TO SPAN ;
+: 2DUP OVER OVER ;
+: WITHIN OVER - PUSH - POP U< ;
+DEFER KEY
 
-\ : ACC
-\
-\
-\
-\
-\
+: (AC   { ADR CNT / ADR CNT1 } OVER + PUSH DUP
+  BEGIN  KEY     CASE
+     cr OF  DUP XCHG DROP  ENDOF
+     bs OF  2DUP <>  IF 1- bs EMIT SPACE bs EMIT THEN  ENDOF
+     DUP bl 1B WITHIN  IF DUP EMIT SWAP C!+ DUP THEN
+              ENDCASE    DUP I =
+  UNTIL RDROP OVER - 1 : SPACES LOOPS SPACE ;
+
+\ -------------------------------------------------------------
+
+LIKE (DE =, (BE
+$96 C, $31 C,  $DB C, $B4 C, $E C, $CD C, $10 C, $96 C, RET,
+
+LIKE STR =, (BK
+$31 C,  $DB C,  $93 C,  $CD C,  $16 C,  $08 C,  $C0 C,  $74 C,
+$02 C,  $30 C,  $E4 C,  $93 C,  RET,
+
+: WDUMP ;DROP LOOPS STR H. ;    0 =, BYE  : U* UM* DROP; ,<
+: PAGE 25 : CRS  LOOPS CR ;     0 VALUE DPTR  0 VALUE ADR  0 VALUE NPTR
+: DNEXT DPTR CSTR + @+ TO NPTR ;   : END? DUP TO DPTR C@ ;
+: #>ID? TO ADR DICT SKIP BEGIN NPTR END? WHILE DNEXT ADR = UNTIL THEN DPTR C@ ;
+: VLIST DICT SKIP BEGIN NPTR END? WHILE DNEXT H. DPTR ID. REPEAT ;
+
+META (BK KEY    META @OK vOK.   META (AC ACCEPT    META (BE  EMIT
+
 
