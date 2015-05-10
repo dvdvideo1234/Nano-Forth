@@ -215,24 +215,13 @@ DUP  =, ".      \ RUNTIME STRING LITERAL EMITER FUNCTION
 ' \ =: \`       \ COMPILING VERSION
 ' { =: {`       \ COMPILING VERSION
 
-: CR (." ,< 2 C, 13 C, 10 C, >, 0 ,< ' CNTC    2+ , >, ;
-\ META  CR vOK.
-
-LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
-: SPACE bl EMIT ;       \ EMIT BLANK SPACE
-: ID. ;SPC ". ;
-
-: (ERR  CR  TBUF ID.  STATE ".  CR ;
-META (ERR vERR                  \ SHOW ERROR ROUTINE
-
 : LATEST DICT CSTR + @ ;        : ;code POP LATEST ! ;
 : RECURCE` LATEST , ;   \ REFERENCE TO SELF IN SAME WORD
 LIKE ;` =, DOES>` >, ;code DOES, ,<     \ WE HAVE DOES !
 
 \ CONSTANTS   VARIABLES VALUES  & DEFERS
- 16 CONST 1H       10 CONST lf       '0 CONST '0'     3 CONST 3
-256 CONST 1B    $FC00 CONST FTOP    255 CONST &BYTE  13 CONST cr
-  8 CONST bs        1 CONST 1
+ 16 CONST 1H    '0 CONST '0'    3 CONST 3       1 CONST 1
+256 CONST 1B    $FC00 CONST FTOP    255 CONST &BYTE
 
 : 2* DUP + ;
 : B>W &BYTE AND ;
@@ -246,11 +235,25 @@ LIKE ;` =, DOES>` >, ;code DOES, ,<     \ WE HAVE DOES !
 ' `_SETPNT   ' `_POINT    2 (:) POINT  ,
 ' `_VAR      ' `_SETVAR2  ' `_CONS3   3 (:) QUAN ,
 
+HERE DOES, >, C@ EMIT ;   HERE #DOES 1- CALL, >, C@ ;  2 (:) CONST.C C,
+10 CONST.C lf   13 CONST.C cr   8 CONST.C bs  '- CONST.C '-'
+
 \ searching
 HERE DOES, >, : (' C@ ' + ;
  DUP =, 'TO  2 C, =, 'AT  4 C,  \ ADDRESS OF XT+2 / XT+4
 HERE DOES, >, (' EXEC ; DUP =, TO   2 C,  =, AT  4 C, \ EXECUTES XT+2 / XT+4
 HERE DOES, >, (' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
+
+LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
+: SPACE bl EMIT ;       \ EMIT BLANK SPACE
+: ID. ;SPC ". ;
+
+: CR TO cr  TO lf  0 TO CNTC ;
+\ : CR (." ,< 2 C, 13 C, 10 C, >, 0 ,< ' CNTC    2+ , >, ;
+\ META  CR vOK.
+
+: (ERR  CR  TBUF ID.  STATE ".  CR ;
+META (ERR vERR                  \ SHOW ERROR ROUTINE
 
 \ CONTINUE EXTENDING COMPILER
 : DXEP DUP : XEP XCHG EXECUTE POP ;     : (CALL @R+ PUSH ;
@@ -269,8 +272,8 @@ HERE DOES, >, (' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
 ' MARK>      '    (#IF (=) #IF`            ' MARK>     ' (OF   (=) OF`
 
 : REPEAT` AGAIN` THEN` ;                ' IF`   =: WHILE`
-: ELSE` F> AHEAD` >F THEN` ;   ' ELSE` =: ENDOF`
-: ENDCASE`  COMPILE DROP  BEGIN F> #IF >F THEN` REPEAT DROP ;
+: ELSE` F> AHEAD` : `ELSE >F THEN` ;    ' ELSE` =: ENDOF`
+: ENDCASE`  COMPILE DROP  BEGIN F> #IF `ELSE REPEAT DROP ;
 
 \ STRING COMPILING
 : (",)  '"  WORD                        \ PARSE & COMPILE STR
@@ -285,28 +288,31 @@ HERE DOES, >, (' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
 
 LIKE J  =, I 0 ,        : TWICE I PUSH ;
 
+\ -------------------------------------------------------------
+\ NUMOUT
+\
+: U* UM* DROP; ,<       : W>B &BYTE AND ;       : L>H 1B U* ;
+: BB>W  W>B L>H SWAP W>B XOR ;  : W>BB 1B U/MOD ;  : B>HH 1H U/MOD ;
 : ALPHA  9 OVER U<  7 AND + '0' + ;           \  7 ALPHA EMIT
-: H. ;SPC 1B  U/MOD TWICE  1H U/MOD  TWICE
-: DIG. ALPHA EMIT ;
-: . DUP 0< IF '- EMIT ABS THEN
-: U. ;SPC
+: H.  ;SPC  W>BB TWICE  B>HH TWICE    : DIG.  ALPHA EMIT ;
+: .   DUP 0< IF TO '-' ABS THEN       : U.    ;SPC
 : `U. lf U/MOD 0?SKIP RECURCE DIG. ;
 
 \ -------------------------------------------------------------
 
 : 2DUP OVER OVER ;
+' `ROT =, ROT
+
 : WITHIN OVER - PUSH - POP U< ;
-DEFER KEY
+0 DEFER KEY
 
 : (AC   { ADR CNT / ADR CNT1 } OVER + PUSH DUP
   BEGIN  KEY     CASE
      cr OF  DUP XCHG DROP  ENDOF
-     bs OF  2DUP <>  IF 1- bs EMIT SPACE bs EMIT THEN  ENDOF
+     bs OF  2DUP <>  IF 1- TO bs SPACE  TO bs THEN  ENDOF
      DUP bl 1B WITHIN  IF DUP EMIT SWAP C!+ DUP THEN
               ENDCASE    DUP I =
   UNTIL RDROP OVER - 1 : SPACES LOOPS SPACE ;
-
-\ -------------------------------------------------------------
 
 LIKE (DE =, (BE
 $96 C, $31 C,  $DB C, $B4 C, $E C, $CD C, $10 C, $96 C, RET,
@@ -315,7 +321,20 @@ LIKE STR =, (BK
 $31 C,  $DB C,  $93 C,  $CD C,  $16 C,  $08 C,  $C0 C,  $74 C,
 $02 C,  $30 C,  $E4 C,  $93 C,  RET,
 
-: WDUMP ;DROP LOOPS STR H. ;    0 =, BYE  : U* UM* DROP; ,<
+CODE: (IO
+$88 C,  $1E C,  { $09 C,  $01 C,} HERE 12 + , $56 C,  $94 C,  $5B C,  $59 C,
+$5F C,  $94 C,  $97 C,  $92 C,  $57 C,  $CD C,  $21 C,  $57 C,  \
+$97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $19 C,  $FF C,  $57 C,  $94 C,
+#JMP, ' `2DROPX ,R
+
+0 VALUE _AX  0 VALUE _BX  0 VALUE _CX  0 VALUE _DX  0 VALUE _FR
+HERE DOES, >, C@  (IO  TO _FR  TO _AX  TO _BX  TO _CX  TO _DX ;
+DUP   =, (4DOS $21 C,   =, (VID $10 C,
+
+
+\ -------------------------------------------------------------
+
+: WDUMP ;DROP LOOPS STR H. ;    0 =, BYE
 : PAGE 25 : CRS  LOOPS CR ;     0 VALUE DPTR  0 VALUE ADR  0 VALUE NPTR
 : DNEXT DPTR CSTR + @+ TO NPTR ;   : END? DUP TO DPTR C@ ;
 : #>ID? TO ADR DICT SKIP BEGIN NPTR END? WHILE DNEXT ADR = UNTIL THEN DPTR C@ ;
