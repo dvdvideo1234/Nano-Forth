@@ -321,17 +321,20 @@ LIKE STR =, (BK
 $31 C,  $DB C,  $93 C,  $CD C,  $16 C,  $08 C,  $C0 C,  $74 C,
 $02 C,  $30 C,  $E4 C,  $93 C,  RET,
 
+\ -------------------------------------------------------------
+0 VALUE _AX     0 VALUE _BX     0 VALUE _CX     0 VALUE _DX     0 VALUE _FR
 CODE: (IO
-$88 C,  $1E C,  { $09 C,  $01 C,} HERE 12 + , $56 C,  $94 C,  $5B C,  $59 C,
-$5F C,  $94 C,  $97 C,  $92 C,  $57 C,  $CD C,  $21 C,  $57 C,  \
-$97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $19 C,  $FF C,  $57 C,  $94 C,
-#JMP, ' `2DROPX ,R
-
-0 VALUE _AX  0 VALUE _BX  0 VALUE _CX  0 VALUE _DX  0 VALUE _FR
+  $88 C,  $1E C,  HERE 12 + ,     $56 C,  $94 C,  $5B C,  $59 C,
+  $5F C,  $94 C,  $97 C,  $92 C,  $57 C,  $CD C,  $21 C,  $5F C,
+  $97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $9C C,  $94 C,
+  #JMP, ' `2DROPX ,R
+: REGS _DX _CX _BX _AX ;  : ODD 1 AND ;  0 VALUE _AR  0 VALUE HBLK  0 VALUE BLK
 HERE DOES, >, C@  (IO  TO _FR  TO _AX  TO _BX  TO _CX  TO _DX ;
-DUP   =, (4DOS $21 C,   =, (VID $10 C,
-
-
+DUP =, (DOS $21 C,  DUP =, (VID $10 C,   =, (KBD $16 C,
+HERE DOES, >, @  TO _AX  REGS (DOS _FR ODD A" :IO?" ;
+DUP =, `OPEN $3D02 ,    DUP =, `READ  $3F00 ,   DUP =, `SIZE  $4202 ,
+DUP =, `WRITE  $4000 ,  DUP =, `POSF  $4200 ,       =, `CLOSE $3E00 ,
+\ : =" '"
 \ -------------------------------------------------------------
 
 : WDUMP ;DROP LOOPS STR H. ;    0 =, BYE
