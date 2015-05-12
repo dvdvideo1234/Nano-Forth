@@ -221,9 +221,11 @@ LIKE ;` =, DOES>` >, ;code DOES, ,<     \ WE HAVE DOES !
 
 \ CONSTANTS   VARIABLES VALUES  & DEFERS
  16 CONST 1H    '0 CONST '0'    3 CONST 3       1 CONST 1
-256 CONST 1B    $FC00 CONST FTOP    255 CONST &BYTE
+256 CONST 1B    $FC00 CONST FTOP    255 CONST &BYTE     26 CONST eof
+FTOP 1B - 1B - CONST NPAD       1024 CONST 1K
 
 : 2* DUP + ;
+' `NIP =, NIP
 : B>W &BYTE AND ;
 : >IP+ NOT 3  AND 2* POP + PUSH ;
 : (,) CREATE , DOES> @ , ;              \ commaers  & --V MAKERS
@@ -234,15 +236,16 @@ LIKE ;` =, DOES>` >, ;code DOES, ,<     \ WE HAVE DOES !
 ' `_SETVAR   ' `_DEFER2   2 (:) VECTOR ,
 ' `_SETPNT   ' `_POINT    2 (:) POINT  ,
 ' `_VAR      ' `_SETVAR2  ' `_CONS3   3 (:) QUAN ,
+' `_VAR      ' `_SETVAR2  ' `_DEFER3  3 (:) VQUAN ,
 
 HERE DOES, >, C@ EMIT ;   HERE #DOES 1- CALL, >, C@ ;  2 (:) CONST.C C,
 10 CONST.C lf   13 CONST.C cr   8 CONST.C bs  '- CONST.C '-'
 
 \ searching
-HERE DOES, >, : (' C@ ' + ;
+HERE DOES, >, : `(' C@ ' + ;
  DUP =, 'TO  2 C, =, 'AT  4 C,  \ ADDRESS OF XT+2 / XT+4
-HERE DOES, >, (' EXEC ; DUP =, TO   2 C,  =, AT  4 C, \ EXECUTES XT+2 / XT+4
-HERE DOES, >, (' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
+HERE DOES, >, `(' EXEC ; DUP =, TO   2 C,  =, AT  4 C, \ EXECUTES XT+2 / XT+4
+HERE DOES, >, `(' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
 
 LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
 : SPACE bl EMIT ;       \ EMIT BLANK SPACE
@@ -252,8 +255,8 @@ LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
 \ : CR (." ,< 2 C, 13 C, 10 C, >, 0 ,< ' CNTC    2+ , >, ;
 \ META  CR vOK.
 
-: (ERR  CR  TBUF ID.  STATE ".  CR ;
-META (ERR vERR                  \ SHOW ERROR ROUTINE
+\  : (ERR  CR  TBUF ID.  STATE ".  CR ;
+\  META (ERR vERR                  \ SHOW ERROR ROUTINE
 
 \ CONTINUE EXTENDING COMPILER
 : DXEP DUP : XEP XCHG EXECUTE POP ;     : (CALL @R+ PUSH ;
@@ -267,13 +270,15 @@ META (ERR vERR                  \ SHOW ERROR ROUTINE
 : (OF OVER <> @R+ SWAP IF XCHG SKIP THEN DROP DROP; ,<
 ' RELEASE>   ' EXIT    (=) ;THEN`          '              <MARK =: BEGIN`
 ' >MARK<     '    (FOR (=) FOR`            ' <RELEASE> ' (NEXT (=) NEXT`
+' <MARK      '    PUSH (=) FOR>`           ' <RELEASE  ' (NEXT (=) <NEXT`
 ' MARK>      '   (CALL (=) CALL`           ' <RELEASE  ' (JUMP (=) AGAIN`
 ' <RELEASE   '     (IF (=) UNTIL`          ' MARK>     ' (JUMP (=) AHEAD`
 ' MARK>      '    (#IF (=) #IF`            ' MARK>     ' (OF   (=) OF`
 
-: REPEAT` AGAIN` THEN` ;                ' IF`   =: WHILE`
-: ELSE` F> AHEAD` : `ELSE >F THEN` ;    ' ELSE` =: ENDOF`
-: ENDCASE`  COMPILE DROP  BEGIN F> #IF `ELSE REPEAT DROP ;
+: CSWAP` F> F> SWAP >F >F ;
+: REPEAT` AGAIN`  THEN` ;          ' IF`   =: WHILE`
+: ELSE`   AHEAD` CSWAP` THEN` ;    ' ELSE` =: ENDOF`
+: ENDCASE`  COMPILE DROP  BEGIN F> #IF >F THEN` REPEAT DROP ;
 
 \ STRING COMPILING
 : (",)  '"  WORD                        \ PARSE & COMPILE STR
@@ -304,7 +309,7 @@ LIKE J  =, I 0 ,        : TWICE I PUSH ;
 ' `ROT =, ROT
 
 : WITHIN OVER - PUSH - POP U< ;
-0 DEFER KEY
+0 VQUAN KEY
 
 : (AC   { ADR CNT / ADR CNT1 } OVER + PUSH DUP
   BEGIN  KEY     CASE
@@ -321,6 +326,8 @@ LIKE STR =, (BK
 $31 C,  $DB C,  $93 C,  $CD C,  $16 C,  $08 C,  $C0 C,  $74 C,
 $02 C,  $30 C,  $E4 C,  $93 C,  RET,
 
+' (BK TO KEY
+
 \ -------------------------------------------------------------
 0 VALUE _AX     0 VALUE _BX     0 VALUE _CX     0 VALUE _DX     0 VALUE _FR
 CODE: (IO
@@ -328,21 +335,73 @@ CODE: (IO
   $5F C,  $94 C,  $97 C,  $92 C,  $57 C,  $CD C,  $21 C,  $5F C,
   $97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $9C C,  $94 C,
   #JMP, ' `2DROPX ,R
-: REGS _DX _CX _BX _AX ;  : ODD 1 AND ;  0 VALUE _AR  0 VALUE HBLK  0 VALUE BLK
+\ : REGS _DX _CX _BX _AX ;
+: ODD 1 AND ;   0 VALUE SCRH  0 VALUE BLK  0 VALUE EOS?
+: IO? _FR ODD A" :IO?" ;  : D0 0 0 ;
 HERE DOES, >, C@  (IO  TO _FR  TO _AX  TO _BX  TO _CX  TO _DX ;
 DUP =, (DOS $21 C,  DUP =, (VID $10 C,   =, (KBD $16 C,
-HERE DOES, >, @  TO _AX  REGS (DOS _FR ODD A" :IO?" ;
-DUP =, `OPEN $3D02 ,    DUP =, `READ  $3F00 ,   DUP =, `SIZE  $4202 ,
-DUP =, `WRITE  $4000 ,  DUP =, `POSF  $4200 ,       =, `CLOSE $3E00 ,
-\ : =" '"
+HERE DOES, >, @ (DOS ;  DUP =, `OPEN $3D02 ,    DUP =, FREAD  $3F00 ,
+DUP =, FWRITE  $4000 ,  DUP =, `SEEK   $4200 ,  =, `CREATE $3C00 ,
+HERE DOES, >, @ PUSH D0 ROT POP (DOS ;
+DUP =, `SIZE  $4202 ,   DUP =, `POSF  $4201 ,   =, FCLOSE $3E00 ,
+
+: =" '" WORD CSTR
+: >ZSTR { A L - ZA } NPAD (S! SWAP 0 : SWAP! SWAP ! ;
+\ : `RW 1K UM* SCRH `SEEK  IO?  1K SCRH  EX IO? ;
+\ : `WBLK `RW FWRITE ;    : `RBLK `RW FREAD ;
+\ : `SIZE { HND -- DX:AX } `POSF IO? _DX _AX
+\    _BX `SIZE TO _CX _AX _DX  { DX:CX} ROT _CX _BX `SEEK ;
+\ : Fcut { SCR -} `RW NIP D0 ROT FWRITE DROP ;
+\ : Fsize SCRH `SIZE 1K UM/MOD NIP ;
+: ;File CSTR >ZSTR 1+ D0 EX IO? _AX ;
+: FOPEN ;File  `OPEN ;        : FCREATE ;File `CREATE ;
+\
+: `BACK! @+ XCHG EXECUTE POP !- DROP; ,<
+: 0; 0?SKIP DROP; RDROP ;
+' `_VAR    HERE #DOES 1- CALL, >, `BACK! !+ ;
+HERE #DOES 2- CALL, >, `BACK! : @- 2- DXEP @ ;
+=H HANDLES , , , HERE 2+ , 20 ALLOT
+: `NOEOS 0 TO EOS? ;  0 QUAN `FBUF
+: FGET `FBUF CALL -1 TO EOS? DROP  cr ;THEN  \ IF EOF THEN EOS
+  AT `FBUF 1 AT HANDLES @ 2- @  FREAD  _AX 0;  \ SOMETHING
+  DROP `FBUF  DUP eof XOR 0; RDROP  ; \ CONTROLS - LIKE BL
+: `KEY!  LIT FGET TO KEY ;
+: ;FILE TO HANDLES `NOEOS  AT KEY @ XCHG PUSH `KEY!
+     EX `NOEOS  POP TO KEY      : `CLOSE1 HANDLES FCLOSE ;
+: FTYPE TOKEN? FOPEN ;FILE BEGIN KEY EMIT EOS? UNTIL ;
+: ;TI ETIB XCHG LTIB PUSH BLK PUSH PUSH  CALL EX POP POP POP THEN
+   TO ETIB TO LTIB DUP TO BLK 0; 0 TO ETIB ;
+: INCLUDE TOKEN? : INCLUDED FOPEN ;FILE ;TI BEGIN vINIT EVAL EOS? UNTIL ;
+: SEVAL 0 SWAP CSTR ;TI EVAL ;
+
+: 2/ 2 : U/ U/MOD NIP; ,<
+: (ERR  CR  TBUF ID.  STATE ".  CR  LIT (BK TO KEY
+   AT HANDLES @+ - 2/ LOOPS `CLOSE1 ;
+  META (ERR vERR                  \ SHOW ERROR ROUTINE
+
 \ -------------------------------------------------------------
 
-: WDUMP ;DROP LOOPS STR H. ;    0 =, BYE
-: PAGE 25 : CRS  LOOPS CR ;     0 VALUE DPTR  0 VALUE ADR  0 VALUE NPTR
-: DNEXT DPTR CSTR + @+ TO NPTR ;   : END? DUP TO DPTR C@ ;
-: #>ID? TO ADR DICT SKIP BEGIN NPTR END? WHILE DNEXT ADR = UNTIL THEN DPTR C@ ;
-: VLIST DICT SKIP BEGIN NPTR END? WHILE DNEXT H. DPTR ID. REPEAT ;
+\ : `SOURCE ETIB 0?SKIP EXIT  BLK  BLOCK 1K + DUP TO ETIB ;
+\ : THRU PUSH 1- POP ;DROP OVER - LOOPS 1+ DXEP
+\ : LOAD 1K 0 ;TI (JUMP `DOEVAL ,<
 
-META (BK KEY    META @OK vOK.   META (AC ACCEPT    META (BE  EMIT
+\ -------------------------------------------------------------
+
+0 =, BYE
+LIKE ;DPUSH =, `;HOME  : `HOME 0 0 : @XY BB>W D0 $200 (VID ;
+: PAGE `;HOME  25 : CRS  LOOPS CR ;
+
+\ 0 VALUE DPTR  0 VALUE ADR  0 VALUE NPTR
+\ : DNEXT DPTR CSTR + @+ TO NPTR ;   : END? DUP TO DPTR C@ ;
+\ : <ID? ADR 2- : #>ID? TO ADR DICT SKIP
+\  BEGIN NPTR END? WHILE DNEXT ADR = UNTIL THEN DPTR C@ ;
+\ : ?ID. CALL ID. DPTR ID. SPACE ;THEN #>ID? IF @R+ DROP; THEN
+\         <ID? IF " TO" ;THEN <ID? IF " AT" ;THEN RDROP ;
+\ : VLIST DICT SKIP BEGIN NPTR END? WHILE DNEXT H. DPTR ID. REPEAT ;
+\ 0 VALUE `WW : `;WW `WW EX TO `WW ;
+\ : SEE ' TO `WW  : L 8 LOOPS `;WW
+\ : WW CR DUP H. STR DUP H. ?ID. ;
+
+META @OK vOK.   META (AC ACCEPT    META (BE  EMIT
 
 
