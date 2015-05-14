@@ -49,11 +49,12 @@ MyCseg  segment para  use16
 
         org 100h
 
-@TBUF   = -256          ; 256
-@TIB    = @TBUF * 2     ; 256
-@R_TOP  = @TIB * 2      ; 512  RSTACK
-@S_TOP  = @R_TOP * 2    ; 1024 DSTACK
-@VOCTOP = @S_TOP * 5    ; 2048 = 4 BUFFERS * 512
+@TBUF   = -256          ;  256
+@TIB    = @TBUF  * 2    ;  256
+                        ;  512 B FSTACK
+@R_TOP  = @TIB   * 2    ; 1024 B RSTACK
+@S_TOP  = @R_TOP * 2    ; 2048 B DSTACK
+@VOCTOP = @S_TOP * 2    ; 4096 B = 4 BUFFERS * 1024 B
 
 Start   Label byte
         JMPS SELF0
@@ -80,7 +81,7 @@ _OPERATION DW @_WARY
   __VALUE  _HERE,FREEMEM
   __VALUE  _ETIB,0
   __VALUE  _LTIB,0
-  __VALUE  _DICT,@VOCTOP
+  __VALUE  _DICT,@VOCTOP*2
   __VALUE  _CNTC,0
   __value  _stat,0
 

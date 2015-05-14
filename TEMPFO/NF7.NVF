@@ -15,7 +15,7 @@ $24B =: SKIP    $1A8 =: ;DROP   $245 =: (NEXT   $4B1 =: (FOR    $247 =: RDROP
 $444 =: PUSH    $47F =: EXECUTE $241 =: J       $20B =: STR        \ _WSTR
 $1DD =: (ASTR   \ _ASTR - STRING PRIMITIVE
 $219 =: CSTR    \ _CSTR - CSTRING > COUNT ADDRESS
-$194 =: (A"     \ _ABORT?  IF 0 <>  ->  TYPES WORD  TYPES "ERROR" & ABORTS
+$194 =: (A"     \ _ABORT?  IF 0 <>  ->  TYPES WORD  TYPES "ERROR KIND" & ABORTS
 $1FF =:  3+        \ _3P
 $152 =: CNTC    \ _CNTC   - COUNT OF EMITTED CHARS ON OUTPUT STREEM
 $118 =: vOK.    \ _OK     - VECTORED RESPONCE OF THE SYSTEM IF NO ERROR
@@ -221,7 +221,7 @@ DUP  =, ".      \ RUNTIME STRING LITERAL EMITER FUNCTION
 ' \ =: \`       \ COMPILING VERSION
 ' { =: {`       \ COMPILING VERSION
 
-: LATEST DICT CSTR + @ ;        : ;code POP LATEST ! ;
+: LATEST DICT CSTR + @ ;        : ;code POP : TOBE LATEST ! ;
 : RECURCE` LATEST , ;   \ REFERENCE TO SELF IN SAME WORD
 LIKE ;` =, DOES>` >, ;code DOES, ,<     \ WE HAVE DOES !
 
