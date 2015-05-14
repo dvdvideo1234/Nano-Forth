@@ -1,4 +1,6 @@
 
+MARKER EXT3.
+
 \ : `SIZE { HND -- DX:AX } `POSF IO? _DX _AX
 \    _BX `SIZE TO _CX _AX _DX  { DX:CX} ROT _CX _BX `SEEK ;
 \ : Fcut { SCR -} `RW NIP D0 ROT FWRITE DROP ;
@@ -36,12 +38,12 @@ HERE DOES, >, C@ PREV FBUFS C! ;  DUP   =, DISCARD  0 C,  =, UPDATE  -1 C,
 \ -------------------------------------------------------------
 : `SOURCE ETIB 0?SKIP EXIT  BLK BLOCK 1K + DUP TO ETIB ;
 : THRU PUSH 1- POP ;DROP OVER - LOOPS 1+ DXEP
-: LOAD 0 1K ;TI (JUMP `DOEVAL ,<
+: LOAD DUP 0= A"  BLK0!" 0 1K ROT ;TIBLK (JUMP `DOEVAL ,<
 
 \ -------------------------------------------------------------
 : -USE SCRH 1+ 0; SCRH FCLOSE -1 TO SCRH ;
-: USING FLUSH -USE FNAME FOPEN TO SCRH ;
-: BYE CLOSE-ALL FLUSH -USE (BYE ;
 : FLUSH SAVE-BUFS EMPTY-BUFS ;
+: USING FLUSH -USE TOKEN? FOPEN TO SCRH ;
+\ : BYE CLOSE-ALL FLUSH -USE BYE ;
 
 

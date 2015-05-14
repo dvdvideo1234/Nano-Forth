@@ -1,3 +1,5 @@
+MARKER EXT2.
+
 HERE DOES, >, CSTR ADR SCAN 1+ 0; DUP ". CSTR + ;
 =, ?STR 3 C, ' A"` 2+ @ ,  ' "` 2+ @ ,  ' ."` 2+ @ ,
 : WDUMP bs ?DU ;DROP LOOPS CR DUP H. bs LOOPS STR H. ;
