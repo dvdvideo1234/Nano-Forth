@@ -7,7 +7,7 @@ $259 =: ,       $1AC =: DROP;   $1EA =: DUP     $1FD =: ,<`     $48B =: >,
 $29D =: WORD    $48D =: #DOES   $1F8 =: @
 HERE $E8 C, #DOES HERE 2 + - ,  >, C@ WORD DROP; ,<  DUP =, \ 0 C,  =, { '} C,
 $2BB =: #??     $3FE =, AND     $299 =: TOKEN?  $221 =: FIND
-: ' TOKEN? FIND 1 AND #?? ;     : LIKE ' @ ;    : ,' ' , ;
+: LOCATE TOKEN? FIND 1 AND ;  : ' LOCATE #?? ;   : LIKE ' @ ;   : ,' ' , ;
 
 \ HERE : CR 13 EMIT 10 EMIT ; $11A !   HERE : ER '? EMIT '? EMIT ; $11E !
 $130 =: bl              \ RETURNS ASCII CODE OF SPACE CHARACTER
@@ -190,8 +190,14 @@ CODE: 0<  $D1 C, $E3 C, #JMP, ' `CF ,R
 LIKE DUP =, U/MOD
 $33 C, $C9 C, $91 C, $92 C, $F7 C, $F3 C, $93 C, $91 C, RET,
 
+LIKE DUP =, SM*
+$93 C, $F7 C, $EA C, $92 C, $93 C, RET,
+
 LIKE DUP =, UM*
 $93 C, $F7 C, $E2 C, $92 C, $93 C, RET,
+
+: U* UM* DROP; ,<
+: * SM* DROP; ,<
 
 ' `XOR =, XOR     ' `NOT =, NOT      : COMPILE @R+ , ;
 LIKE :  =, CONST ' `_CONS , ,' , \ CONSTANTS
@@ -281,7 +287,7 @@ LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
 : ENDCASE`  COMPILE DROP  BEGIN F> #IF >F THEN` REPEAT DROP ;
 
 \ STRING COMPILING
-: (",)  '"  WORD                        \ PARSE & COMPILE STR
+: (",)  '" : (?",)   WORD               \ PARSE & COMPILE STR
 : CSTR, CSTR                            \ COUNTED STRING COMPILE
 : STR, ;HERE (S! DROP; ,<               \ ADR COUNT STRING COMPILE
 
@@ -336,7 +342,7 @@ CODE: (IO
   $97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $9C C,  $94 C,
   #JMP, ' `2DROPX ,R
 \ : REGS _DX _CX _BX _AX ;
-: ODD 1 AND ;   0 VALUE SCRH  0 VALUE BLK  0 VALUE EOS?
+: ODD 1 AND ;  0 VALUE BLK  0 VALUE EOS?
 : IO? _FR ODD A" :IO?" ;  : D0 0 0 ;
 HERE DOES, >, C@  (IO  TO _FR  TO _AX  TO _BX  TO _CX  TO _DX ;
 DUP =, (DOS $21 C,  DUP =, (VID $10 C,   =, (KBD $16 C,
@@ -347,14 +353,9 @@ DUP =, `SIZE  $4202 ,   DUP =, `POSF  $4201 ,   =, FCLOSE $3E00 ,
 
 : =" '" WORD CSTR
 : >ZSTR { A L - ZA } NPAD (S! SWAP 0 : SWAP! SWAP ! ;
-\ : `RW 1K UM* SCRH `SEEK  IO?  1K SCRH  EX IO? ;
-\ : `WBLK `RW FWRITE ;    : `RBLK `RW FREAD ;
-\ : `SIZE { HND -- DX:AX } `POSF IO? _DX _AX
-\    _BX `SIZE TO _CX _AX _DX  { DX:CX} ROT _CX _BX `SEEK ;
-\ : Fcut { SCR -} `RW NIP D0 ROT FWRITE DROP ;
-\ : Fsize SCRH `SIZE 1K UM/MOD NIP ;
 : ;File CSTR >ZSTR 1+ D0 EX IO? _AX ;
 : FOPEN ;File  `OPEN ;        : FCREATE ;File `CREATE ;
+
 \
 : `BACK! @+ XCHG EXECUTE POP !- DROP; ,<
 : 0; 0?SKIP DROP; RDROP ;
@@ -368,22 +369,14 @@ HERE #DOES 2- CALL, >, `BACK! : @- 2- DXEP @ ;
 : `KEY!  LIT FGET TO KEY ;
 : ;FILE TO HANDLES `NOEOS  AT KEY @ XCHG PUSH `KEY!
      EX `NOEOS  POP TO KEY      : `CLOSE1 HANDLES FCLOSE ;
-: FTYPE TOKEN? FOPEN ;FILE BEGIN KEY EMIT EOS? UNTIL ;
-: ;TI ETIB XCHG LTIB PUSH BLK PUSH PUSH  CALL EX POP POP POP THEN
-   TO ETIB TO LTIB DUP TO BLK 0; 0 TO ETIB ;
+: ;TI LTIB XCHG ETIB PUSH BLK PUSH PUSH  CALL EX POP POP POP THEN
+   TO LTIB TO ETIB DUP TO BLK 0; 0 TO ETIB ;
 : INCLUDE TOKEN? : INCLUDED FOPEN ;FILE ;TI BEGIN vINIT EVAL EOS? UNTIL ;
-: SEVAL 0 SWAP CSTR ;TI EVAL ;
 
 : 2/ 2 : U/ U/MOD NIP; ,<
 : (ERR  CR  TBUF ID.  STATE ".  CR  LIT (BK TO KEY
    AT HANDLES @+ - 2/ LOOPS `CLOSE1 ;
   META (ERR vERR                  \ SHOW ERROR ROUTINE
-
-\ -------------------------------------------------------------
-
-\ : `SOURCE ETIB 0?SKIP EXIT  BLK  BLOCK 1K + DUP TO ETIB ;
-\ : THRU PUSH 1- POP ;DROP OVER - LOOPS 1+ DXEP
-\ : LOAD 1K 0 ;TI (JUMP `DOEVAL ,<
 
 \ -------------------------------------------------------------
 
@@ -402,6 +395,6 @@ LIKE ;DPUSH =, `;HOME  : `HOME 0 0 : @XY BB>W D0 $200 (VID ;
 \ : SEE ' TO `WW  : L 8 LOOPS `;WW
 \ : WW CR DUP H. STR DUP H. ?ID. ;
 
-META @OK vOK.   META (AC ACCEPT    META (BE  EMIT
+META @OK vOK.   META (AC ACCEPT    META (BE  EMIT   INCLUDE COMMON.NVF
 
 
