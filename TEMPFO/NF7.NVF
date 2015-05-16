@@ -4,17 +4,15 @@ $209 =: +       $207 =: -
 HERE  $4B C,   HERE  $4B C,  $EB C,  $4F4 2 +  HERE 1 + - C,  =, 1-  =, 2-
 
 $259 =: ,       $1AC =: DROP;   $1EA =: DUP     $1FD =: ,<`     $48B =: >,
-$29D =: WORD    $48D =: #DOES   $1F8 =: @       $4B8 =: 0?SKIP  $20B =: STR
-$2BB =: #??     $3FE =, AND     $299 =: TOKEN?  $221 =: FIND    : W, STR , ;
-: LOCATE TOKEN? FIND 1 AND ;  : ' LOCATE #?? ;  : LIKE ' @ ;    : ,' ' , ;
-HERE =: BLK ' HERE W, @ , 0 ,   $462 =, 2DROP   $461 =, 2DROP;
-HERE $E8 C, #DOES HERE 2 + - ,  >, BLK 0?SKIP DROP; C@ WORD DROP; ,<
-DUP =, \ 0 C,  =, { '} C,
+$29D =: WORD    $48D =: #DOES   $1F8 =: @
+HERE $E8 C, #DOES HERE 2 + - ,  >, C@ WORD DROP; ,<  DUP =, \ 0 C,  =, { '} C,
+$2BB =: #??     $3FE =, AND     $299 =: TOKEN?  $221 =: FIND
+: LOCATE TOKEN? FIND 1 AND ;  : ' LOCATE #?? ;   : LIKE ' @ ;   : ,' ' , ;
 
 \ HERE : CR 13 EMIT 10 EMIT ; $11A !   HERE : ER '? EMIT '? EMIT ; $11E !
 $130 =: bl              \ RETURNS ASCII CODE OF SPACE CHARACTER
 $24B =: SKIP    $1A8 =: ;DROP   $245 =: (NEXT   $4B1 =: (FOR    $247 =: RDROP
-$444 =: PUSH    $47F =: EXECUTE $241 =: J
+$444 =: PUSH    $47F =: EXECUTE $241 =: J       $20B =: STR        \ _WSTR
 $1DD =: (ASTR   \ _ASTR - STRING PRIMITIVE
 $219 =: CSTR    \ _CSTR - CSTRING > COUNT ADDRESS
 $194 =: (A"     \ _ABORT?  IF 0 <>  ->  TYPES WORD  TYPES "ERROR KIND" & ABORTS
@@ -76,12 +74,15 @@ $257 =:  ;COMMA    \ _XCOMMA
 $2B1 =:  ;SETSTR   \ _XSETSTR
 $2B9 =:  ;TOK?     \ _XTOK?
 $4EF =:  0=        \ _ZEQ
+$4B8 =:  0?SKIP    \ _ZSKIP
 
 \ ----------------------------
 
 $4EB =: `NOT
 $4E3 =: `1P
 $42F =: `1P_NIP
+$462 =: `2DROP
+$461 =: `2DROPX
 $4E2 =: `2P
 $42E =: `2P_NIP
 $4E1 =: `3P
@@ -198,8 +199,7 @@ $93 C, $F7 C, $E2 C, $92 C, $93 C, RET,
 : U* UM* DROP; ,<
 : * SM* DROP; ,<
 
-' `NEG =, NEG   ' `XOR =, XOR   ' `NOT =, NOT   : COMPILE @R+ , ;
-: OR OVER NOT AND XOR ;
+' `NEG =, NEG   ' `XOR =, XOR     ' `NOT =, NOT      : COMPILE @R+ , ;
 LIKE :  =, CONST ' `_CONS , ,' , \ CONSTANTS
 LIKE :  =, CREATE ' `_VAR ,  0 , \ ONLY ADDRESS NOTHING MORE
 : (=) =H COMPILE ,< LIKE ;` , >, , , ;  \ DOERS
@@ -226,9 +226,9 @@ DUP  =, ".      \ RUNTIME STRING LITERAL EMITER FUNCTION
 LIKE ;` =, DOES>` >, ;code DOES, ,<     \ WE HAVE DOES !
 
 \ CONSTANTS   VARIABLES VALUES  & DEFERS
- 16 CONST 1H    '0 CONST '0'    3 CONST 3       1 CONST 1
-256 CONST 1B                        255 CONST &BYTE     26 CONST eof
-      $5C      CONST NPAD       1024 CONST 1K   64 CONST 1L
+ 16 CONST 1H      '0 CONST '0'     3 CONST 3       1 CONST  1
+256 CONST 1B     255 CONST &BYTE  26 CONST eof     2 CONST  2
+$5C CONST NPAD  1024 CONST 1K     64 CONST 1L     -1 CONST -1
 
 : 2* DUP + ;
 ' `NIP =, NIP
@@ -265,8 +265,8 @@ LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
 \  META (ERR vERR                  \ SHOW ERROR ROUTINE
 
 \ CONTINUE EXTENDING COMPILER
-: DXEP DUP : XEP XCHG EXECUTE POP ;   : (CALL @R+ PUSH ; : ;GO @R+ XCHG PUSH ;
--#20 CONST FTOP   FTOP VALUE  FSTACK  : ;FSTACK FSTACK EX TO FSTACK ;
+: DXEP DUP : XEP XCHG EXECUTE POP ;     : (CALL @R+ PUSH ;
+-#20 CONST FTOP   FTOP VALUE  FSTACK    : ;FSTACK FSTACK EX TO FSTACK ;
 ' , =: <RELEASE     : F> FSTACK FTOP XOR #?? ;FSTACK : @+ STR SWAP ;
 : >F ;FSTACK : !- 2- DXEP ! ; : <RELEASE> <RELEASE : RELEASE> HERE F> ! ;
 : MARK> HERE >F : Z, 0 , ;      : >MARK< MARK>  : <MARK HERE ;
@@ -306,7 +306,6 @@ LIKE J  =, I 0 ,        : TWICE I PUSH ;
 : BB>W  W>B L>H SWAP W>B XOR ;  : W>BB 1B U/MOD ;  : B>HH 1H U/MOD ;
 : ALPHA  9 OVER U<  7 AND + '0' + ;           \  7 ALPHA EMIT
 : H.  ;SPC  W>BB TWICE  : `B. B>HH TWICE    : DIG.  ALPHA EMIT ;
-: B.  ;SPC  W>B `B. ;
 : .   DUP 0< IF TO '-' ABS THEN       : U.    ;SPC
 : `U. lf U/MOD 0?SKIP RECURCE DIG. ;
 
@@ -343,8 +342,7 @@ CODE: (IO
   $97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $9C C,  $94 C,
   #JMP, ' `2DROPX ,R
 \ : REGS _DX _CX _BX _AX ;
-: ODD 1 AND ;  \ 0 VALUE BLK
-0 VALUE EOS?
+: ODD 1 AND ;  0 VALUE BLK  0 VALUE SCR  0 VALUE XY  0 VALUE EOS?
 : IO? _FR ODD A" :IO?" ;  : D0 0 0 ;
 HERE DOES, >, C@  (IO  TO _FR  TO _AX  TO _BX  TO _CX  TO _DX ;
 DUP =, (DOS $21 C,  DUP =, (VID $10 C,   =, (KBD $16 C,
@@ -369,25 +367,37 @@ HERE #DOES 2- CALL, >, `BACK! : @- 2- DXEP @ ;
   AT `FBUF 1 AT HANDLES @ 2- @  FREAD  _AX 0;  \ SOMETHING
   DROP `FBUF  DUP eof XOR 0; RDROP  ; \ CONTROLS - LIKE BL
 : `KEY!  LIT FGET TO KEY ;
-: ;EDIT 3  : ;FILE  TO HANDLES `NOEOS  AT KEY @ XCHG PUSH `KEY!
+: ;FILE TO HANDLES `NOEOS  AT KEY @ XCHG PUSH `KEY!
      EX `NOEOS  POP TO KEY      : `CLOSE1 HANDLES FCLOSE ;
 : ;TI 0 : ;TIBLK BLK XCHG LTIB PUSH ETIB PUSH PUSH
   CALL EX POP POP POP THEN  TO BLK TO LTIB TO ETIB  BLK 0; 0 TO ETIB ;
 : INCLUDE TOKEN? : INCLUDED FOPEN \` ;FILE D0 ;TI BEGIN vINIT EVAL EOS? UNTIL ;
+: FTYPE TOKEN? FOPEN ;FILE BEGIN KEY EMIT EOS? UNTIL ;
+: M: ';  : ?M: CREATE (?",) DOES>     \ MACROSES
+: SEVAL CSTR : STREVAL ;TI ETIB LTIB EVAL ;
 
 : 2/ 2 : U/ U/MOD NIP; ,<
-: CLOSE_ALL   AT HANDLES @+ - 2/ LOOPS `CLOSE1 ;
-0 VALUE SCR  0 VALUE XY
-: (ERR  CR  TBUF ID.  STATE ".  LIT (BK TO KEY CLOSE_ALL
-        BLK 0;  BLK TO SCR 1K LTIB - TO XY ;
+: CLOSE_ALL    AT HANDLES @+ - 2/ LOOPS `CLOSE1 ;
+: (ERR  CR  TBUF ID.  STATE ".  CR  LIT (BK TO KEY
+      CLOSE_ALL  BLK 0; BLK TO SCR 1K LTIB - TO XY ;
   META (ERR vERR                  \ SHOW ERROR ROUTINE
 
 \ -------------------------------------------------------------
 
 0 =, BYE
-: HOME D0 : @XY BB>W D0 $200 (VID ;
-: PAGE ;GO TO HOME  25 : CRS  LOOPS CR ;
+LIKE ;DPUSH =, `;HOME  : HOME D0 : @XY BB>W D0 $200 (VID ;
+: PAGE `;HOME  25 : CRS  LOOPS CR ;
 
+\ 0 VALUE DPTR  0 VALUE ADR  0 VALUE NPTR
+\ : DNEXT DPTR CSTR + @+ TO NPTR ;   : END? DUP TO DPTR C@ ;
+\ : <ID? ADR 2- : #>ID? TO ADR DICT SKIP
+\  BEGIN NPTR END? WHILE DNEXT ADR = UNTIL THEN DPTR C@ ;
+\ : ?ID. CALL ID. DPTR ID. SPACE ;THEN #>ID? IF @R+ DROP; THEN
+\         <ID? IF " TO" ;THEN <ID? IF " AT" ;THEN RDROP ;
+\ : VLIST DICT SKIP BEGIN NPTR END? WHILE DNEXT H. DPTR ID. REPEAT ;
+\ 0 VALUE `WW : `;WW `WW EX TO `WW ;
+\ : SEE ' TO `WW  : L 8 LOOPS `;WW
+\ : WW CR DUP H. STR DUP H. ?ID. ;
 
 META @OK vOK.   META (AC ACCEPT    META (BE  EMIT   INCLUDE COMMON.NVF
 
