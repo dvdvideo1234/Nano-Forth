@@ -41,9 +41,9 @@ HERE DOES, >, C@ PREV FBUFS C! ;  DUP   =, DISCARD  0 C,  =, UPDATE  -1 C,
 META `SOURCE SOURCE
 : THRU PUSH 1- POP ;DROP OVER - LOOPS 1+ DXEP
 : LOAD DUP 0= A"  BLK0!" 0 1K ROT ;TIBLK (JUMP `DOEVAL ,<
-: LIST DUP TO SCR BLOCK
-: .BLOCK  CR ." SCR# " SCR . 1H LOOPS 1H 1- J -
-: .LINE CR 2 SPACES B. ;[] 1L ?TYPE ;
+\ : LIST DUP TO SCR BLOCK
+\ : .BLOCK  CR ." SCR# " SCR . 1H LOOPS 1H 1- J -
+\ : .LINE CR 2 SPACES B. ;[] 1L ?TYPE ;
 
 \ -------------------------------------------------------------
 
