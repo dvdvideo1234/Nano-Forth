@@ -1,8 +1,8 @@
-MARKER EXT2.
+MARKER DEBUG.
 
 HERE DOES, >, CSTR ADR SCAN 1+ 0; DUP ". CSTR + ;
 =, ?STR 3 C, ' A"` 2+ @ ,  ' "` 2+ @ ,  ' ."` 2+ @ ,
-: WDUMP bs ?DU ;DROP LOOPS CR DUP H. bs LOOPS STR H. ;
+\ WDUMP bs ?DU ;DROP LOOPS CR DUP H. bs LOOPS STR H. ;
 
 : <ID? ADR 2- : #>ID? TO ADR DICT SKIP
  BEGIN NPTR END? WHILE DNEXT ADR = UNTIL THEN DPTR C@ ;
@@ -11,19 +11,19 @@ HERE DOES, >, CSTR ADR SCAN 1+ 0; DUP ". CSTR + ;
       <ID? IF " TO" ;THEN
       <ID? IF " AT" ;THEN
       RDROP ." `$" ADR 2+ 2+ H. ;
-
-0 VALUE `WW
-: `;WW `WW EX TO `WW ;
-
-: SEE ' : @SEE TO `WW
-: L bs LOOPS `;WW
-: WW CR DUP H. DUP PUSH STR DUP H. DUP
-      ?ID. TO ADR ?STR POP #>ID? 0; DPTR ID. ;
-
 : ;[] '[ EMIT EX '] EMIT ;
-LIKE `;HOME 1+ =, `TYPE >, DUP 1H - 1H SPACE ;[] ;DROP
-: ?TYPE LOOPS CSTR
-: ?EMIT DUP bl U< IF DROP '. THEN EMIT ;
+: ;{} '{ EMIT SPACE EX '} EMIT ;
+: ;?ID. EX #>ID? 0; ;SPC ;{} DPTR ". ;
+
+0 VALUE `WW     : `;WW `WW EX TO `WW ;
+
+: SEE ' : @SEE TO `WW   : L bs LOOPS `;WW
+ CR DUP H. ;?ID. DXEP STR DUP H. : `WW2 DUP ?ID. TO ADR ?STR ;
+
+: HACK ' : @HACK TO `WW CR
+: HL bs LOOPS `;WW ;?ID. DXEP STR `WW2 ;
+
+LIKE `;HOME 1+ =, `TYPE >, DUP 1H - 1H SPACE ;[] ;DROP ?TYPE ;
 : DUMP 1H ?DU ;DROP
 : DU LOOPS CR DUP H. SPACE `TYPE   1H LOOPS CSTR
 : B. ;SPC W>B `B. ;

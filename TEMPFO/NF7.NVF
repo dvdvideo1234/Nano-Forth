@@ -1,24 +1,32 @@
-$13A =: HERE    $3E2 =: !       $235 =: ;`      $10C =: EMIT    $22F =: :
-$27D =: =,      $215 =: C@      $273 =: ;HERE   $424 =: C!+   : C, ;HERE C!+ ;
-$209 =: +       $207 =: -
-HERE  $4B C,   HERE  $4B C,  $EB C,  $4F4 2 +  HERE 1 + - C,  =, 1-  =, 2-
+$13A =: HERE    $3E2 =: !       $235 =: ;`      $10C =: EMIT
+$22F =: :       $27D =: =,      $215 =: C@      $273 =: ;HERE
+$424 =: C!+   : C, ;HERE C!+ ;  $209 =: +       $207 =: -
+HERE  $4B C,   HERE  $4B C,  $EB C,  $4F4 2 +  HERE 1 + - C,
+  =, 1-  =, 2-
 
-$259 =: ,       $1AC =: DROP;   $1EA =: DUP     $1FD =: ,<`     $48B =: >,
+$259 =: ,       $1AC =: DROP;   $1EA =: DUP     $1FD =: ,<`
+$48B =: >,
 $29D =: WORD    $48D =: #DOES   $1F8 =: @
-HERE $E8 C, #DOES HERE 2 + - ,  >, C@ WORD DROP; ,<  DUP =, \ 0 C,  =, { '} C,
-$2BB =: #??     $3FE =, AND     $299 =: TOKEN?  $221 =: FIND
-: LOCATE TOKEN? FIND 1 AND ;  : ' LOCATE #?? ;   : LIKE ' @ ;   : ,' ' , ;
+HERE $E8 C, #DOES HERE 2 + - ,  >, C@ WORD DROP; ,<
+DUP =, \ 0 C,  =, { '} C,
 
-\ HERE : CR 13 EMIT 10 EMIT ; $11A !   HERE : ER '? EMIT '? EMIT ; $11E !
+$2BB =: #??     $3FE =, AND     $299 =: TOKEN?  $221 =: FIND
+: LOCATE TOKEN? FIND 1 AND ;  : ' LOCATE #?? ;   : LIKE ' @ ;
+: ,' ' , ;
+
+\ HERE : CR 13 EMIT 10 EMIT ; $11A !
+\ HERE : ER '? EMIT '? EMIT ; $11E !
 $130 =: bl              \ RETURNS ASCII CODE OF SPACE CHARACTER
-$24B =: SKIP    $1A8 =: ;DROP   $245 =: (NEXT   $4B1 =: (FOR    $247 =: RDROP
-$444 =: PUSH    $47F =: EXECUTE $241 =: J       $20B =: STR        \ _WSTR
+$24B =: SKIP    $1A8 =: ;DROP   $245 =: (NEXT   $4B1 =: (FOR
+$247 =: RDROP
+$444 =: PUSH    $47F =: EXECUTE $241 =: J       $20B =: STR
+   \ _WSTR
 $1DD =: (ASTR   \ _ASTR - STRING PRIMITIVE
 $219 =: CSTR    \ _CSTR - CSTRING > COUNT ADDRESS
-$194 =: (A"     \ _ABORT?  IF 0 <>  ->  TYPES WORD  TYPES "ERROR KIND" & ABORTS
+$194 =: (A"     \ TYPES WORD  TYPES "ERROR KIND" & ABORTS
 $1FF =:  3+        \ _3P
-$152 =: CNTC    \ _CNTC   - COUNT OF EMITTED CHARS ON OUTPUT STREEM
-$118 =: vOK.    \ _OK     - VECTORED RESPONCE OF THE SYSTEM IF NO ERROR
+$152 =: CNTC    \ COUNT OF EMITTED CHARS ON OUTPUT STREEM
+$118 =: vOK.    \ VECTORED RESPONCE OF THE SYSTEM IF NO ERROR
 $1C2 =:  ;DPUSH    \ _XDPUSH
 $11C =: vERR       \ _ERROR  - DEFER ERROR
 $128 =: TBUF       \ _TBUF
@@ -175,10 +183,12 @@ $40E =: `_VAR
 \ HERE : CR 13 EMIT 10 EMIT ;     $11A !
 \ HERE : ERR '? EMIT '? EMIT '? EMIT ;     $11E !
 
-LIKE ;` =, :` ,' SKIP ,' :       \ ":" - NOW DEFINES WORDS ON COMPILE STATE
+LIKE ;` =, :` ,' SKIP ,' :
+\ ":" - NOW DEFINES WORDS ON COMPILE STATE
 ' `2P  =, 2+            ' `1P  =, 1+  \ : C,R HERE 1+ - C, ;
 HERE $E8 C, #DOES HERE    2+ - , >, C@ C, ;
-DUP =, #CAL, $E8 ,    DUP =, #JMP, $E9 ,    DUP =, JMPS, $EB ,  =, RET, $C3 ,
+DUP =, #CAL, $E8 ,    DUP =, #JMP, $E9 ,
+DUP =, JMPS, $EB ,  =, RET, $C3 ,
 : DOES, #DOES           : CALL, #CAL,   : ,R HERE    2+ - , ;
 
 LIKE ! =, U<
@@ -199,7 +209,8 @@ $93 C, $F7 C, $E2 C, $92 C, $93 C, RET,
 : U* UM* DROP; ,<
 : * SM* DROP; ,<
 
-' `NEG =, NEG   ' `XOR =, XOR     ' `NOT =, NOT      : COMPILE @R+ , ;
+' `NEG =, NEG   ' `XOR =, XOR     ' `NOT =, NOT
+: COMPILE @R+ , ;
 LIKE :  =, CONST ' `_CONS , ,' , \ CONSTANTS
 LIKE :  =, CREATE ' `_VAR ,  0 , \ ONLY ADDRESS NOTHING MORE
 : (=) =H COMPILE ,< LIKE ;` , >, , , ;  \ DOERS
@@ -208,12 +219,17 @@ LIKE :  =, CREATE ' `_VAR ,  0 , \ ONLY ADDRESS NOTHING MORE
 : IS '    2+ ! ;
 : TIMES SWAP PUSH
 : LOOPS (FOR  ,< HERE 10 + , >, J EXECUTE
-        (NEXT ,< HERE 6 - , >, RDROP ;          \ LOOPS & TIMES FUNCTIONS
+        (NEXT ,< HERE 6 - , >, RDROP ;
+\ LOOPS & TIMES FUNCTIONS
 
+LIKE @ =, ?BL.
+$80 C, $FB C, bl C, $73 C, 2 C, $B3 C, $2E C, RET,
 ' `NEST3
 DUP  =, (."     \ COMPILETIME STRING LITERAL EMITER
 DUP  =, ".      \ RUNTIME STRING LITERAL EMITER FUNCTION
-=, TYPE  >, (ASTR CSTR ;DROP LOOPS CSTR EMIT ;
+=, TYPE  >, (ASTR CSTR ;DROP
+: ?TYPE LOOPS CSTR
+: ?EMIT ?BL. EMIT ;
 : (" (ASTR ;    \ STRING LITERAL
 
 : ALLOT ;HERE + ;
@@ -234,8 +250,9 @@ $5C CONST NPAD  1024 CONST 1K     64 CONST 1L     -1 CONST -1
 ' `NIP =, NIP
 : B>W &BYTE AND ;
 : >IP+ NOT 3  AND 2* POP + PUSH ;
-: (,) CREATE , DOES> @ , ;              \ commaers  & --V MAKERS
-: (:) CREATE DUP C, >IP+ , , , ,'  DOES> CSTR =H >IP+ W, W, W, @EXEC ;
+: (,) CREATE , DOES> @ , ;      \ commaers  & --V MAKERS
+: (:) CREATE DUP C, >IP+ , , , ,'
+       DOES> CSTR =H >IP+ W, W, W, @EXEC ;
 
 ' `_DEFER    1 (:) DEFER ,
 ' `_SETVAR   ' `_CONS2    2 (:) VALUE ,
@@ -244,16 +261,20 @@ $5C CONST NPAD  1024 CONST 1K     64 CONST 1L     -1 CONST -1
 ' `_VAR      ' `_SETVAR2  ' `_CONS3   3 (:) QUAN ,
 ' `_VAR      ' `_SETVAR2  ' `_DEFER3  3 (:) VQUAN ,
 
-HERE DOES, >, C@ EMIT ;   HERE #DOES 1- CALL, >, C@ ;  2 (:) CONST.C C,
+HERE DOES, >, C@ EMIT ;   HERE #DOES 1- CALL, >, C@ ;
+2 (:) CONST.C C,
 10 CONST.C lf   13 CONST.C cr   8 CONST.C bs  '- CONST.C '-'
 
 \ searching
 HERE DOES, >, : `(' C@ ' + ;
  DUP =, 'TO  2 C, =, 'AT  4 C,  \ ADDRESS OF XT+2 / XT+4
-HERE DOES, >, `(' EXEC ; DUP =, TO   2 C,  =, AT  4 C, \ EXECUTES XT+2 / XT+4
-HERE DOES, >, `(' , ;    DUP =, TO`  2 C,  =, AT` 4 C, \ COMPILES
+HERE DOES, >, `(' EXEC ; DUP =, TO   2 C,  =, AT  4 C,
+\ EXECUTES XT+2 / XT+4
+HERE DOES, >, `(' , ;    DUP =, TO`  2 C,  =, AT` 4 C,
+\ COMPILES
 
-LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
+LIKE ;DPUSH =, ;SPC
+\  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
 : SPACE bl EMIT ;       \ EMIT BLANK SPACE
 : ID. ;SPC ". ;
 
@@ -266,20 +287,23 @@ LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
 
 \ CONTINUE EXTENDING COMPILER
 : DXEP DUP : XEP XCHG EXECUTE POP ;     : (CALL @R+ PUSH ;
--#20 CONST FTOP   FTOP VALUE  FSTACK    : ;FSTACK FSTACK EX TO FSTACK ;
-' , =: <RELEASE     : F> FSTACK FTOP XOR #?? ;FSTACK : @+ STR SWAP ;
-: >F ;FSTACK : !- 2- DXEP ! ; : <RELEASE> <RELEASE : RELEASE> HERE F> ! ;
+-#20 CONST FTOP   FTOP VALUE  FSTACK
+: ;FSTACK FSTACK EX TO FSTACK ;
+' , =: <RELEASE
+: F> FSTACK FTOP XOR #?? ;FSTACK : @+ STR SWAP ;
+: >F ;FSTACK : !- 2- DXEP ! ;
+: <RELEASE> <RELEASE : RELEASE> HERE F> ! ;
 : MARK> HERE >F : Z, 0 , ;      : >MARK< MARK>  : <MARK HERE ;
 : CASE`  0 >F ;         ' XOR =: <>     : = <> 0= ;
 
-' MARK>      '     (IF (=) IF`                       ' RELEASE> =: THEN`
+' MARK>    '    (IF (=) IF`               ' RELEASE> =: THEN`
 : (OF OVER <> @R+ SWAP IF XCHG SKIP THEN DROP DROP; ,<
-' RELEASE>   ' EXIT    (=) ;THEN`          '              <MARK =: BEGIN`
-' >MARK<     '    (FOR (=) FOR`            ' <RELEASE> ' (NEXT (=) NEXT`
-' <MARK      '    PUSH (=) FOR>`           ' <RELEASE  ' (NEXT (=) <NEXT`
-' MARK>      '   (CALL (=) CALL`           ' <RELEASE  ' (JUMP (=) AGAIN`
-' <RELEASE   '     (IF (=) UNTIL`          ' MARK>     ' (JUMP (=) AHEAD`
-' MARK>      '    (#IF (=) #IF`            ' MARK>     ' (OF   (=) OF`
+' RELEASE> ' EXIT   (=) ;THEN`  '              <MARK =: BEGIN`
+' >MARK<   '   (FOR (=) FOR`    ' <RELEASE> ' (NEXT (=) NEXT`
+' <MARK    '   PUSH (=) FOR>`   ' <RELEASE  ' (NEXT (=) <NEXT`
+' MARK>    '  (CALL (=) CALL`   ' <RELEASE  ' (JUMP (=) AGAIN`
+' <RELEASE '    (IF (=) UNTIL`  ' MARK>     ' (JUMP (=) AHEAD`
+' MARK>    '   (#IF (=) #IF`    ' MARK>     ' (OF   (=) OF`
 
 : CSWAP` F> F> SWAP >F >F ;
 : REPEAT` AGAIN`  THEN` ;          ' IF`   =: WHILE`
@@ -287,9 +311,9 @@ LIKE ;DPUSH =, ;SPC     \  EMIT SPACE IN THE END OF WORD  __RVAR2 _XSPC
 : ENDCASE`  COMPILE DROP  BEGIN F> #IF >F THEN` REPEAT DROP ;
 
 \ STRING COMPILING
-: (",)  '" : (?",)   WORD               \ PARSE & COMPILE STR
-: CSTR, CSTR                            \ COUNTED STRING COMPILE
-: STR, ;HERE (S! DROP; ,<               \ ADR COUNT STRING COMPILE
+: (",)  '" : (?",)   WORD       \ PARSE & COMPILE STR
+: CSTR, CSTR                    \ COUNTED STRING COMPILE
+: STR, ;HERE (S! DROP; ,<       \ ADR COUNT STRING COMPILE
 
 ' (",) ' ("   (=) "`    \ STRING LITERALS  COMPILER
 ' (",) ' (A"  (=) A"`   \ STRING ERROR MESSAGES  COMPILER
@@ -303,9 +327,10 @@ LIKE J  =, I 0 ,        : TWICE I PUSH ;
 \ NUMOUT
 \
 : U* UM* DROP; ,<       : W>B &BYTE AND ;       : L>H 1B U* ;
-: BB>W  W>B L>H SWAP W>B XOR ;  : W>BB 1B U/MOD ;  : B>HH 1H U/MOD ;
+: BB>W  W>B L>H SWAP W>B XOR ;  : W>BB 1B U/MOD ;
+: B>HH 1H U/MOD ;
 : ALPHA  9 OVER U<  7 AND + '0' + ;           \  7 ALPHA EMIT
-: H.  ;SPC  W>BB TWICE  : `B. B>HH TWICE    : DIG.  ALPHA EMIT ;
+: H.  ;SPC  W>BB TWICE  : `B. B>HH TWICE  : DIG.  ALPHA EMIT ;
 : .   DUP 0< IF TO '-' ABS THEN       : U.    ;SPC
 : `U. lf U/MOD 0?SKIP RECURCE DIG. ;
 
@@ -335,21 +360,26 @@ $02 C,  $30 C,  $E4 C,  $93 C,  RET,
 ' (BK TO KEY
 
 \ -------------------------------------------------------------
-0 VALUE _AX     0 VALUE _BX     0 VALUE _CX     0 VALUE _DX     0 VALUE _FR
+0 VALUE _AX     0 VALUE _BX     0 VALUE _CX
+0 VALUE _DX     0 VALUE _FR
 CODE: (IO
-  $88 C,  $1E C,  HERE 12 + ,     $56 C,  $94 C,  $5B C,  $59 C,
-  $5F C,  $94 C,  $97 C,  $92 C,  $57 C,  $CD C,  $21 C,  $5F C,
-  $97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $9C C,  $94 C,
-  #JMP, ' `2DROPX ,R
+ $88 C,  $1E C,  HERE 12 + ,     $56 C,  $94 C,  $5B C,  $59 C,
+ $5F C,  $94 C,  $97 C,  $92 C,  $57 C,  $CD C,  $21 C,  $5F C,
+ $97 C,  $94 C,  $52 C,  $51 C,  $53 C,  $57 C,  $9C C,  $94 C,
+ #JMP, ' `2DROPX ,R
 \ : REGS _DX _CX _BX _AX ;
-: ODD 1 AND ;  0 VALUE BLK  0 VALUE SCR  0 VALUE XY  0 VALUE EOS?
+: ODD 1 AND ;
+0 VALUE BLK  0 VALUE SCR  0 VALUE XY  0 VALUE EOS?
 : IO? _FR ODD A" :IO?" ;  : D0 0 0 ;
 HERE DOES, >, C@  (IO  TO _FR  TO _AX  TO _BX  TO _CX  TO _DX ;
 DUP =, (DOS $21 C,  DUP =, (VID $10 C,   =, (KBD $16 C,
-HERE DOES, >, @ (DOS ;  DUP =, `OPEN $3D02 ,    DUP =, FREAD  $3F00 ,
-DUP =, FWRITE  $4000 ,  DUP =, `SEEK   $4200 ,  =, `CREATE $3C00 ,
+HERE DOES, >, @ (DOS ;  DUP =, `OPEN $3D02 ,
+DUP =, FREAD  $3F00 ,
+DUP =, FWRITE  $4000 ,  DUP =, `SEEK   $4200 ,
+    =, `CREATE $3C00 ,
 HERE DOES, >, @ PUSH D0 ROT POP (DOS ;
-DUP =, `SIZE  $4202 ,   DUP =, `POSF  $4201 ,   =, FCLOSE $3E00 ,
+DUP =, `SIZE  $4202 ,   DUP =, `POSF  $4201 ,
+    =, FCLOSE $3E00 ,
 
 : =" '" WORD CSTR
 : >ZSTR { A L - ZA } NPAD (S! SWAP 0 : SWAP! SWAP ! ;
@@ -371,8 +401,10 @@ HERE #DOES 2- CALL, >, `BACK! : @- 2- DXEP @ ;
 : ;FILE TO HANDLES `NOEOS  AT KEY @ XCHG PUSH `KEY!
      EX `NOEOS  POP TO KEY      : `CLOSE1 HANDLES FCLOSE ;
 : ;TI 0 : ;TIBLK BLK XCHG LTIB PUSH ETIB PUSH PUSH
-  CALL EX POP POP POP THEN  TO BLK TO LTIB TO ETIB  BLK 0; 0 TO ETIB ;
-: INCLUDE TOKEN? : INCLUDED FOPEN \` ;FILE D0 ;TI BEGIN vINIT EVAL EOS? UNTIL ;
+  CALL EX POP POP POP THEN  TO BLK TO LTIB TO ETIB
+: INVALIDATE? BLK 0; 0 TO ETIB ;
+: INCLUDE TOKEN? : INCLUDED FOPEN \` ;FILE D0 ;TI
+     BEGIN vINIT EVAL EOS? UNTIL ;
 : FTYPE TOKEN? FOPEN ;FILE BEGIN KEY EMIT EOS? UNTIL ;
 : M: ';  : ?M: CREATE (?",) DOES>     \ MACROSES
 : SEVAL CSTR : STREVAL ;TI ETIB LTIB EVAL ;
@@ -395,11 +427,13 @@ LIKE ;DPUSH =, `;HOME  : HOME D0 : @XY BB>W D0 $200 (VID ;
 \  BEGIN NPTR END? WHILE DNEXT ADR = UNTIL THEN DPTR C@ ;
 \ : ?ID. CALL ID. DPTR ID. SPACE ;THEN #>ID? IF @R+ DROP; THEN
 \         <ID? IF " TO" ;THEN <ID? IF " AT" ;THEN RDROP ;
-\ : VLIST DICT SKIP BEGIN NPTR END? WHILE DNEXT H. DPTR ID. REPEAT ;
+\ : VLIST DICT SKIP BEGIN NPTR END?
+\ WHILE DNEXT H. DPTR ID. REPEAT ;
 \ 0 VALUE `WW : `;WW `WW EX TO `WW ;
 \ : SEE ' TO `WW  : L 8 LOOPS `;WW
 \ : WW CR DUP H. STR DUP H. ?ID. ;
 
-META @OK vOK.   META (AC ACCEPT    META (BE  EMIT   INCLUDE COMMON.NVF
+META @OK vOK.
+META (AC ACCEPT    META (BE  EMIT   INCLUDE COMMON.NVF
 
 
