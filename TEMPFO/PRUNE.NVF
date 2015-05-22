@@ -1,0 +1,42 @@
+{ PRUNE BY ADDRESS}
+: `HERE+! HERE  DUP PUSH @ + POP ! ;
+: `DICTEL DPTR NPTR OVER - ;
+: `DEST HERE STR + ; 0 VALUE `H
+: `ADD? DNEXT  ADR U< 0;
+    DPTR 1+ C@ '` XOR 0;
+   `DICTEL `DEST    OVER `HERE+! SWAP 1+
+: `CMOVE ;2DROP LOOPS PUSH CSTR POP C!+ ;
+
+: `P TO ADR   0 HERE !  DICT SKIP BEGIN  NPTR  END?
+   WHILE `ADD? REPEAT
+    1 `HERE+! ;
+
+CREATE `O >, (DE ETIB (ACC @_INI ,<
+: FORGET '
+: FGT `P $E000 TO DICT HERE STR >DICT  ADR TO HERE ;
+
+: `N, LOOPS
+: `W, STR
+: `, `H !+ TO `H ;
+
+: 'PRUNE ' 2+ @ FGT ;
+
+: `WS, `W,
+: `S, SWAP
+: `WS+, `W, SWAP 2+ ;
+
+: PRUNE HERE FGT ;
+
+: `W+, `W, 2+ ;
+: `INIT $100 TBL TO `H  7 `N, `O  `WS+,
+        `WS, `WS, `W+, 0 `, `W+, 0 `,
+        12 `N, `S, NIP 2 `N,  ADR `, 2+
+         8 `N, DROP $E000 `,  TBL `H
+: `OVER-FWR OVER -
+: `FWR FHTOP FWRITE ;
+
+: SAVE TOKEN? FCREATE
+  ;FILE `P  `INIT  $152 ADR `OVER-FWR  HERE DUP @ 2+ `FWR ;
+
+
+

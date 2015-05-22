@@ -1,0 +1,134 @@
+{  MARKER EDIT. }
+
+-1024 VALUE THERE : <H HERE THERE TO HERE TO THERE ; ' <H =: H>
+
+D0 7  FAMILY VALUE  `BASE SPTR `SPTRFIX  XK `PDATA `INS HLD
+0 VECTOR `'ADVANCE
+
+: PAGE 0 24 @XY PAGE ;
+: `L/ 1L NEG AND ;    { LINE BEGIN FUNCTION }
+: \ BLK IF LTIB 1- `L/ TO LTIB ;THEN ,< ,' \` >, ;  ' \ =: \`
+
+: <? 2DUP : < - 0< ;
+: >SORT <? 0; SWAP ;
+: MIN >SORT NIP; ,<
+: MAX >SORT DROP; ,<
+: BASE! 2 MAX TO `BASE ;
+: BACK3 POP 6 - PUSH ;
+: ;HLD HLD EX TO HLD ;
+
+\ NUMOUT
+: 1# `BASE U/MOD SWAP : AHOLD ALPHA : HOLD ;HLD
+: C!- 1- DXEP C! ;
+: `SGN# 0 TO HLD 0; NEG EX '- HOLD ;
+: `N# BASE! XEP DUP 0< : `?N# `SGN#  : `S# 1# 0?SKIP BACK3 ;
+: . 0 ;SPC : .R lf : .RB  `N#
+    HLD + SPACES HLD DUP NEG ;DROP  LOOPS CSTR EMIT ;
+
+: LIST DUP TO SCR BLOCK
+: .BLOCK  ;DROP ." SCR# " SCR . CR 1H LOOPS CR 1H  J -
+: .LINE cr EMIT  4 .R SPACE 1L ;[] ?TYPE ;
+
+{ STRINGS   }
+: `?SPTR! `SPTRFIX  DICT <> 0;
+     DICT DUP TO `SPTRFIX TO SPTR  TWICE  D0
+: >S SPTR OVER PUSH (MPUSH XCHG POP C!- TO SPTR ;
+: CMOVE> SWAP OVER+ (MPUSH DROP ;
+: ST  SPTR CSTR ;                      {  \ STACK TOP / NEXT  }
+: S> SPTR            : SDROP  ST + TO SPTR ; {  \ DROP STRING }
+
+: WHAT? 7 EMIT ;
+: -:  ' , C,  XK 2+ DUP TO XK       { BYTES FOR MOVE UP 1 }
+         HERE OVER - DUP PUSH       { START ADDRESS    }
+         DUP 1+ ROT                 { PREPARE FOR MOVE }
+         CMOVE>  HERE C@ POP C!   ; { FIX CODE  }
+: SWITCH: CREATE HERE 73 1 TO XK 0 -:
+    DOES> SWAP TO XK CSTR 2DUP XK BSCAN 1+ 2* + + @EXEC ;
+: ;SWITCH  73 - A" BAD KEYS" XK 2/ 1- SWAP C! ;
+
+: `?XY 1L U/MOD 6 3 ROT + XEP + ;
+: `POSXY XY `?XY @XY   ;
+: `_INS  `INS 0= TO `INS
+: `.INS  75 1 @XY `INS IF ." INS" ;THEN ." OVT" ;
+: `;LRUD  XY EX 1K 1- AND  TO XY ;
+: `;LPOS  XY EX `PDATA + ;
+: `RELOAD SCR BLOCK TO `PDATA `?SPTR! `;LRUD ;
+: `REDRAW `.INS HOME CR  `PDATA .BLOCK ;
+: `L_UP  `;LRUD  1L - ;      { LINE UP  }
+: `L_DN  `;LRUD  1L + ;      { LINE DOWN}
+: `L_END `;LRUD              { DO LINE END}
+: `/L  1L 1- OR ;        { LINE END FUNCTION }
+{ COPY POS^ LINE/ /LINE LDRAW EL INSC DELC OVTC INSL DELL LL}
+: `<_|   `L_DN               { CARRIGE RETURN L_DN L_BEG }
+: `L_BEG `;LRUD  `L/ ;       { DO LINE BEGIN}
+: `->    `;LRUD  1+ ;        { MOVE 1 CHAR RIGHT}
+: `<-    `;LRUD  1- ;        { MOVE 1 CHAR LEFT}
+: `TAB>  `;LRUD  7 OR 1+ ;   { NEXT TABULATION }
+: `<TAB  `;LRUD  1- -8 AND ; { PREVIOUS TABULATION}
+: `APOS  `;LRUD  0 AND ;     { HOME POSITION OF CURSOR   }
+: `LINE/ `;LPOS `L/ ;  : `/LINE `;LPOS `/L ;
+: `LDRAW `POSXY `LINE/ XY 1L /  .LINE DROP ; { OK POS}
+: `EJECTBLOCK DISCARD -1 PREV BUFS ! ;
+: `RESET `EJECTBLOCK `RELOAD `REDRAW ; { !!!!!!! }
+: `LB SCR + 0 MAX TO SCR `RELOAD `REDRAW ;  { +blk - }
+: `LEOS 1K  XY - 1L - 0 MAX ; { - chars_to_end_of_screen }
+: `POS^ `PDATA XY + ;          { - char^ }
+: `P2 `POS^ DUP DUP 1L + ;     { - char^ char^ char^+1l }
+: `LL XY `/L XY - ;            { - chars_to_end_of_line }
+: `GETCHAR XY 0= `'ADVANCE `POS^ C@ 33 U< ;
+: `-BL BEGIN  `GETCHAR 0= OR UNTIL ;
+: `N  1 `LB ;
+: `-NONBL BEGIN `GETCHAR OR UNTIL ;
+: `B -1 `LB ;
+: `>NEXT TO `'ADVANCE `-NONBL `-BL ;
+: `ADV   LIT `-> `>NEXT ;
+: `>EL 1K `LEOS - 1L MIN ;
+: `BACK   LIT `<- `>NEXT `-> ;
+: `EL `>EL BLANK ;  { ( ERASE LINE OR LESS)  }
+: `RDRC `REDRAW UPDATE ;
+: `DELL `P2 SWAP `LEOS CMOVE `LEOS +  `EL `RDRC ;
+: `>INSL `P2 `LEOS CMOVE> `EL ;
+: `C `POS^ `>EL `L_DN >S ;
+: `G `C `L_UP `DELL ;
+: `P ST NIP 0;  `>INSL  SPTR CSTR SDROP
+        `>EL MIN `POS^ SWAP CMOVE `RDRC ;
+: `INSL `>INSL `RDRC ;
+: `POSC `POS^ DUP 1+ ;
+: `INSC `INS IF `POSC `LL CMOVE> THEN
+: `OVTC `POS^ C! UPDATE ;
+: `BS `<- : `DELC `POSC SWAP `LL CMOVE bl
+              `/LINE C! `LDRAW UPDATE ;
+: `ESQ/E EMPTY-BUFS
+: `X-POS 0 18 @XY   1 TO EOS? ;
+: `Q/ED  FLUSH  `X-POS ;
+
+<H
+1  71  7 FAMILY CONST  kHOME  kUP  kPGUP  -- kLEFT  -- kRIGHT
+   79  7 FAMILY CONST  -- kEND  kDOWN  kPGDN  kINS  kDEL  ksF1
+1 113  7 FAMILY CONST  kaF10 -- kcLEFT kcRIGHT kcEND -- kcHOME
+1 59  10 FAMILY CONST  kF1 kF2 kF3 kF4 kF5 kF6 kF7 kF8 kF9 kF10
+  9  CONST kTAB       104  CONST kaF1       93  CONST ksF10
+ 94  CONST kCF1       103  CONST kcF10      15  CONST ksTAB
+ 1 1  12 FAMILY CONST  ^A ^B ^C ^D --E --F --G --H ^I ^J ^K ^L
+ 1 13 11 FAMILY CONST  --M ^N --O --P ^Q --R ^S --T --U ^V --W
+ 1 24  4 FAMILY CONST  ^X --Y ^Z kESQ
+H>
+
+SWITCH: `EF WHAT?                  kLEFT -: `<-    kUP -: `L_UP
+ kHOME -: `L_BEG   kEND -: `L_END  kPGUP -: `B   kPGDN -: `N
+ kDOWN -: `L_DN  kRIGHT -: `->     kINS  -: `_INS kDEL -: `DELC
+ ksTAB -: `<TAB  kcHOME -: `APOS
+;SWITCH
+
+: `ONEC XK bl U<  IF WHAT? ;THEN XK `INSC `LDRAW `-> ;
+SWITCH:  `EK  `ONEC   ^J -: `<-  ^K -: `->     ^X -:  `G
+  127 -: `DELL    bs -: `BS        ^D -: `DELC  cr -: `<_|
+ ^N -: `N     ^B -: `B    ^L -: `RESET   ^I -: `TAB>
+ ^C -: `C     ^V -: `P    ^Q -: `ESQ/E   ^Z -: `BACK
+ ^A -: `ADV   kESQ -: `Q/ED  ^S -: `INSL   0 -: `EF
+;SWITCH
+
+: `@KEY `POSXY (BK W>BB #IF SWAP ;THEN DROP ;
+: EDIT PAGE : `(E TO SCR   : E `RELOAD `REDRAW 3 ;FILE BEGIN
+    `@KEY `EK EOS? UNTIL ;      : HELP SCR PUSH `(E POP `(E ;
+
