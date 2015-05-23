@@ -286,7 +286,8 @@ LIKE ;DPUSH =, ;SPC
 \  META (ERR vERR                  \ SHOW ERROR ROUTINE
 
 \ CONTINUE EXTENDING COMPILER
-: DXEP DUP : XEP XCHG EXECUTE POP ;     : (CALL @R+ PUSH ;
+: 1+DXEP 1+ : DXEP DUP : XEP XCHG EXECUTE POP ;
+: (CALL @R+ PUSH ;
 -#20 CONST FTOP   FTOP VALUE  FSTACK
 : ;FSTACK FSTACK EX TO FSTACK ;
 ' , =: <RELEASE
@@ -412,7 +413,8 @@ HERE #DOES 2- CALL, >, `BACK! : @- 2- DXEP @ ;
 : 2/ 2 : U/ U/MOD NIP; ,<
 : CLOSE_ALL    AT HANDLES @+ - 2/ LOOPS `CLOSE1 ;
 : (ERR  CR  TBUF ID.  STATE ".  CR  LIT (BK TO KEY
-      CLOSE_ALL  BLK 0; BLK TO SCR 1K LTIB - TO XY ;
+      CLOSE_ALL  BLK 0; BLK TO SCR LTIB NEG
+: >XY 1K 1- AND TO XY ;
   META (ERR vERR                  \ SHOW ERROR ROUTINE
 
 \ -------------------------------------------------------------

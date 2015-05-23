@@ -1,11 +1,3 @@
-
-\ MARKER EXT3.
-
-\ : `SIZE { HND -- DX:AX } `POSF IO? _DX _AX
-\    _BX `SIZE TO _CX _AX _DX  { DX:CX} ROT _CX _BX `SEEK ;
-\ : Fcut { SCR -} `RW NIP D0 ROT FWRITE DROP ;
-\ : Fsize SCRH `SIZE 1K UM/MOD NIP ;
-
      0 VALUE NBUFS
      0 VALUE SCRH
      0 VALUE PREV
@@ -33,19 +25,12 @@ DUP   =, DISCARD  0 C,  =, UPDATE  -1 C,
 : SAVE-BUFS  NBUFS FOR> +BUF TO PREV ?SAVE <NEXT ;
 : BLOCK ;ABLK J ?BUF -IF DROP J BUFFER J `RBLK ;THEN TO PREV ;
 
-\ : `SOURCE ETIB 0?SKIP EXIT  BLK  BLOCK 1K + DUP TO ETIB ;
-\ : THRU PUSH 1- POP ;DROP OVER - LOOPS 1+ DXEP
-\ : LOAD 1K 0 ;TI (JUMP `DOEVAL ,<
-
 \ -------------------------------------------------------------
 
 : `SOURCE ETIB 0?SKIP EXIT  BLK BLOCK 1K + DUP TO ETIB ;
 META `SOURCE SOURCE
 : THRU PUSH 1- POP ;DROP OVER - LOOPS 1+ DXEP
 : LOAD DUP 0= A"  BLK0!" 0 1K ROT ;TIBLK (JUMP `DOEVAL ,<
-\ : LIST DUP TO SCR BLOCK
-\ : .BLOCK  CR ." SCR# " SCR . 1H LOOPS 1H 1- J -
-\ : .LINE CR 2 SPACES B. ;[] 1L ?TYPE ;
 
 \ -------------------------------------------------------------
 
