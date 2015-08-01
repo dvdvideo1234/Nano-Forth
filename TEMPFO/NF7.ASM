@@ -1,34 +1,31 @@
         INCLUDE  NF7.i0
 
 ; REGISTERS
-; SI INSTRUCTION POINTER
-; AX DATA STACK POINTER
+; BX INSTRUCTION POINTER
+; SI DATA STACK POINTER
 ; SP RETURN STACK POINTER
-; BX DATA STACK TOP REGISTER
-; DX DATA STACK NEXT REGISTER
-; DI WORK REGISTER
+; AX DATA STACK TOP REGISTER
+; cx WORK REGISTER
+; di temp register
 
-ip  = si        ; for interpretter
-w   = di
-dsp = ax
-rsp = sp
-top = Bx
-topL = BL
-toph = Bh
-NR   = DX
-NRL  = DL
-NRH  = DH
-TR   = CX
+ip   = BX        ; for interpretter
+w    = CX
+dsp  = SI
+rsp  = sp
+top  = Ax
+topL = AL
+toph = Ah
+TR   = DI
 
 ;ar   = bx       ; address  register
 ;tr   = dx       ; temp register
 ;trl  = dl
 
-nbase = bx      ; for number utility
-nacc  = di
+;nbase = bx      ; for number utility
+;nacc  = di
 
 ; ADRESS REGISTER  ?
-; BP   - NOT USED
+; BP, DX  - NOT USED
 ;
 ; MINIMAL SET INTERPRETTER COMMANDS
 ; METHOD       COMMANDS  (DOES (VAR (CONST (CONST2 (DEFER (DEFER2
@@ -59,31 +56,241 @@ MyCseg  segment para  use16
 Start   Label byte
         JMPS SELF0
 
-_OPERATION DW @_WARY
-        DW _NUMBER,_EXEC        ; INTERPRET
-        DW _COMP_NUM,_COMMA     ; COMPILE
+;_OPERATION DW @_WARY
+;        DW _NUMBER,_EXEC        ; INTERPRET
+;        DW _COMP_NUM,_COMMA     ; COMPILE
+;
+;  __DEFERO _EMIT,_@EMIT
+;  __DEFER  _SOURCE,_ETIB
+;  __DEFER  _ACCEPT,_ACC
+;  __DEFER  _OK,0
+;  __DEFER  _ERROR,0
+;;  __DEFER  _OK,_@OK
+;;  __DEFER  _ERROR,_@ERROR
+;
+;  __CONST  _TBL,80H
+;  __CONST  _TIB,@TIB
+;  __CONST  _TBUF,@TBuf
+;  __CONST  _0,0
+;  __CONST  _BL,32
+;
+;  __POINT  _INIT,_@_INI
+;  __VALUE  _HERE,FREEMEM
+;  __VALUE  _ETIB,0
+;  __VALUE  _LTIB,0
+;  __VALUE  _DICT,@VOCTOP*2
+;  __VALUE  _CNTC,0
+;  __value  _stat,0
 
-  __DEFERO _EMIT,_@EMIT
-  __DEFER  _SOURCE,_ETIB
-  __DEFER  _ACCEPT,_ACC
-  __DEFER  _OK,0
-  __DEFER  _ERROR,0
-;  __DEFER  _OK,_@OK
-;  __DEFER  _ERROR,_@ERROR
+;------------  inner INTERPRETTER ----
+; CONTROL      COMMANDS
+; xep ex exit execute nop skip zskip -if if jump f>c f>c; 0;
 
-  __CONST  _TBL,80H
-  __CONST  _TIB,@TIB
-  __CONST  _TBUF,@TBuf
-  __CONST  _0,0
-  __CONST  _BL,32
+ __w  _dxep
+ dw _dup
+ __w  _xep
+ dw _xchg,_execute,_pop,_exit
 
-  __POINT  _INIT,_@_INI
-  __VALUE  _HERE,FREEMEM
-  __VALUE  _ETIB,0
-  __VALUE  _LTIB,0
-  __VALUE  _DICT,@VOCTOP*2
-  __VALUE  _CNTC,0
-  __value  _stat,0
+ __l  _FtoCX
+  r_to w
+  xchg ip,w
+  jmp  w
+
+ __l  _FtoC
+  jmp ip
+
+ __W  _EXECUTE
+  DW   _PUSH
+ __w  _nop
+  dw   _EXIT
+
+  __l  _0x
+  rchg w
+  drop
+  jcxz @skip
+  jmps @PUSHW
+
+  __l  _ZSKIP
+  rchg w
+  drop
+  jcxz @skip
+  jmps @PUSHW
+
+  __l   _IFm
+  dec   top
+  Jns   @JUMP
+  JMPS  @SKIP
+
+  __l  _IF
+  rchg w
+  drop
+  jcxz @jump
+
+ __l _skip
+@SKIP:
+  INC   IP
+  INC   IP
+  JMPS  @MAIN
+
+ __l _jump
+@JUMP:
+  MOV   IP,[IP]
+  JMPS  @MAIN
+
+; stack commands
+; push drop swap over pop dup xchg -rot rdrop rdrop; i j
+
+ __l _j
+  r_to tr
+  r_to w
+  to_r w
+  to_r tr
+  JMPs  @PUSHW
+
+ __l _i
+  r_to w
+  to_r w
+  JMPs  @PUSHW
+
+ __l _rotm
+  xchg  top,[DSP-2]
+
+ __L _swap
+  xchg  top,[DSP]
+  JMPs  @MAIN
+
+ __L _over
+  MOV   w,[DSP]
+  JMPs  @PUSHW
+
+ __l _xchg
+  r_to w
+  to_r top
+  jmps @swap
+
+ __L _pop
+  pop   w
+  skipr di
+
+ __L _DUP
+  mov   w,top
+@PUSHW:
+  LEA   dsp,[DSP-2]
+  MOV   [DSP],TOP
+@swap:
+  xchg  TOP,W
+
+; MAIN  LOOP  INNER INTERPRETTER
+
+@MAIN:
+  MOV   W,[IP]
+  INC   IP
+  INC   IP
+  SHL   W,1
+  JC    @NEST
+  JMP   W
+
+ __l  _EX
+  r_to w
+@NEST:
+  to_r ip
+  mov  ip,w
+  JMPs  @MAIN
+
+ __l rdropx
+  to_r w
+@return:
+  r_to  IP
+  JMPs  @MAIN
+
+ __L  _EXIT
+  jmps  @return
+
+ __l _rdrop
+  r_to  w
+  JMPs  @MAIN
+
+; LOGICAL      COMMANDS  XOR AND not
+ __l _and
+  and [dsp],top
+  jmps @drop
+
+ __l _xor
+  xor [dsp],top
+  jmps @drop
+
+; ---------------------------------------
+; MATH  COMMANDS
+; + - ABS NEG 1- 2- 1+ 2+ um* UM/MOD 4+
+ __l _sub
+  neg top
+ __l _add
+  add [dsp],top
+ __L _drop
+@drop:
+  drop
+  JMPs  @MAIN
+
+ __L _push
+  to_r  top
+  jmps @drop
+
+ __l _abs
+  or top,top
+  jns  @@1
+ __l neg
+  dec top
+ __l _not
+  not top
+@@1:
+  JMPs  @MAIN
+
+ __l _4p
+  imc top
+  imc top
+ __l _2p
+  imc top
+@1p:
+  imc top
+  JMPs  @MAIN
+
+ __l _1p
+  jmps @1p
+
+ __l _2m
+  dec top
+@1m:
+  dec top
+  JMPs  @MAIN
+
+ __l _1m
+  jmps @1m
+
+ __l _umul
+  to_r dx
+  mul  [dsp]
+  xchg [dsp],top
+  rchg dx
+@save_dx:
+  r_to dx
+  jmps @main
+
+ __l _udiv
+  to_r dx
+  rchg w
+  drop
+  rchg dx
+  cmp  dx,w
+  jnc  @@1
+  mov  top,[dsp]
+  div  w
+  mov  [dsp],dx
+@@1:
+  jmps @save_dx
+
+; ---------------------------------------
+; data
+ __l
 
 ;------------  MAIN LOOP  OUTER INTERPRETTER ----
 
@@ -590,9 +797,6 @@ dfnd:
 @PUSHW2:
   W2
 
-@PUSHW:
-  to_r  W
-  JMPS  @MAIN
 
   __XT  _PUSH,@_DROP       ; PUSH
   JMPS  @PUSHW
@@ -620,68 +824,6 @@ dfnd:
   DROP2 TOP,NR
   JMPS  @MAIN
 
-; CONTROL      COMMANDS
-
-@_DEFERO:
-  INC   PW [AT_+_CNTC]
-  JMPS  @_DEFER
-
-@_DEFER3:
-  W2
-@_DEFER2:
-  W2
-@_DEFER:
-  MOV   W,[W]
-@EXEC:
-  OR    W,W
-  JZ    @MAIN
-  W2
-  JMP   [W-2]
-
-@nest5:
-  w2
-@nest4:
-  w2
-@nest3:
-  w2
-@nest2:
-  w2
-  skipa                 ; >nest  !!!
-
-  __XT  _EXECUTE,@_DROP      ; EXECUTE
-  JMPS  @NEST
-
-  __XT  _EXEC,@_DROP       ; EXEC
-  jmps  @EXEC
-
-  __XT  _PERFORM,@_DROP    ; @EXEC
-  jmps  @_DEFER
-
-; MAIN  LOOP
-
-  __XT _RPAR,@_state              ; ]
-
-  __XT _does,@_var2
-@DOES3:
-  W2
-@DOES2:
-  W2
-@DOES:
-  tDUP
-  MOV   top,W
-@EX:
-  r_to  W
-@NEST:
-  to_r  IP
-@LBL:
-  to_r  W
-@RETURN:
-  r_to  IP
-@MAIN:
-  MOV   W,[IP]
-  wiP2
-  JMP   [W-2]
-
 @_POINT:
   W2
   MOV   W,[W]
@@ -698,40 +840,6 @@ dfnd:
 @_BARY:
   ADD   top,W
   JMPS  @MAIN
-
-  __XT  _FOR,@_1M         ; (FOR
-  JS    @JUMPDR
-  TO_R  TOP
-  JMPS  @SKIPDR
-
-  __XT  _ZSKIP,@_TOP?
-  JNE   @MAIN
-@SKIPDR:
-  TDROP
-@SKIP:
-  wiP2
-  JMPS  @MAIN
-
-  __XT  _DUP_IF,@_TOP?
-  JE    @JUMP
-  JMPS  @SKIP
-
-  __XT  _IF,@_TOP?      ; (IF
-@IF:
-  JNE   @SKIPDR
-@JUMPDR:
-  TDROP
-
-@JUMP:    ; (JUMP
-  MOV   IP,[IP]
-  JMPS  @MAIN
-
-@NEXT:    ; (NEXT
-  R_TO  TR
-  JCXZ  @SKIP
-  DEC   TR
-  TO_R  TR
-  JMPS  @JUMP
 
 @SWAPX:
   R_TO  IP

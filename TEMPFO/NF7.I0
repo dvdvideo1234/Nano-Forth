@@ -8,6 +8,10 @@ TO_     =  2
 AT_     =  4
 VL_     =  6
 
+drop    macro
+        lodsw
+        endm
+
 JMPS    MACRO LBL
           jmp  SHORT LBL
         ENDM
@@ -26,10 +30,6 @@ SKIPr   MACRO reg
         ENDM
 
 
-X       MACRO
-  xchg Rsp,DSP
-        ENDM
-
 TO_R    MACRO  REG
   PUSH   REG
         ENDM
@@ -37,34 +37,6 @@ TO_R    MACRO  REG
 R_TO    MACRO  REG
   POP    REG
         ENDM
-
-TO_D    MACRO  REG
-  X
-  PUSH   REG
-  X
-        ENDM
-
-D_TO    MACRO  REG
-  X
-  POP    REG
-  X
-        ENDM
-
-tDUP    macro
-        CALL  @TOPDUP
-        endm
-
-TDROP   macro
-        CALL  @TOPDROP
-        endm
-
-w2      macro
-  scasw
-        endm
-
-wip2    macro
-  cmpsw
-        endm
 
 cf_to   macro  reg
   sbb   reg,reg
@@ -74,19 +46,6 @@ rchg    macro   reg
   xchg  ax,reg
         endm
 
-DUP2    MACRO   R1,R2
-  X
-  PUSH  R1
-  PUSH  R2
-  X
-        ENDM
-
-DROP2   MACRO   R1,R2
-  X
-  POP   R1
-  POP   R2
-  X
-        ENDM
 
 qqqqq = 0
 ppppp = qqqqq
@@ -105,73 +64,33 @@ ppppp = $
 qqqqq = ppppp
         endm
 
-__ALIGN  MACRO  FLAG
+__a  MACRO  FLAG
         IF ($-START+FLAG) AND 1
         NOP
         ENDIF
         ENDM
 
-;        _ALIGN 0
-;HLBL    =      ($-START+100H) SHR 1
-__XALIGN MACRO  HLBL
-HLBL    =      $
-        ENDM
-
-;;LBL     =      (($-START+100H) SHR 1)+08000H
-__colGO  macro  lbl,LBL2
-        __COL2 LBL
-        __LBL  LBL2
+__c macro  _wrd
+        __a  1
+        call  _wrd
         endm
 
-__PRIM   macro  lbl
-        __XALIGN LBL
-        DW  $+2
+__w macro  _wrd
+        __a  0
+_wrd = (($-START+100H) SHR 1)+08000H
         endm
 
-__col5   macro  lbl
-        __XALIGN LBL
-        DW  @NEST5
+__L    macro _lbl
+        __a  0
+_LBL    =      ($-START+100H) SHR 1
         endm
 
-__col4   macro  lbl
-        __XALIGN LBL
-        DW  @NEST4
+__entry  macro nam,ADR
+        __nam  nam
+        DW    ADR
         endm
 
-__col3   macro  lbl
-        __XALIGN LBL
-        DW  @NEST3
-        endm
-
-__col2   macro  lbl
-        __XALIGN LBL
-        DW  @NEST2
-        endm
-
-__col    macro  lbl
-        __XALIGN LBL
-        DW  @NEST
-        endm
-
-__RVAR3  macro  lbl
-        __XALIGN LBL
-        DW  @PUSHW3
-        endm
-
-__RVAR2  macro  lbl
-        __XALIGN LBL
-        DW  @PUSHW2
-        endm
-
-__RVAR   macro  lbl
-        __XALIGN LBL
-        DW  @PUSHW
-        endm
-
-__LBL    macro  lbl
-        __XALIGN LBL
-        DW  @LBL
-        endm
+;--------------------------------------
 
 __VAR    macro   LBL,DAT
         __XALIGN LBL
@@ -228,11 +147,6 @@ __MCONS  macro   lbl,dat
         DW    DOConst-1
         DW    _DOES5
         DW    DAT
-        endm
-
-__entry  macro nam,ADR
-        __nam  nam
-        DW    ADR
         endm
 
 
