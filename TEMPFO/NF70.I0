@@ -4,20 +4,16 @@ pd  equ dword ptr
 pw  equ word  ptr
 pb  equ byte  ptr
 
-TO_     =  1
-AT_     =  2
-VL_     =  3
+TO_     =  2
+AT_     =  4
+VL_     =  6
 
 ddup    macro
-  to_d  top
-        endm
-
-ldip    macro
-  MOV   w,[ip]
+  to_d  t
         endm
 
 drop    macro
-        d_to  top
+  d_to  t
         endm
 
 TO_d    MACRO  REG
@@ -71,9 +67,9 @@ rchg    macro   reg
   xchg  ax,reg
         endm
 
-ip2p    macro
-        inc   ip
-        inc   ip
+i2      macro  reg
+        inc   reg
+        inc   reg
         endm
 
 w2p    macro
@@ -81,11 +77,13 @@ w2p    macro
         endm
 
 x      macro
-        rchg  sp
+        Xchg  R,D
         endm
 
 qqqqq = 0
 ppppp = qqqqq
+
+@_CNT__A = 0
 
 __nam    macro   msg
   local endstr
@@ -112,6 +110,7 @@ qqqqq = ppppp
 __a  MACRO  FLAG
         IF ($-START+FLAG) AND 1
         NOP
+@_CNT__A = @_CNT__A +  1
         ENDIF
         ENDM
 
@@ -120,19 +119,18 @@ __c macro  _wrd
         call  _wrd
         endm
 
-__d macro
-        dw  @_does
-        endm
+;__d macro
+;        dw  @_does
+;        endm
 
 __w macro  _wrd
         __a  0
 _wrd =   $+1
         endm
 
-__L    macro _lbl,_adr
+__L    macro _lbl
         __a  0
 _LBL    =      $
-        dw  _adr
         endm
 
 __entry  macro nam,ADR
@@ -144,42 +142,42 @@ __entry  macro nam,ADR
 
 __VAR    macro   LBL,DAT
         __w LBL
-        DW      @_VAR,DAT
+        DW      _VAR,DAT
         ENDM
 
-__XT     macro   LBL,ADR
-        __w LBL
-        DW      ADR
-        ENDM
+;__XT     macro   LBL,ADR
+;        __w LBL
+;        DW      ADR
+;        ENDM
 
 __value  macro   lbl,dat
         __w LBL
-        DW     @_cons2,@_setvar,dat
+        DW     _litx2,_setv,dat
         endm
 
-__DEFERO macro   lbl,dat
+__DEFERO macro  lbl,dat
         __w LBL
-        DW     @_deferO,dat
+        DW      _deferO,dat
         endm
 
 __DEFER  macro   lbl,dat
         __w LBL
-        DW     @_defer,dat
+        DW     _JUMP,dat
         endm
 
 __vector macro   lbl,dat
         __w LBL
-        DW     @_defer2,@_setvar,dat
+        DW     _defer2,_setv,dat
         endm
 
 __point  macro   lbl,dat
         __w LBL
-        DW     @_point,@_setpnt,dat
+        DW     _point,_seti,dat
         endm
 
 __QUAN   MACRO   LBL,DAT
         __w LBL
-        DW     @_CONS3,@_setvar2,@_VAR,dat
+        DW     _litx3,_setv2,_VAR,dat
         ENDM
 
 ;__VOC    MACRO   LBL,DAT
@@ -191,12 +189,5 @@ __const  macro   lbl,dat
         __w LBL
         DW    @_cons,DAT
         endm
-
-;__MCONS  macro   lbl,dat
-;        __w LBL
-;        DW    DOConst-1
-;        DW    _DOES5
-;        DW    DAT
-;        endm
 
 

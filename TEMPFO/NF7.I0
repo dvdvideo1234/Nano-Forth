@@ -8,12 +8,16 @@ TO_     =  2
 AT_     =  4
 VL_     =  6
 
-drop    macro
-        lodsw
+X       MACRO
+  XCHG  RSP,DSP
+        ENDM
+
+tdrop   macro
+  d_TO  T
         endm
 
 JMPS    MACRO LBL
-          jmp  SHORT LBL
+        jmp  SHORT LBL
         ENDM
 
 SKIPA   MACRO
@@ -30,8 +34,39 @@ SKIPr   MACRO reg
         ENDM
 
 
+TDUP    MACRO
+  call  @tdup
+        ENDM
+
+W2      MACRO
+  SCASW
+        ENDM
+
+iP2     MACRO
+  inc   ip
+  inc   ip
+        ENDM
+
+lwiP2   MACRO
+  rchg  w
+  lodsw
+  rchg  w
+        ENDM
+
 TO_R    MACRO  REG
   PUSH   REG
+        ENDM
+
+D_TO    MACRO  REG
+  X
+  POP    REG
+  X
+        ENDM
+
+TO_D    MACRO  REG
+  X
+  PUSH   REG
+  X
         ENDM
 
 R_TO    MACRO  REG
@@ -46,6 +81,9 @@ rchg    macro   reg
   xchg  ax,reg
         endm
 
+if0     macro   loc
+  jcxz  loc
+        endm
 
 qqqqq = 0
 ppppp = qqqqq
