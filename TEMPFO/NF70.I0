@@ -114,14 +114,15 @@ __a  MACRO  FLAG
         ENDIF
         ENDM
 
-__c macro  _wrd
+__c     macro  _wrd
         __a  1
         call  _wrd
         endm
 
-;__d macro
-;        dw  @_does
-;        endm
+__d     macro  dz       ; does
+        ddup
+        call  dz
+        endm
 
 __w macro  _wrd
         __a  0

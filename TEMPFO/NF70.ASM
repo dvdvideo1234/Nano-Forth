@@ -86,33 +86,41 @@ Start   Label byte
 ;------------  MAIN LOOP  OUTER INTERPRETTER ----
 
 SELF0:
-;Start   Label byte
- mov   bx,1000h     ; only 64k allocate
- mov   ah,4ah
- int   21h
+  mov   bx,1000h     ; only 64k allocate
+  mov   ah,4ah
+  int   21h
 @ABORT:
- mov   r,offset @R_TOP
- mov   d,offset @D_TOP
+  mov   r,offset @R_TOP
+  mov   d,offset @D_TOP
  __C   @RETURN
-  dw   _tpstr
+  dw   _lit,128,_dup,_accept;_e_bl
+; dw   _lit,128
+; dw   _type ; ,_e_bl
+  dw   _e_bl,_tpstr
  __nam2 "proba"
 
- __l _bye
-  dw    0 ; bye
+  dw _bye
 
  __l _abort
   jmps  @abort
 
-;__w _zeq
-; dw  _if,
+ __w _q
+  dw  _cemit
+ __w _cq
+  dw  _litx,'?'
 
  __w _execute
   dw  _go
 
+ __W _md_LOOPS
+  dw  _0swap,_sta,_lit,16
  __W _LOOPS
   DW  _FOR,@@2
 @@1:    DW _J,_EXECUTE
 @@2:    DW _NEXT,@@1,_RDROP,_RDROPX
+
+ __w _inlstr
+  dw  _astr,_exit
 
  __w _tpstr
   dw  _astr
@@ -129,7 +137,79 @@ SELF0:
  __W _@EMIT
   DW  _litx3,_setv2
  __W _EMIT
-  DW _DEFERO,_@EMITD,_EXIT
+  DW  _nop,_@EMITD
+ __w _nop
+  dw  _EXIT
+
+ __w _eq?               ; =?
+  dw  _over
+ __w _eq_to?            ; =to
+  dw  _over
+ __w _eq                ; =
+  dw  _xor
+ __w _zeq               ; 0=
+  dw  _nif,@m1
+ __w _0                 ; 0
+@0:
+  dw  _litx2
+ __w _m1                ; -1
+@m1:
+  dw  _litx2
+ __w _bye               ; bye
+  dw  0,-1
+
+@ac_cr:  dw  _dup,_sta,_exit
+@ac_bs:  dw  _eq?,_0x,_1m,_tpstr
+         db  3,8,32,8
+         dw  _exit
+@ac_oth: dw  _dup,_emit,_swap,_stpb,_exit
+
+ __w _ac_tab
+  dw  _do_tab
+  db  2,8,13,0
+  dw  @ac_oth,@ac_bs,@ac_cr
+
+ __w _accept
+  dw _over,_add,_sta,_dup
+@@acc1:
+  dw _key,_ac_tab,_lda,_eq_to?,_nif,@@acc1
+ __w _overm
+  dw  _over
+ __w _sub
+  dw  _neg
+ __w _add
+  dw  _add2d,_dropx
+
+ __l _cemit
+ __d @does2
+ __w _c@emit
+  dw  _cstr,_emit
+  dw  _dropx
+
+ __w _e_bl
+  dw  _cemit
+ __w _bl
+  dw  _litx,32
+
+ __W _UMMUL
+  DW  _md_loops,_MULAD,_EXIT
+
+ __W _UMDIVM
+  DW  _md_loops,_DIVSUB,_EXIT
+
+; __w _accept
+;  dw  _push
+; : (ACC  PUSH 0
+;  BEGIN KEY
+;    CASE
+;      cr OF DUP XCHG DROP ENDOF
+;      bs OF DUP IF 1- TO bs  SPACE  TO bs THEN  ENDOF
+;      PUSH  I bl &BYTE WITHIN
+;       IF 2DUP + I SWAP C! 1+  I EMIT THEN POP
+;    ENDCASE
+;  DUP I = UNTIL RDROP ;
+
+;------------------------------------------------
 
  __l _@rldp             ; @r+
   call  @rptr
@@ -138,22 +218,25 @@ SELF0:
   ret
 
  __l _astr              ; (str
-  call  @rptr0
+  call  @rptr
+@astr:
+  xor   w,w
   mov   t,i
   lodsb
+  mov   c,w
   or    wl,1
   add   i,w
   ret
 
- __L _litx
-  jmps  @_CONS0
+ __L _litx2
+  jmps  @litx2
  __L _litx3
   lodsw
- __L _litx2
+@litx2:
   lodsw
-@_CONS0:
+ __L _litx
   lodsw
- __l _pushwx
+@pushwx:
   ddup
   xchg  t,w
 @exit2:
@@ -165,13 +248,7 @@ SELF0:
   i2    i
  __l _SETV
   mov   [i],t
-  jmp   _dropx
-
- __L _DEFERO
-  INC   PW @CNTC
-  JMPS  _MAIN
-
-@CNTC: dw 0
+  jmps  _dropx
 
 ;------------  inner INTERPRETTER ----
 ; CONTROL      COMMANDS
@@ -189,19 +266,22 @@ SELF0:
   POP   PW [T-2]
 
  __L _2M
-  DEC  T
+  DEC   T
 @1M:
-  DEC  T
+  DEC   T
   JMPS  _MAIN
 
-;__l _loops
-; dec  t
-; js  _dropx
-; x
-; to_d t
-; lea  w,i-2
-; to_d w
-; x
+ __L _abs
+  OR    T,T
+  JNS   @MAIN1
+
+ __L _NEG
+  DEC   T
+
+ __L _NOT
+  NOT   T
+@MAIN1:
+  JMPS  _MAIN
 
  __L _nipx
   D_to  w
@@ -244,8 +324,6 @@ SELF0:
   pop   a
   JMPS  _MAIN
 
-@rptr0:
-  xor   w,w
 @rptr:
   pop   c
   ddup
@@ -258,7 +336,7 @@ SELF0:
 
  __L _STPB
   d_to  w
-  stosw
+  stosb
   JMPS  _MAIN
 
  __L _LDP
@@ -278,13 +356,17 @@ SELF0:
   and   t,w
   jmps  _main
 
+ __l _0
+  ddup
+  ddup
+
  __l _xor
   d_to  w
   xor   t,w
   jmps  _main
 
-  __l _for
-   mov   I,[I]
+ __l _for
+  mov   I,[I]
 
  __l _push
   d_to  w
@@ -348,17 +430,30 @@ _SKDROP:
   DEC   PW [R]
   skipr c
 
- __l _ifm
-  or    t,t
+ __l _nifm
+  inc   t
+@ifm1:
+  dec   t
   Jns   _jump
 _skip:
   JMPS  @SKIP
 
- __l _if
+ __l _nifm1
+  jmps  @ifm1
+
+ __l _nifd
+  ddup
+ __l _nif
   or    t,t
   JNZ   _SKDROP
 _JPDROP:
   JMPS  @JPDROP
+
+ __l _0x
+  or    t,t
+  jz    @drop
+ __a 1
+  skipa
 
  __l _at                ; @
   mov   t,[t]
@@ -391,15 +486,39 @@ _drop:
 
  __l _pushb
   MOV   wH,0
+  JMPS  _PUSHW
+
+ __L _swap
+  d_to  w
+  skipb
+
+ __L _LIT
+  LODSW
+  skipr c
+
+ __L _over
+  d_to  w
+  to_d  w
 
  __l _pushw
   ddup
   xchg  w,t
   JMPS  _main
 
- __L _LIT
-  LODSW
-  JMPS  _PUSHW
+ __l _ZEQ?
+  ddup
+@ZEQ:
+  SUB   t,1
+@CF:
+  cf_to t
+  JMPs  _MAIN
+
+ __l _ZEQ
+  jmps  @ZEQ
+
+ __L _ZLESS
+  SHL   t,1
+  jmps  @CF
 
  __L _cstr
   MOV   w,[T]
@@ -421,6 +540,28 @@ _drop:
   XCHG  I,A
   JMPS  _pushb
 
+ __l _do_tab
+  push  t
+  call  @astr
+  pop   w
+  add   t,c
+  std
+  repne scasb
+@do_tabx:
+  cld
+  mov   t,c
+  push  w
+  jne   _jtable
+  pop   w
+  inc   t
+
+ __l _jtable
+  shl   t,1
+
+ __l _jrel
+  add   i,t
+  JMP   @JPDROP
+
  __L _MULAD     ;  1 AR AND IF T ADD THEN U2/ ;
   POP   w
   TEST  wL,1
@@ -429,8 +570,7 @@ _drop:
 @MUL:
   RCR   T,1
   RCR   w,1
-  PUSH  w
-  JMP   _MAIN
+  JMPs  @DIV
 
  __L _DIVSUB    ;  1 AR AND IF T ADD THEN U2/ ;
   POP   w
@@ -440,23 +580,13 @@ _drop:
   JB    @DIV
   SUB   T,A
   INC   w
- __l _0swap
 @DIV:
   PUSH  w
   JMP   _MAIN
 
- __W _ZEQ
-  DW  _IF,_M1
- __W _0
-  DW  _LIT,0,_EXIT
- __W _M1
-  DW  _LIT,-1,_EXIT
-
- __W _UMMUL
-  DW  _STA,_0,$+2,$+2,$+2,_MULAD ,_MULAD ,_EXIT
-
- __W _UMDIVM
-  DW  _STA,_0,$+2,$+2,$+2,_DIVSUB,_DIVSUB,_EXIT
+ __l _0swap
+  xor   w,w
+  jmps  @div
 
 freemem:
   DW ENDMEM-FREEMEM-2
@@ -468,6 +598,25 @@ lastw = ppppp
 
 MyCseg  ends
         end  Start
+
+;  xor   w,w
+;  push  t
+;  lodsb
+;  push  w
+;  push  i       ; search table start
+;  mov   c,w
+;  or    wl,1    ; align
+;  add   i,w     ; table start
+;  add   i,c
+;  add   i,c     ; after table end
+;  xchg  t,w
+;  pop   t
+;  rep   scasb
+;  pop   t
+;  jne   _drop
+;  pop   w
+;  not   c
+;  mov   t,c
 
 ; __L @_VAR3
 ;  ip2p
@@ -541,18 +690,6 @@ MyCseg  ends
 ;  rp2P
 ;
 
-; __L _abs
-;  OR    TOP,TOP
-;  JNS   @MAIN1
-;
-; __L _NEG
-;  DEC   TOP
-;
-; __L _NOT
-;  NOT   TOP
-;@MAIN1:
-;  JMPS  @MAIN
-;
 ; __L _LARY
 ;  SHL   TOP,1
 ;

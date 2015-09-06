@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 1
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 1
 nf70.asm
 
 
@@ -60,7 +60,7 @@ nf70.asm
 1    55				     SKIPBr  MACRO regb
 1    56					     mov   regb,0
 1    57					     org   $-1
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 2
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 2
 nf70.asm
 
 
@@ -122,7 +122,7 @@ nf70.asm
 1   112				       local endstr
 1   113					db    endstr-$-1
 1   114					db    msg
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 3
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 3
 nf70.asm
 
 
@@ -145,903 +145,1497 @@ nf70.asm
 1   130					     ENDIF
 1   131					     ENDM
 1   132
-1   133				     __c macro	_wrd
+1   133				     __c     macro  _wrd
 1   134					     __a  1
 1   135					     call  _wrd
 1   136					     endm
 1   137
-1   138				     __d macro
-1   139					     dw	 @_does
-1   140					     endm
-1   141
-1   142				     __w macro	_wrd
-1   143					     __a  0
-1   144				     _wrd =   $+1
-1   145					     endm
-1   146
-1   147				     __L    macro _lbl
-1   148					     __a  0
-1   149				     _LBL    =	    $
-1   150					     endm
-1   151
-1   152				     __entry  macro nam,ADR
-1   153					     DW	   ADR,0
-1   154					     __nam  nam
-1   155					     endm
-1   156
-1   157				     ;--------------------------------------
-1   158
-1   159				     __VAR    macro   LBL,DAT
-1   160					     __w LBL
-1   161					     DW	     @_VAR,DAT
-1   162					     ENDM
-1   163
-1   164				     __XT     macro   LBL,ADR
-1   165					     __w LBL
-1   166					     DW	     ADR
-1   167					     ENDM
-1   168
-1   169				     __value  macro   lbl,dat
-1   170					     __w LBL
-1   171					     DW	    @_cons2,@_setvar,dat
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 4
+1   138				     __d     macro  dz	     ; does
+1   139					     ddup
+1   140					     call  dz
+1   141					     endm
+1   142
+1   143				     __w macro	_wrd
+1   144					     __a  0
+1   145				     _wrd =   $+1
+1   146					     endm
+1   147
+1   148				     __L    macro _lbl
+1   149					     __a  0
+1   150				     _LBL    =	    $
+1   151					     endm
+1   152
+1   153				     __entry  macro nam,ADR
+1   154					     DW	   ADR,0
+1   155					     __nam  nam
+1   156					     endm
+1   157
+1   158				     ;--------------------------------------
+1   159
+1   160				     __VAR    macro   LBL,DAT
+1   161					     __w LBL
+1   162					     DW	     _VAR,DAT
+1   163					     ENDM
+1   164
+1   165				     ;__XT     macro   LBL,ADR
+1   166				     ;	      __w LBL
+1   167				     ;	      DW      ADR
+1   168				     ;	      ENDM
+1   169
+1   170				     __value  macro   lbl,dat
+1   171					     __w LBL
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 4
 nf70.asm
 
 
 
-1   172					     endm
-1   173
-1   174				     __DEFERO macro  lbl,dat
-1   175					     __w LBL
-1   176					     DW	     _deferO,dat
-1   177					     endm
-1   178
-1   179				     __DEFER  macro   lbl,dat
-1   180					     __w LBL
-1   181					     DW	    _JUMP,dat
-1   182					     endm
-1   183
-1   184				     __vector macro   lbl,dat
-1   185					     __w LBL
-1   186					     DW	    @_defer2,@_setvar,dat
-1   187					     endm
-1   188
-1   189				     __point  macro   lbl,dat
-1   190					     __w LBL
-1   191					     DW	    @_point,_setpnt,dat
-1   192					     endm
-1   193
-1   194				     __QUAN   MACRO   LBL,DAT
-1   195					     __w LBL
-1   196					     DW	    @_CONS3,@_setvar2,@_VAR,dat
-1   197					     ENDM
-1   198
-1   199				     ;__VOC    MACRO   LBL,DAT
-1   200				     ;	     __w LBL
-1   201				     ;	      DW     @_SET_VOC,@_SRCH_VOC,dat
-1   202				     ;	      ENDM
-1   203
-1   204				     __const  macro   lbl,dat
-1   205					     __w LBL
-1   206					     DW	   @_cons,DAT
-1   207					     endm
-1   208
+1   172					     DW	    _litx2,_setv,dat
+1   173					     endm
+1   174
+1   175				     __DEFERO macro  lbl,dat
+1   176					     __w LBL
+1   177					     DW	     _deferO,dat
+1   178					     endm
+1   179
+1   180				     __DEFER  macro   lbl,dat
+1   181					     __w LBL
+1   182					     DW	    _JUMP,dat
+1   183					     endm
+1   184
+1   185				     __vector macro   lbl,dat
+1   186					     __w LBL
+1   187					     DW	    _defer2,_setv,dat
+1   188					     endm
+1   189
+1   190				     __point  macro   lbl,dat
+1   191					     __w LBL
+1   192					     DW	    _point,_seti,dat
+1   193					     endm
+1   194
+1   195				     __QUAN   MACRO   LBL,DAT
+1   196					     __w LBL
+1   197					     DW	    _litx3,_setv2,_VAR,dat
+1   198					     ENDM
+1   199
+1   200				     ;__VOC    MACRO   LBL,DAT
+1   201				     ;	     __w LBL
+1   202				     ;	      DW     @_SET_VOC,@_SRCH_VOC,dat
+1   203				     ;	      ENDM
+1   204
+1   205				     __const  macro   lbl,dat
+1   206					     __w LBL
+1   207					     DW	   @_cons,DAT
+1   208					     endm
 1   209
-    210
-    211				     ; REGISTERS
-    212				     ; ip   INSTRUCTION	POINTER
-    213				     ; dsp  DATA STACK POINTER
-    214				     ; rsP  RETURN STACK POINTER
-    215				     ; top  DATA STACK TOP REGISTER
-    216				     ; w    word register  = scratch
-    217				     ; t    temp register  - scratch
-    218				     ; c    count register - scratch
-    219
-    220	      =SI		     i	  = si	      ;	for interpretter
-    221	      =BP		     r	  = bp
-    222	      =SP		     d	  = sp
-    223	      =DI		     t	  = di
-    224	      =DX		     a	  = dx	     ; arith register
-    225	      =CX		     c	  = cx
-    226	      =AX		     w	  = ax
-    227	      =AL		     wl	  = aL
-    228	      =AH		     wh	  = ah
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 5
+1   210
+    211
+    212				     ; REGISTERS
+    213				     ; i    INSTRUCTION	POINTER
+    214				     ; d    DATA STACK POINTER
+    215				     ; r    RETURN STACK POINTER
+    216				     ; t    DATA STACK TOP REGISTER
+    217				     ; a    arith/adrs register	 - scratch
+    218				     ; w    word register  = scratch
+    219				     ; c    count register - scratch
+    220
+    221	      =SI		     i	  = si	     ; for interpretter
+    222	      =BP		     r	  = bp
+    223	      =SP		     d	  = sp
+    224	      =DI		     t	  = di
+    225	      =DX		     a	  = dx	     ; arith register
+    226	      =CX		     c	  = cx
+    227	      =AX		     w	  = ax
+    228	      =AL		     wl	  = aL
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 5
 nf70.asm
 
 
 
-    229
-    230	      =DI		     NBASE = di
-    231	      =BX		     NACC  = bx
-    232
+    229	      =AH		     wh	  = ah
+    230
+    231	      =DI		     NBASE = di
+    232	      =BX		     NACC  = bx
     233
-    234	0000			     MyCseg  segment para  use16
-    235
-    236					     assume cs:	MyCseg,	 ds: MyCseg, ss: MyCseg, es: MyCseg
-    237
-    238					     org 100h
-    239
-    240	      =-0100		     @TBUF   = -256	     ;	256
-    241	      =-0200		     @TIB    = @TBUF  *	2    ;	256
-    242							     ;	512 B FSTACK
-    243	      =-0400		     @R_TOP  = @TIB   *	2    ; 1024 B RSTACK
-    244	      =-0800		     @S_TOP  = @R_TOP *	2    ; 2048 B DSTACK
-    245	      =-1000		     @VOCTOP = @S_TOP *	2    ; 4096 B =	4 BUFFERS * 1024 B
-    246
-    247	0100			     Start   Label byte
-    248
-    249				     ;	      JMPS SELF0
-    250
-    251				     ; __W _OPERATION
-    252				     ;	      DW _WARY,_NUMBER,_EXEC	    ; INTERPRET
-    253				     ;	      DW _COMP_NUM,_COMMA     ;	COMPILE
-    254				     ;
-    255				     ;;	 __DEFER  _ACCEPT,_ACC
-    256				     ;	__DEFER	 _OK,0
-    257				     ;	__DEFER	 _ERROR,0
-    258				     ;;	 __DEFER  _OK,_@OK
-    259				     ;;	 __DEFER  _ERROR,_@ERROR
-    260				     ;
-    261				     ;	__CONST	_@SOURCE,@_SOURCE   ;_ETIB
-    262				     ;	__CONST	 _TBL,80H
-    263				     ;	__CONST	 _TIB,@TIB
-    264				     ;	__CONST	 _TBUF,@TBuf
-    265				     ;	__CONST	 _0,0
-    266				     ;_BYE    =	$-1   ;	JMP TO 0
-    267				     ;
-    268				     ;	__CONST	 _BL,32
-    269				     ;
-    270				     ;	__POINT	 _INIT,_@_INI
-    271				     ;	__VALUE	 _HERE,FREEMEM
-    272				     ;	__VALUE	 _ETIB,0
-    273				     ;	__VALUE	 _LTIB,0
-    274				     ;	__VALUE	 _DICT,@VOCTOP*2
-    275				     ;	__VALUE	 _CNTC,0
-    276				     ;@CNTC   =	$-2
-    277				     ;	__value	 _stat,0
-    278				     ;
-    279				     ;------------  MAIN LOOP  OUTER INTERPRETTER ----
-    280
-    281	0100			     SELF0:
-    282				     ;Start   Label byte
-    283	0100  BB 1000		      mov   bx,1000h	 ; only	64k allocate
-    284	0103  B8 4A00		      mov   ax,4a00h
-    285	0106  CD 21		      int   21h
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 6
+    234
+    235	0000			     MyCseg  segment para  use16
+    236
+    237					     assume cs:	MyCseg,	 ds: MyCseg, ss: MyCseg, es: MyCseg
+    238
+    239					     org 100h
+    240
+    241	      =-0100		     @TBUF   = -256	     ;	256
+    242	      =-0200		     @TIB    = @TBUF  *	2    ;	256
+    243							     ;	512 B FSTACK
+    244	      =-0400		     @R_TOP  = @TIB   *	2    ; 1024 B RSTACK
+    245	      =-0800		     @D_TOP  = @R_TOP *	2    ; 2048 B DSTACK
+    246	      =-1000		     @VOCTOP = @D_TOP *	2    ; 4096 B =	4 BUFFERS * 1024 B
+    247
+    248	0100			     Start   Label byte
+    249
+    250				     ;	      JMPS SELF0
+    251
+    252				     ; __W _OPERATION
+    253				     ;	      DW _WARY,_NUMBER,_EXEC	    ; INTERPRET
+    254				     ;	      DW _COMP_NUM,_COMMA     ;	COMPILE
+    255				     ;
+    256				     ;;	 __DEFER  _ACCEPT,_ACC
+    257				     ;	__DEFER	 _OK,0
+    258				     ;	__DEFER	 _ERROR,0
+    259				     ;;	 __DEFER  _OK,_@OK
+    260				     ;;	 __DEFER  _ERROR,_@ERROR
+    261				     ;
+    262				     ;	__CONST	_@SOURCE,@_SOURCE   ;_ETIB
+    263				     ;	__CONST	 _TBL,80H
+    264				     ;	__CONST	 _TIB,@TIB
+    265				     ;	__CONST	 _TBUF,@TBuf
+    266				     ;	__CONST	 _0,0
+    267				     ;_BYE    =	$-1   ;	JMP TO 0
+    268				     ;
+    269				     ;	__CONST	 _BL,32
+    270				     ;
+    271				     ;	__POINT	 _INIT,_@_INI
+    272				     ;	__VALUE	 _HERE,FREEMEM
+    273				     ;	__VALUE	 _ETIB,0
+    274				     ;	__VALUE	 _LTIB,0
+    275				     ;	__VALUE	 _DICT,@VOCTOP*2
+    276				     ;	__VALUE	 _CNTC,0
+    277				     ;@CNTC   =	$-2
+    278				     ;	__value	 _stat,0
+    279				     ;
+    280				     ;------------  MAIN LOOP  OUTER INTERPRETTER ----
+    281
+    282	0100			     SELF0:
+    283				     ;Start   Label byte
+    284	0100  BB 1000		       mov   bx,1000h	  ; only 64k allocate
+    285	0103  B4 4A		       mov   ah,4ah
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 6
 nf70.asm
 
 
 
-    286	0108			     _ABORT:
-    287	0108  BE 0112r		      mov   i,offset R_TOP
-    288	010B  AD		      lodsw
-    289				      rchg  R
-1   290	010C  95		       xchg  ax,R
-    291	010D  AD		      lodsw
-    292				      rchg  D
-1   293	010E  94		       xchg  ax,D
-    294				      __C   @RETURN
-1   295					     __a  1
-2   296					     IF	($-START+1) AND	1
-2   297					     NOP
-2   298				     @_CNT__A =	@_CNT__A +  1
-2   299					     ENDIF
-1   300	010F  E8 0023			     call  @RETURN
-    301
-    302	0112  FC00 F800		     R_TOP  dw @R_TOP,@S_TOP
-    303
-    304				     ;------------  inner INTERPRETTER ----
-    305				     ; CONTROL	    COMMANDS
-    306				     ; xep ex exit execute nop skip zskip
-    307				     ; -if if jump f>c f>c; 0;
-    308
-    309				      __L _STMb
-1   310					     __a  0
-2   311					     IF	($-START+0) AND	1
-2   312					     NOP
-2   313				     @_CNT__A =	@_CNT__A +  1
-2   314					     ENDIF
-1   315	      =MYCSEG:0116	     _STMb    =	     $
-    316				       d_to  w
-1   317	0116  58		       pop   w
-    318	0117  88 45 FF		       mov   [T-1],wl
+    286	0105  CD 21		       int   21h
+    287	0107			     @ABORT:
+    288	0107  BD FC00		       mov   r,offset @R_TOP
+    289	010A  BC F800		       mov   d,offset @D_TOP
+    290				      __C   @RETURN
+1   291					     __a  1
+2   292					     IF	($-START+1) AND	1
+2   293					     NOP
+2   294				     @_CNT__A =	@_CNT__A +  1
+2   295					     ENDIF
+1   296	010D  E8 0111			     call  @RETURN
+    297	0110  0137r		       dw   _tpstr
+    298				      __nam2 "proba"
+1   299	0112  05			db    ??0000-$-1
+1   300	0113  70 72 6F 62 61		db    "proba"
+1   301	0118			     ??0000  label   byte
+1   302				       __a  0
+2   303					     IF	($-START+0) AND	1
+2   304					     NOP
+2   305				     @_CNT__A =	@_CNT__A +  1
+2   306					     ENDIF
+    307
+    308	0118  0161r		       dw _bye
+    309
+    310				      __l _abort
+1   311					     __a  0
+2   312					     IF	($-START+0) AND	1
+2   313					     NOP
+2   314				     @_CNT__A =	@_CNT__A +  1
+2   315					     ENDIF
+1   316	      =MYCSEG:011A	     _abort    =      $
+    317				       jmps  @abort
+1   318	011A  EB EB			       jmp  SHORT @abort
     319
-    320				      __L _1M
+    320				      __w _execute
 1   321					     __a  0
 2   322					     IF	($-START+0) AND	1
 2   323					     NOP
 2   324				     @_CNT__A =	@_CNT__A +  1
 2   325					     ENDIF
-1   326	      =MYCSEG:011A	     _1M    =	   $
-    327				       JMPS  @1M
-1   328	011A  EB 05			       jmp  SHORT @1M
-    329
-    330				      __L _STM
-1   331					     __a  0
-2   332					     IF	($-START+0) AND	1
-2   333					     NOP
-2   334				     @_CNT__A =	@_CNT__A +  1
-2   335					     ENDIF
-1   336	      =MYCSEG:011C	     _STM    =	    $
-    337	011C  8F 45 FE		       POP   PW	[T-2]
-    338
-    339				      __L _2M
-1   340					     __a  0
-2   341					     IF	($-START+0) AND	1
-2   342	011F  90			     NOP
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 7
+1   326	      =MYCSEG:011D	     _execute =	  $+1
+    327	011C  026Cr		       dw  _go
+    328
+    329				      __W _md_LOOPS
+1   330					     __a  0
+2   331					     IF	($-START+0) AND	1
+2   332					     NOP
+2   333				     @_CNT__A =	@_CNT__A +  1
+2   334					     ENDIF
+1   335	      =MYCSEG:011F	     _md_LOOPS =   $+1
+    336	011E  0320r 02DCr 02CAr	  +    dw  _0swap,_sta,_lit,16
+    337	      0010
+    338				      __W _LOOPS
+1   339					     __a  0
+2   340					     IF	($-START+0) AND	1
+2   341					     NOP
+2   342				     @_CNT__A =	@_CNT__A +  1
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 7
 nf70.asm
 
 
 
-2   343	      =0001		     @_CNT__A =	@_CNT__A +  1
-2   344					     ENDIF
-1   345	      =MYCSEG:0120	     _2M    =	   $
-    346	0120  4F		       DEC  T
-    347	0121			     @1M:
-    348	0121  4F		       DEC  T
-    349				       JMPS  _MAIN
-1   350	0122  EB 5A			       jmp  SHORT _MAIN
-    351
-    352				      __L _nipx
-1   353					     __a  0
-2   354					     IF	($-START+0) AND	1
-2   355					     NOP
-2   356				     @_CNT__A =	@_CNT__A +  1
-2   357					     ENDIF
-1   358	      =MYCSEG:0124	     _nipx    =	     $
-    359				       D_to  w
-1   360	0124  58		       pop   w
-    361				       SKIPB
-1   362	0125  3C			     DB	   03CH
-    363
-    364				      __L _DROPx
-1   365					     __a  0
-2   366					     IF	($-START+0) AND	1
-2   367					     NOP
-2   368				     @_CNT__A =	@_CNT__A +  1
-2   369					     ENDIF
-1   370	      =MYCSEG:0126	     _DROPx    =      $
-    371				       DROP
-1   372				       d_to  t
-2   373	0126  5F		       pop   t
-    374				       SKIPR c
-1   375	0127  B9 0000			     mov   c,0
-1   376					     org   $-2
-    377
-    378				      __l _rDROPx
-1   379					     __a  0
-2   380					     IF	($-START+0) AND	1
-2   381					     NOP
-2   382				     @_CNT__A =	@_CNT__A +  1
-2   383					     ENDIF
-1   384	      =MYCSEG:0128	     _rDROPx	=      $
-    385				       i2    r
-1   386	0128  45			     inc   r
-1   387	0129  45			     inc   r
-    388
-    389				      __l _exit	       ; exit
-1   390					     __a  0
-2   391					     IF	($-START+0) AND	1
-2   392					     NOP
-2   393				     @_CNT__A =	@_CNT__A +  1
-2   394					     ENDIF
-1   395	      =MYCSEG:012A	     _exit    =	     $
-    396	012A  8B 76 00		       mov   i,[r]
-    397				       jmps  _rdrop
-1   398	012D  EB 4D			       jmp  SHORT _rdrop
-    399	012F			     @does3:
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 8
+2   343					     ENDIF
+1   344	      =MYCSEG:0127	     _LOOPS =	$+1
+    345	0126  0256r 012Er	       DW  _FOR,@@2
+    346	012A  02A8r 011Dr	     @@1:    DW	_J,_EXECUTE
+    347	012E  028Ar 012Ar 0274r	  +  @@2:    DW	_NEXT,@@1,_RDROP,_RDROPX
+    348	      0214r
+    349
+    350				      __w _tpstr
+1   351					     __a  0
+2   352					     IF	($-START+0) AND	1
+2   353					     NOP
+2   354				     @_CNT__A =	@_CNT__A +  1
+2   355					     ENDIF
+1   356	      =MYCSEG:0137	     _tpstr =	$+1
+    357	0136  01D6r		       dw  _astr
+    358				      __w _tcstr
+1   359					     __a  0
+2   360					     IF	($-START+0) AND	1
+2   361					     NOP
+2   362				     @_CNT__A =	@_CNT__A +  1
+2   363					     ENDIF
+1   364	      =MYCSEG:0139	     _tcstr =	$+1
+    365	0138  02D2r		       dw  _cstr
+    366				      __w _type
+1   367					     __a  0
+2   368					     IF	($-START+0) AND	1
+2   369					     NOP
+2   370				     @_CNT__A =	@_CNT__A +  1
+2   371					     ENDIF
+1   372	      =MYCSEG:013B	     _type =   $+1
+    373	013A  022Er 0127r 02E0r	  +    dw  _nipa,_loops,_cld@p,_emit,_exit
+    374	      0151r 0216r
+    375
+    376				      __W _@KEY
+1   377					     __a  0
+2   378					     IF	($-START+0) AND	1
+2   379					     NOP
+2   380				     @_CNT__A =	@_CNT__A +  1
+2   381					     ENDIF
+1   382	      =MYCSEG:0145	     _@KEY =   $+1
+    383	0144  01E6r 01F4r	       DW  _litx2,_setv
+    384				      __W _KEY
+1   385					     __a  0
+2   386					     IF	($-START+0) AND	1
+2   387					     NOP
+2   388				     @_CNT__A =	@_CNT__A +  1
+2   389					     ENDIF
+1   390	      =MYCSEG:0149	     _KEY =   $+1
+    391	0148  02C0r 0216r	       DW  _@KEYD,_EXIT
+    392
+    393				      __W _@EMIT
+1   394					     __a  0
+2   395					     IF	($-START+0) AND	1
+2   396					     NOP
+2   397				     @_CNT__A =	@_CNT__A +  1
+2   398					     ENDIF
+1   399	      =MYCSEG:014D	     _@EMIT =	$+1
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 8
 nf70.asm
 
 
 
-    400				       i2    i
-1   401	012F  46			     inc   i
-1   402	0130  46			     inc   i
-    403	0131			     @does2:
-    404				       i2    i
-1   405	0131  46			     inc   i
-1   406	0132  46			     inc   i
-    407	0133			     @does:
-    408	0133  8B FE		       mov   t,i
-    409	0135			     @return:
-    410				       d_to  i
-1   411	0135  5E		       pop   i
-    412				       jmps  _main
-1   413	0136  EB 46			       jmp  SHORT _main
-    414
-    415				      __l _xchg
-1   416					     __a  0
-2   417					     IF	($-START+0) AND	1
-2   418					     NOP
-2   419				     @_CNT__A =	@_CNT__A +  1
-2   420					     ENDIF
-1   421	      =MYCSEG:0138	     _xchg    =	     $
-    422	0138  87 7E 00		       xchg  t,[r]
-    423				       skipb
-1   424	013B  3C			     DB	   03CH
-    425
-    426				      __L _DuP
+    400	014C  01E8r 01F2r	       DW  _litx3,_setv2
+    401				      __W _EMIT
+1   402					     __a  0
+2   403					     IF	($-START+0) AND	1
+2   404					     NOP
+2   405				     @_CNT__A =	@_CNT__A +  1
+2   406					     ENDIF
+1   407	      =MYCSEG:0151	     _EMIT =   $+1
+    408	0150  0155r 02B6r	       DW  _nop,_@EMITD
+    409				      __w _nop
+1   410					     __a  0
+2   411					     IF	($-START+0) AND	1
+2   412					     NOP
+2   413				     @_CNT__A =	@_CNT__A +  1
+2   414					     ENDIF
+1   415	      =MYCSEG:0155	     _nop =   $+1
+    416	0154  0216r		       dw  _EXIT
+    417
+    418				      __w _eq		     ; =
+1   419					     __a  0
+2   420					     IF	($-START+0) AND	1
+2   421					     NOP
+2   422				     @_CNT__A =	@_CNT__A +  1
+2   423					     ENDIF
+1   424	      =MYCSEG:0157	     _eq =   $+1
+    425	0156  0250r		       dw  _xor
+    426				      __w _zeq		     ; 0=
 1   427					     __a  0
 2   428					     IF	($-START+0) AND	1
 2   429					     NOP
 2   430				     @_CNT__A =	@_CNT__A +  1
 2   431					     ENDIF
-1   432	      =MYCSEG:013C	     _DuP    =	    $
-    433				       ddup
-1   434				       to_d  t
-2   435	013C  57		       PUSH   t
-    436				       skipr c
-1   437	013D  B9 0000			     mov   c,0
-1   438					     org   $-2
-    439
-    440				      __L _STP
-1   441					     __a  0
-2   442					     IF	($-START+0) AND	1
-2   443					     NOP
-2   444				     @_CNT__A =	@_CNT__A +  1
-2   445					     ENDIF
-1   446	      =MYCSEG:013E	     _STP    =	    $
-    447				       d_to  w
-1   448	013E  58		       pop   w
-    449	013F  AB		       stosw
-    450				       JMPS  _MAIN
-1   451	0140  EB 3C			       jmp  SHORT _MAIN
-    452
-    453				      __l _ex
-1   454					     __a  0
-2   455					     IF	($-START+0) AND	1
-2   456					     NOP
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 9
+1   432	      =MYCSEG:0159	     _zeq =   $+1
+    433	0158  0298r 015Er	       dw  _if,@m1
+    434				      __w _0		     ; 0
+1   435					     __a  0
+2   436					     IF	($-START+0) AND	1
+2   437					     NOP
+2   438				     @_CNT__A =	@_CNT__A +  1
+2   439					     ENDIF
+1   440	      =MYCSEG:015D	     _0	=   $+1
+    441	015C  01E6r		       dw  _litx2
+    442				      __w _m1		     ; -1
+1   443					     __a  0
+2   444					     IF	($-START+0) AND	1
+2   445					     NOP
+2   446				     @_CNT__A =	@_CNT__A +  1
+2   447					     ENDIF
+1   448	      =MYCSEG:015F	     _m1 =   $+1
+    449	015E			     @m1:
+    450	015E  01E6r		       dw  _litx2
+    451				      __w _bye		     ; bye
+1   452					     __a  0
+2   453					     IF	($-START+0) AND	1
+2   454					     NOP
+2   455				     @_CNT__A =	@_CNT__A +  1
+2   456					     ENDIF
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 9
 nf70.asm
 
 
 
-2   457				     @_CNT__A =	@_CNT__A +  1
-2   458					     ENDIF
-1   459	      =MYCSEG:0142	     _ex    =	   $
-    460	0142  87 76 00		       xchg  i,[r]
-    461				       skipr c
-1   462	0145  B9 0000			     mov   c,0
-1   463					     org   $-2
-    464
-    465				      __L _STPB
-1   466					     __a  0
-2   467					     IF	($-START+0) AND	1
-2   468					     NOP
-2   469				     @_CNT__A =	@_CNT__A +  1
-2   470					     ENDIF
-1   471	      =MYCSEG:0146	     _STPB    =	     $
-    472				       d_to  w
-1   473	0146  58		       pop   w
-    474	0147  AB		       stosw
-    475				       JMPS  _MAIN
-1   476	0148  EB 34			       jmp  SHORT _MAIN
-    477
-    478				      __L _LDP
-1   479					     __a  0
-2   480					     IF	($-START+0) AND	1
-2   481					     NOP
-2   482				     @_CNT__A =	@_CNT__A +  1
-2   483					     ENDIF
-1   484	      =MYCSEG:014A	     _LDP    =	    $
-    485	014A  FF 35		       PUSH  PW	[T]
+1   457	      =MYCSEG:0161	     _bye =   $+1
+    458	0160  0000 FFFF		       dw  0,-1
+    459
+    460	0164  015Dr 0248r 0216r	     @ac_cr:  dw  _0,_and,_exit
+    461	016A  02CCr 02B2r 0250r	  +  @ac_bs:  dw  _over,_lda,_xor,_0x,_1m,_e_bs,_e_bl,_e_bs
+    462	      029Er 01FCr 01BFr	  +
+    463	      01B9r 01BFr
+    464				      __w _a1m
+1   465					     __a  0
+2   466					     IF	($-START+0) AND	1
+2   467					     NOP
+2   468				     @_CNT__A =	@_CNT__A +  1
+2   469					     ENDIF
+1   470	      =MYCSEG:017B	     _a1m =   $+1
+    471	017A  02B2r 01FCr 02DCr	  +	      dw  _lda,_1m,_sta,_exit
+    472	      0216r
+    473	0182  0228r 0151r 02D8r	  +  @ac_oth: dw  _dup,_emit,_cst@p,_1m,_exit
+    474	      01FCr 0216r
+    475
+    476				      __w _ac_tab
+1   477					     __a  0
+2   478					     IF	($-START+0) AND	1
+2   479					     NOP
+2   480				     @_CNT__A =	@_CNT__A +  1
+2   481					     ENDIF
+1   482	      =MYCSEG:018D	     _ac_tab =	 $+1
+    483	018C  02E8r		       dw  _do_tab
+    484	018E  02 08 0D 00	       db  2,8,13,0
+    485	0192  0182r 016Ar 0164r	       dw  @ac_oth,@ac_bs,@ac_cr
     486
-    487				      __L _2P
+    487				      __w _accept
 1   488					     __a  0
 2   489					     IF	($-START+0) AND	1
 2   490					     NOP
 2   491				     @_CNT__A =	@_CNT__A +  1
 2   492					     ENDIF
-1   493	      =MYCSEG:014C	     _2P    =	   $
-    494	014C  47		       INC   T
-    495	014D			     @1P:
-    496	014D  47		       INC   T
-    497				       JMPS  _MAIN
-1   498	014E  EB 2E			       jmp  SHORT _MAIN
-    499
-    500				      __L _1P
-1   501					     __a  0
-2   502					     IF	($-START+0) AND	1
-2   503					     NOP
-2   504				     @_CNT__A =	@_CNT__A +  1
-2   505					     ENDIF
-1   506	      =MYCSEG:0150	     _1P    =	   $
-    507				       JMPS  @1p
-1   508	0150  EB FB			       jmp  SHORT @1p
-    509
-    510				      __l _and
-1   511					     __a  0
-2   512					     IF	($-START+0) AND	1
-2   513					     NOP
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 10
+1   493	      =MYCSEG:0199	     _accept =	 $+1
+    494	0198  02CCr 02DCr	       dw _over,_sta
+    495	019C			     @@acc1:
+    496	019C  0149r 018Dr 0296r	  +    dw _key,_ac_tab,_ifd,@@acc1,_drop,_lda
+    497	      019Cr 02BEr 02B2r
+    498				      __w _overm
+1   499					     __a  0
+2   500					     IF	($-START+0) AND	1
+2   501					     NOP
+2   502				     @_CNT__A =	@_CNT__A +  1
+2   503					     ENDIF
+1   504	      =MYCSEG:01A9	     _overm =	$+1
+    505	01A8  02CCr		       dw  _over
+    506				      __w _sub
+1   507					     __a  0
+2   508					     IF	($-START+0) AND	1
+2   509					     NOP
+2   510				     @_CNT__A =	@_CNT__A +  1
+2   511					     ENDIF
+1   512	      =MYCSEG:01AB	     _sub =   $+1
+    513	01AA  020Ar		       dw  _neg
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 10
 nf70.asm
 
 
 
-2   514				     @_CNT__A =	@_CNT__A +  1
-2   515					     ENDIF
-1   516	      =MYCSEG:0152	     _and    =	    $
-    517				       d_to  w
-1   518	0152  58		       pop   w
-    519	0153  23 F8		       and   t,w
-    520				       jmps  _main
-1   521	0155  EB 27			       jmp  SHORT _main
+    514				      __w _add
+1   515					     __a  0
+2   516					     IF	($-START+0) AND	1
+2   517					     NOP
+2   518				     @_CNT__A =	@_CNT__A +  1
+2   519					     ENDIF
+1   520	      =MYCSEG:01AD	     _add =   $+1
+    521	01AC  0264r 0212r	       dw  _add2d,_dropx
     522
-    523				      __l _xor
+    523				      __l _cemit
 1   524					     __a  0
 2   525					     IF	($-START+0) AND	1
-2   526	0157  90			     NOP
-2   527	      =0002		     @_CNT__A =	@_CNT__A +  1
+2   526					     NOP
+2   527				     @_CNT__A =	@_CNT__A +  1
 2   528					     ENDIF
-1   529	      =MYCSEG:0158	     _xor    =	    $
-    530				       d_to  w
-1   531	0158  58		       pop   w
-    532	0159  33 F8		       xor   t,w
-    533				       jmps  _main
-1   534	015B  EB 21			       jmp  SHORT _main
-    535
-    536				       __l _for
-1   537					     __a  0
-2   538					     IF	($-START+0) AND	1
-2   539	015D  90			     NOP
-2   540	      =0003		     @_CNT__A =	@_CNT__A +  1
-2   541					     ENDIF
-1   542	      =MYCSEG:015E	     _for    =	    $
-    543	015E  8B 34			mov   I,[I]
-    544
-    545				      __l _push
-1   546					     __a  0
-2   547					     IF	($-START+0) AND	1
-2   548					     NOP
-2   549				     @_CNT__A =	@_CNT__A +  1
-2   550					     ENDIF
-1   551	      =MYCSEG:0160	     _push    =	     $
-    552				       d_to  w
-1   553	0160  58		       pop   w
-    554	0161  97		       xchg  w,t
-    555				       skipr c	 ; jmps	@rpush
-1   556	0162  B9 0000			     mov   c,0
-1   557					     org   $-2
-    558
-    559	0163			     @NESTz:
-    560	0163  48		       dec   w
-    561	0164			     @NEST:
-    562	0164  96		       xchg  w,i
-    563	0165			     @rpush:
-    564				       to_r  w
-1   565				       x
-2   566	0165  87 EC			     Xchg  R,D
-1   567	0167  50		       PUSH   w
-1   568				       x
-2   569	0168  87 EC			     Xchg  R,D
-    570				       JMPs  _MAIN
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 11
+1   529	      =MYCSEG:01B0	     _cemit    =      $
+    530				      __d @does2
+1   531					     ddup
+2   532				       to_d  t
+3   533	01B0  57		       PUSH   t
+1   534	01B1  E8 0069			     call  @does2
+    535				      __w _ldb	     ; c@
+1   536					     __a  0
+2   537					     IF	($-START+0) AND	1
+2   538					     NOP
+2   539				     @_CNT__A =	@_CNT__A +  1
+2   540					     ENDIF
+1   541	      =MYCSEG:01B5	     _ldb =   $+1
+    542	01B4  02D2r 0210r	       dw  _cstr,_nipx
+    543
+    544				      __w _e_bl
+1   545					     __a  0
+2   546					     IF	($-START+0) AND	1
+2   547					     NOP
+2   548				     @_CNT__A =	@_CNT__A +  1
+2   549					     ENDIF
+1   550	      =MYCSEG:01B9	     _e_bl =   $+1
+    551	01B8  01B0r		       dw  _cemit
+    552				      __w _bl
+1   553					     __a  0
+2   554					     IF	($-START+0) AND	1
+2   555					     NOP
+2   556				     @_CNT__A =	@_CNT__A +  1
+2   557					     ENDIF
+1   558	      =MYCSEG:01BB	     _bl =   $+1
+    559	01BA  01EAr 0020	       dw  _litx,32
+    560
+    561				      __w _e_bs
+1   562					     __a  0
+2   563					     IF	($-START+0) AND	1
+2   564					     NOP
+2   565				     @_CNT__A =	@_CNT__A +  1
+2   566					     ENDIF
+1   567	      =MYCSEG:01BF	     _e_bs =   $+1
+    568	01BE  01B0r		       dw  _cemit
+    569				      __w _bs
+1   570					     __a  0
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 11
 nf70.asm
 
 
 
-1   571	016A  EB 12			       jmp  SHORT _MAIN
-    572
-    573				     ; LOGICAL	    COMMANDS  XOR AND not
-    574
-    575				      __l _add2d
-1   576					     __a  0
-2   577					     IF	($-START+0) AND	1
-2   578					     NOP
-2   579				     @_CNT__A =	@_CNT__A +  1
-2   580					     ENDIF
-1   581	      =MYCSEG:016C	     _add2d    =      $
-    582				       d_to  w
-1   583	016C  58		       pop   w
-    584	016D  03 F8		       add   t,w
-    585				       to_d  t
-1   586	016F  57		       PUSH   t
-    587
-    588				      __l _2div
-1   589					     __a  0
-2   590					     IF	($-START+0) AND	1
-2   591					     NOP
-2   592				     @_CNT__A =	@_CNT__A +  1
-2   593					     ENDIF
-1   594	      =MYCSEG:0170	     _2div    =	     $
-    595	0170  D1 DF		       rcr   t,1
-    596				       jmps  _main
-1   597	0172  EB 0A			       jmp  SHORT _main
-    598
-    599				     ; MAIN  LOOP  INNER INTERPRETTER
-    600
-    601				      __l _go
-1   602					     __a  0
-2   603					     IF	($-START+0) AND	1
-2   604					     NOP
-2   605				     @_CNT__A =	@_CNT__A +  1
-2   606					     ENDIF
-1   607	      =MYCSEG:0174	     _go    =	   $
-    608	0174  8B F7		       mov   i,t
-    609				       jmps  @drop
-1   610	0176  EB 34			       jmp  SHORT @drop
-    611
-    612				      __L _pop
-1   613					     __a  0
-2   614					     IF	($-START+0) AND	1
-2   615					     NOP
-2   616				     @_CNT__A =	@_CNT__A +  1
-2   617					     ENDIF
-1   618	      =MYCSEG:0178	     _pop    =	    $
-    619				       ddup
-1   620				       to_d  t
-2   621	0178  57		       PUSH   t
-    622	0179  8B 7E 00		       MOV   T,[R]
-    623
-    624				      __l _rDROP
-1   625					     __a  0
-2   626					     IF	($-START+0) AND	1
-2   627					     NOP
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 12
+2   571					     IF	($-START+0) AND	1
+2   572					     NOP
+2   573				     @_CNT__A =	@_CNT__A +  1
+2   574					     ENDIF
+1   575	      =MYCSEG:01C1	     _bs =   $+1
+    576	01C0  01EAr 0008	       dw  _litx,8
+    577
+    578				      __W _UMMUL
+1   579					     __a  0
+2   580					     IF	($-START+0) AND	1
+2   581					     NOP
+2   582				     @_CNT__A =	@_CNT__A +  1
+2   583					     ENDIF
+1   584	      =MYCSEG:01C5	     _UMMUL =	$+1
+    585	01C4  011Fr 0302r 0216r	       DW  _md_loops,_MULAD,_EXIT
+    586
+    587				      __W _UMDIVM
+1   588					     __a  0
+2   589					     IF	($-START+0) AND	1
+2   590					     NOP
+2   591				     @_CNT__A =	@_CNT__A +  1
+2   592					     ENDIF
+1   593	      =MYCSEG:01CB	     _UMDIVM =	 $+1
+    594	01CA  011Fr 0310r 0216r	       DW  _md_loops,_DIVSUB,_EXIT
+    595
+    596				     ; __w _accept
+    597				     ;	dw  _push
+    598				     ; : (ACC  PUSH 0
+    599				     ;	BEGIN KEY
+    600				     ;	  CASE
+    601				     ;	    cr OF DUP XCHG DROP	ENDOF
+    602				     ;	    bs OF DUP IF 1- TO bs  SPACE  TO bs	THEN  ENDOF
+    603				     ;	    PUSH  I bl &BYTE WITHIN
+    604				     ;	     IF	2DUP + I SWAP C! 1+  I EMIT THEN POP
+    605				     ;	  ENDCASE
+    606				     ;	DUP I =	UNTIL RDROP ;
+    607
+    608				     ;------------------------------------------------
+    609
+    610				      __l _@rldp	     ; @r+
+1   611					     __a  0
+2   612					     IF	($-START+0) AND	1
+2   613					     NOP
+2   614				     @_CNT__A =	@_CNT__A +  1
+2   615					     ENDIF
+1   616	      =MYCSEG:01D0	     _@rldp    =      $
+    617	01D0  E8 005E		       call  @rptr
+    618	01D3  AD		       lodsw
+    619				       rchg  t
+1   620	01D4  97		       xchg  ax,t
+    621	01D5  C3		       ret
+    622
+    623				      __l _astr		     ; (str
+1   624					     __a  0
+2   625					     IF	($-START+0) AND	1
+2   626					     NOP
+2   627				     @_CNT__A =	@_CNT__A +  1
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 12
 nf70.asm
 
 
 
-2   628				     @_CNT__A =	@_CNT__A +  1
-2   629					     ENDIF
-1   630	      =MYCSEG:017C	     _rDROP    =      $
-    631				       i2    r
-1   632	017C  45			     inc   r
-1   633	017D  45			     inc   r
-    634
-    635				      __l _MAIN
-1   636					     __a  0
-2   637					     IF	($-START+0) AND	1
-2   638					     NOP
-2   639				     @_CNT__A =	@_CNT__A +  1
-2   640					     ENDIF
-1   641	      =MYCSEG:017E	     _MAIN    =	     $
-    642	017E  AD		       lodsw
-    643	017F  A8 01		       test  wl,1
-    644	0181  75 E0		       Jnz   @NESTz
-    645	0183  FF E0		       JMP   w
-    646	0185			     @JPDROP:
-    647				       drop
-1   648				       d_to  t
-2   649	0185  5F		       pop   t
-    650
-    651				      __l _jump
-1   652					     __a  0
-2   653					     IF	($-START+0) AND	1
-2   654					     NOP
-2   655				     @_CNT__A =	@_CNT__A +  1
-2   656					     ENDIF
-1   657	      =MYCSEG:0186	     _jump    =	     $
-    658	0186  8B 34		       MOV   I,[I]
-    659				       JMPS  _MAIN
-1   660	0188  EB F4			       jmp  SHORT _MAIN
-    661
-    662				      __L _ZSKIP
-1   663					     __a  0
-2   664					     IF	($-START+0) AND	1
-2   665					     NOP
-2   666				     @_CNT__A =	@_CNT__A +  1
-2   667					     ENDIF
-1   668	      =MYCSEG:018A	     _ZSKIP    =      $
-    669	018A  0B FF		       or    t,t
-    670	018C  75 F0		       jnz   _main
-    671	018E			     _SKDROP:
-    672				       drop
-1   673				       d_to  t
-2   674	018E  5F		       pop   t
-    675	018F			     @skip:
-    676	018F  AD		       lodsw
-    677				       JMPS  _MAIN
-1   678	0190  EB EC			       jmp  SHORT _MAIN
-    679
-    680				      __L _NEXT
-1   681					     __a  0
-2   682					     IF	($-START+0) AND	1
-2   683					     NOP
-2   684				     @_CNT__A =	@_CNT__A +  1
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 13
+2   628					     ENDIF
+1   629	      =MYCSEG:01D6	     _astr    =	     $
+    630	01D6  E8 0058		       call  @rptr
+    631	01D9			     @astr:
+    632	01D9  33 C0		       xor   w,w
+    633	01DB  8B FE		       mov   t,i
+    634	01DD  AC		       lodsb
+    635	01DE  8B C8		       mov   c,w
+    636	01E0  0C 01		       or    wl,1
+    637	01E2  03 F0		       add   i,w
+    638	01E4  C3		       ret
+    639
+    640				      __L _litx2
+1   641					     __a  0
+2   642					     IF	($-START+0) AND	1
+2   643	01E5  90			     NOP
+2   644	      =0001		     @_CNT__A =	@_CNT__A +  1
+2   645					     ENDIF
+1   646	      =MYCSEG:01E6	     _litx2    =      $
+    647				       jmps  @litx2
+1   648	01E6  EB 01			       jmp  SHORT @litx2
+    649				      __L _litx3
+1   650					     __a  0
+2   651					     IF	($-START+0) AND	1
+2   652					     NOP
+2   653				     @_CNT__A =	@_CNT__A +  1
+2   654					     ENDIF
+1   655	      =MYCSEG:01E8	     _litx3    =      $
+    656	01E8  AD		       lodsw
+    657	01E9			     @litx2:
+    658	01E9  AD		       lodsw
+    659				      __L _litx
+1   660					     __a  0
+2   661					     IF	($-START+0) AND	1
+2   662					     NOP
+2   663				     @_CNT__A =	@_CNT__A +  1
+2   664					     ENDIF
+1   665	      =MYCSEG:01EA	     _litx    =	     $
+    666	01EA  AD		       lodsw
+    667	01EB			     @pushwx:
+    668				       ddup
+1   669				       to_d  t
+2   670	01EB  57		       PUSH   t
+    671	01EC  97		       xchg  t,w
+    672	01ED			     @exit2:
+    673				       jmps  _exit
+1   674	01ED  EB 27			       jmp  SHORT _exit
+    675
+    676				      __L _SETV3
+1   677					     __a  0
+2   678					     IF	($-START+0) AND	1
+2   679	01EF  90			     NOP
+2   680	      =0002		     @_CNT__A =	@_CNT__A +  1
+2   681					     ENDIF
+1   682	      =MYCSEG:01F0	     _SETV3    =      $
+    683				       i2    i
+1   684	01F0  46			     inc   i
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 13
 nf70.asm
 
 
 
-2   685					     ENDIF
-1   686	      =MYCSEG:0192	     _NEXT    =	     $
-    687	0192  FF 4E 00		       DEC   PW	[R]
-    688				       skipr c
-1   689	0195  B9 0000			     mov   c,0
-1   690					     org   $-2
-    691
-    692				      __l _ifm
-1   693					     __a  0
-2   694					     IF	($-START+0) AND	1
-2   695					     NOP
-2   696				     @_CNT__A =	@_CNT__A +  1
-2   697					     ENDIF
-1   698	      =MYCSEG:0196	     _ifm    =	    $
-    699	0196  0B FF		       or    t,t
-    700	0198  79 EC		       Jns   _jump
-    701	019A			     _skip:
-    702				       JMPS  @SKIP
-1   703	019A  EB F3			       jmp  SHORT @SKIP
-    704
-    705				      __l _if
-1   706					     __a  0
-2   707					     IF	($-START+0) AND	1
-2   708					     NOP
-2   709				     @_CNT__A =	@_CNT__A +  1
-2   710					     ENDIF
-1   711	      =MYCSEG:019C	     _if    =	   $
-    712	019C  0B FF		       or    t,t
-    713	019E  75 EE		       JNZ   _SKDROP
-    714	01A0			     _JPDROP:
-    715				       JMPS  @JPDROP
-1   716	01A0  EB E3			       jmp  SHORT @JPDROP
-    717
-    718				      __l _at		     ; @
-1   719					     __a  0
-2   720					     IF	($-START+0) AND	1
-2   721					     NOP
-2   722				     @_CNT__A =	@_CNT__A +  1
-2   723					     ENDIF
-1   724	      =MYCSEG:01A2	     _at    =	   $
-    725	01A2  8B 3D		       mov   t,[t]
-    726				       jmps  _main
-1   727	01A4  EB D8			       jmp  SHORT _main
-    728
-    729				      __l _j		     ; j
-1   730					     __a  0
-2   731					     IF	($-START+0) AND	1
-2   732					     NOP
-2   733				     @_CNT__A =	@_CNT__A +  1
-2   734					     ENDIF
-1   735	      =MYCSEG:01A6	     _j	   =	  $
-    736				       ddup
-1   737				       to_d  t
-2   738	01A6  57		       PUSH   t
-    739	01A7  8B 7E 02		       mov   T,[R+2]
-    740				       JMPS  _main
-1   741	01AA  EB D2			       jmp  SHORT _main
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 14
+1   685	01F1  46			     inc   i
+    686				      __l _SETV2
+1   687					     __a  0
+2   688					     IF	($-START+0) AND	1
+2   689					     NOP
+2   690				     @_CNT__A =	@_CNT__A +  1
+2   691					     ENDIF
+1   692	      =MYCSEG:01F2	     _SETV2    =      $
+    693				       i2    i
+1   694	01F2  46			     inc   i
+1   695	01F3  46			     inc   i
+    696				      __l _SETV
+1   697					     __a  0
+2   698					     IF	($-START+0) AND	1
+2   699					     NOP
+2   700				     @_CNT__A =	@_CNT__A +  1
+2   701					     ENDIF
+1   702	      =MYCSEG:01F4	     _SETV    =	     $
+    703	01F4  89 3C		       mov   [i],t
+    704				       jmps  _dropx
+1   705	01F6  EB 1A			       jmp  SHORT _dropx
+    706
+    707				     ;------------  inner INTERPRETTER ----
+    708				     ; CONTROL	    COMMANDS
+    709				     ; xep ex exit execute nop skip zskip
+    710				     ; -if if jump f>c f>c; 0;
+    711
+    712				      __L _STMb
+1   713					     __a  0
+2   714					     IF	($-START+0) AND	1
+2   715					     NOP
+2   716				     @_CNT__A =	@_CNT__A +  1
+2   717					     ENDIF
+1   718	      =MYCSEG:01F8	     _STMb    =	     $
+    719				       d_to  w
+1   720	01F8  58		       pop   w
+    721	01F9  88 45 FF		       mov   [T-1],wl
+    722
+    723				      __L _1M
+1   724					     __a  0
+2   725					     IF	($-START+0) AND	1
+2   726					     NOP
+2   727				     @_CNT__A =	@_CNT__A +  1
+2   728					     ENDIF
+1   729	      =MYCSEG:01FC	     _1M    =	   $
+    730				       JMPS  @1M
+1   731	01FC  EB 05			       jmp  SHORT @1M
+    732
+    733				      __L _STM
+1   734					     __a  0
+2   735					     IF	($-START+0) AND	1
+2   736					     NOP
+2   737				     @_CNT__A =	@_CNT__A +  1
+2   738					     ENDIF
+1   739	      =MYCSEG:01FE	     _STM    =	    $
+    740	01FE  8F 45 FE		       POP   PW	[T-2]
+    741
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 14
 nf70.asm
 
 
 
-    742	01AC			     @drop:
-    743				       drop
-1   744				       d_to  t
-2   745	01AC  5F		       pop   t
-    746				       jmps  _main
-1   747	01AD  EB CF			       jmp  SHORT _main
-    748
-    749				      __l _lda		     ; a@
-1   750					     __a  0
-2   751					     IF	($-START+0) AND	1
-2   752	01AF  90			     NOP
-2   753	      =0004		     @_CNT__A =	@_CNT__A +  1
-2   754					     ENDIF
-1   755	      =MYCSEG:01B0	     _lda    =	    $
-    756	01B0  8B C2		       mov   w,a
-    757				       jmps  _pushw
-1   758	01B2  EB 10			       jmp  SHORT _pushw
-    759
-    760				      __L _@EMITD
-1   761					     __a  0
-2   762					     IF	($-START+0) AND	1
-2   763					     NOP
-2   764				     @_CNT__A =	@_CNT__A +  1
-2   765					     ENDIF
-1   766	      =MYCSEG:01B4	     _@EMITD	=      $
-    767	01B4  52		       push  dx
-    768	01B5  8B D7		       MOV   DX,T
-    769	01B7  B4 02		       MOV   AH,2
-    770	01B9  CD 21		       INT   21H
-    771	01BB  5A		       pop   dx
-    772	01BC			     _drop:
-    773				       JMPS  @drop
-1   774	01BC  EB EE			       jmp  SHORT @drop
-    775
-    776				      __L _@KEYD
-1   777					     __a  0
-2   778					     IF	($-START+0) AND	1
-2   779					     NOP
-2   780				     @_CNT__A =	@_CNT__A +  1
-2   781					     ENDIF
-1   782	      =MYCSEG:01BE	     _@KEYD    =      $
-    783	01BE  B4 08		       MOV   AH,8
-    784	01C0  CD 21		       INT   21H
+    742				      __L _2M
+1   743					     __a  0
+2   744					     IF	($-START+0) AND	1
+2   745	0201  90			     NOP
+2   746	      =0003		     @_CNT__A =	@_CNT__A +  1
+2   747					     ENDIF
+1   748	      =MYCSEG:0202	     _2M    =	   $
+    749	0202  4F		       DEC   T
+    750	0203			     @1M:
+    751	0203  4F		       DEC   T
+    752				       JMPS  _MAIN
+1   753	0204  EB 70			       jmp  SHORT _MAIN
+    754
+    755				      __L _abs
+1   756					     __a  0
+2   757					     IF	($-START+0) AND	1
+2   758					     NOP
+2   759				     @_CNT__A =	@_CNT__A +  1
+2   760					     ENDIF
+1   761	      =MYCSEG:0206	     _abs    =	    $
+    762	0206  0B FF		       OR    T,T
+    763	0208  79 04		       JNS   @MAIN1
+    764
+    765				      __L _NEG
+1   766					     __a  0
+2   767					     IF	($-START+0) AND	1
+2   768					     NOP
+2   769				     @_CNT__A =	@_CNT__A +  1
+2   770					     ENDIF
+1   771	      =MYCSEG:020A	     _NEG    =	    $
+    772	020A  4F		       DEC   T
+    773
+    774				      __L _NOT
+1   775					     __a  0
+2   776					     IF	($-START+0) AND	1
+2   777	020B  90			     NOP
+2   778	      =0004		     @_CNT__A =	@_CNT__A +  1
+2   779					     ENDIF
+1   780	      =MYCSEG:020C	     _NOT    =	    $
+    781	020C  F7 D7		       NOT   T
+    782	020E			     @MAIN1:
+    783				       JMPS  _MAIN
+1   784	020E  EB 66			       jmp  SHORT _MAIN
     785
-    786				      __l _pushb
+    786				      __L _nipx
 1   787					     __a  0
 2   788					     IF	($-START+0) AND	1
 2   789					     NOP
 2   790				     @_CNT__A =	@_CNT__A +  1
 2   791					     ENDIF
-1   792	      =MYCSEG:01C2	     _pushb    =      $
-    793	01C2  B4 00		       MOV   wH,0
-    794
-    795				      __l _pushw
-1   796					     __a  0
-2   797					     IF	($-START+0) AND	1
-2   798					     NOP
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 15
+1   792	      =MYCSEG:0210	     _nipx    =	     $
+    793				       D_to  w
+1   794	0210  58		       pop   w
+    795				       SKIPB
+1   796	0211  3C			     DB	   03CH
+    797
+    798				      __L _DROPx
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 15
 nf70.asm
 
 
 
-2   799				     @_CNT__A =	@_CNT__A +  1
-2   800					     ENDIF
-1   801	      =MYCSEG:01C4	     _pushw    =      $
-    802				       ddup
-1   803				       to_d  t
-2   804	01C4  57		       PUSH   t
-    805	01C5  97		       xchg  w,t
-    806				       JMPS  _main
-1   807	01C6  EB B6			       jmp  SHORT _main
-    808
-    809				      __L _LIT
-1   810					     __a  0
-2   811					     IF	($-START+0) AND	1
-2   812					     NOP
-2   813				     @_CNT__A =	@_CNT__A +  1
-2   814					     ENDIF
-1   815	      =MYCSEG:01C8	     _LIT    =	    $
-    816	01C8  AD		       LODSW
-    817				       JMPS  _PUSHW
-1   818	01C9  EB F9			       jmp  SHORT _PUSHW
-    819
-    820				      __L _cstr
-1   821					     __a  0
-2   822					     IF	($-START+0) AND	1
-2   823	01CB  90			     NOP
-2   824	      =0005		     @_CNT__A =	@_CNT__A +  1
-2   825					     ENDIF
-1   826	      =MYCSEG:01CC	     _cstr    =	     $
-    827	01CC  8B 05		       MOV   w,[T]
-    828	01CE  47		       inc   t
-    829				       jmps  _pushb
-1   830	01CF  EB F1			       jmp  SHORT _pushb
-    831
-    832				      __L _cST@P
-1   833					     __a  0
-2   834					     IF	($-START+0) AND	1
-2   835	01D1  90			     NOP
-2   836	      =0006		     @_CNT__A =	@_CNT__A +  1
-2   837					     ENDIF
-1   838	      =MYCSEG:01D2	     _cST@P    =      $
-    839	01D2  97		       XCHG  w,T
-    840	01D3  87 FA		       XCHG  T,A
-    841	01D5  AA		       STOSB
-    842
-    843				      __l _sta
-1   844					     __a  0
-2   845					     IF	($-START+0) AND	1
-2   846					     NOP
-2   847				     @_CNT__A =	@_CNT__A +  1
-2   848					     ENDIF
-1   849	      =MYCSEG:01D6	     _sta    =	    $
-    850	01D6  87 D7		       XCHG  a,t
-    851				       JMPS  @drop
-1   852	01D8  EB D2			       jmp  SHORT @drop
-    853
-    854				      __L _cLD@P
-1   855					     __a  0
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 16
+1   799					     __a  0
+2   800					     IF	($-START+0) AND	1
+2   801					     NOP
+2   802				     @_CNT__A =	@_CNT__A +  1
+2   803					     ENDIF
+1   804	      =MYCSEG:0212	     _DROPx    =      $
+    805				       DROP
+1   806				       d_to  t
+2   807	0212  5F		       pop   t
+    808				       SKIPR c
+1   809	0213  B9 0000			     mov   c,0
+1   810					     org   $-2
+    811
+    812				      __l _rDROPx
+1   813					     __a  0
+2   814					     IF	($-START+0) AND	1
+2   815					     NOP
+2   816				     @_CNT__A =	@_CNT__A +  1
+2   817					     ENDIF
+1   818	      =MYCSEG:0214	     _rDROPx	=      $
+    819				       i2    r
+1   820	0214  45			     inc   r
+1   821	0215  45			     inc   r
+    822
+    823				      __l _exit	       ; exit
+1   824					     __a  0
+2   825					     IF	($-START+0) AND	1
+2   826					     NOP
+2   827				     @_CNT__A =	@_CNT__A +  1
+2   828					     ENDIF
+1   829	      =MYCSEG:0216	     _exit    =	     $
+    830	0216  8B 76 00		       mov   i,[r]
+    831				       jmps  _rdrop
+1   832	0219  EB 59			       jmp  SHORT _rdrop
+    833	021B			     @does3:
+    834				       i2    i
+1   835	021B  46			     inc   i
+1   836	021C  46			     inc   i
+    837	021D			     @does2:
+    838				       i2    i
+1   839	021D  46			     inc   i
+1   840	021E  46			     inc   i
+    841	021F			     @does:
+    842	021F  8B FE		       mov   t,i
+    843	0221			     @return:
+    844				       d_to  i
+1   845	0221  5E		       pop   i
+    846				       jmps  _main
+1   847	0222  EB 52			       jmp  SHORT _main
+    848
+    849				      __l _xchg
+1   850					     __a  0
+2   851					     IF	($-START+0) AND	1
+2   852					     NOP
+2   853				     @_CNT__A =	@_CNT__A +  1
+2   854					     ENDIF
+1   855	      =MYCSEG:0224	     _xchg    =	     $
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 16
 nf70.asm
 
 
 
-2   856					     IF	($-START+0) AND	1
-2   857					     NOP
-2   858				     @_CNT__A =	@_CNT__A +  1
-2   859					     ENDIF
-1   860	      =MYCSEG:01DA	     _cLD@P    =      $
-    861	01DA  87 F2		       XCHG  I,A
-    862	01DC  AC		       LODSB
-    863	01DD  87 F2		       XCHG  I,A
-    864				       JMPS  _pushb
-1   865	01DF  EB E1			       jmp  SHORT _pushb
-    866
-    867				      __L _MULAD     ;	1 AR AND IF T ADD THEN U2/ ;
-1   868					     __a  0
-2   869					     IF	($-START+0) AND	1
-2   870	01E1  90			     NOP
-2   871	      =0007		     @_CNT__A =	@_CNT__A +  1
-2   872					     ENDIF
-1   873	      =MYCSEG:01E2	     _MULAD    =      $
-    874	01E2  58		       POP   w
-    875	01E3  A8 01		       TEST  wL,1
-    876	01E5  74 02		       JE    @MUL
-    877	01E7  03 FA		       ADD   T,A
-    878	01E9			     @MUL:
-    879	01E9  D1 DF		       RCR   T,1
-    880	01EB  D1 D8		       RCR   w,1
-    881	01ED  50		       PUSH  w
-    882	01EE  EB 8E		       JMP   _MAIN
-    883
-    884				      __L _DIVSUB    ;	1 AR AND IF T ADD THEN U2/ ;
-1   885					     __a  0
-2   886					     IF	($-START+0) AND	1
-2   887					     NOP
-2   888				     @_CNT__A =	@_CNT__A +  1
-2   889					     ENDIF
-1   890	      =MYCSEG:01F0	     _DIVSUB	=      $
-    891	01F0  58		       POP   w
-    892	01F1  D1 E0		       SHL   w,1
-    893	01F3  D1 D7		       RCL   T,1
-    894	01F5  3B FA		       CMP   T,A
-    895	01F7  72 03		       JB    @DIV
-    896	01F9  2B FA		       SUB   T,A
-    897	01FB  40		       INC   w
-    898	01FC			     @DIV:
-    899	01FC  50		       PUSH  w
-    900	01FD  E9 FF7E		       JMP   _MAIN
-    901
-    902				      __W _ZEQ
-1   903					     __a  0
-2   904					     IF	($-START+0) AND	1
-2   905					     NOP
-2   906				     @_CNT__A =	@_CNT__A +  1
-2   907					     ENDIF
-1   908	      =MYCSEG:0201	     _ZEQ =   $+1
-    909	0200  019Cr 020Br	       DW  _IF,_M1
-    910				      __W _0
-1   911					     __a  0
-2   912					     IF	($-START+0) AND	1
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 17
+    856	0224  87 7E 00		       xchg  t,[r]
+    857				       skipb
+1   858	0227  3C			     DB	   03CH
+    859
+    860				      __L _DuP
+1   861					     __a  0
+2   862					     IF	($-START+0) AND	1
+2   863					     NOP
+2   864				     @_CNT__A =	@_CNT__A +  1
+2   865					     ENDIF
+1   866	      =MYCSEG:0228	     _DuP    =	    $
+    867				       ddup
+1   868				       to_d  t
+2   869	0228  57		       PUSH   t
+    870				       skipr c
+1   871	0229  B9 0000			     mov   c,0
+1   872					     org   $-2
+    873
+    874				      __L _STP
+1   875					     __a  0
+2   876					     IF	($-START+0) AND	1
+2   877					     NOP
+2   878				     @_CNT__A =	@_CNT__A +  1
+2   879					     ENDIF
+1   880	      =MYCSEG:022A	     _STP    =	    $
+    881				       d_to  w
+1   882	022A  58		       pop   w
+    883	022B  AB		       stosw
+    884				       JMPS  _MAIN
+1   885	022C  EB 48			       jmp  SHORT _MAIN
+    886
+    887				      __l _nipa
+1   888					     __a  0
+2   889					     IF	($-START+0) AND	1
+2   890					     NOP
+2   891				     @_CNT__A =	@_CNT__A +  1
+2   892					     ENDIF
+1   893	      =MYCSEG:022E	     _nipa    =	     $
+    894	022E  5A		       pop   a
+    895				       JMPS  _MAIN
+1   896	022F  EB 45			       jmp  SHORT _MAIN
+    897
+    898	0231			     @rptr:
+    899	0231  59		       pop   c
+    900				       ddup
+1   901				       to_d  t
+2   902	0232  57		       PUSH   t
+    903	0233  87 76 00		       xchg  i,[r]
+    904	0236  FF D1		       call  c
+    905
+    906				      __l _ex
+1   907					     __a  0
+2   908					     IF	($-START+0) AND	1
+2   909					     NOP
+2   910				     @_CNT__A =	@_CNT__A +  1
+2   911					     ENDIF
+1   912	      =MYCSEG:0238	     _ex    =	   $
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 17
 nf70.asm
 
 
 
-2   913					     NOP
-2   914				     @_CNT__A =	@_CNT__A +  1
-2   915					     ENDIF
-1   916	      =MYCSEG:0205	     _0	=   $+1
-    917	0204  01C8r 0000 012Ar	       DW  _LIT,0,_EXIT
-    918				      __W _M1
+    913	0238  87 76 00		       xchg  i,[r]
+    914				       skipr c
+1   915	023B  B9 0000			     mov   c,0
+1   916					     org   $-2
+    917
+    918				      __L _STPB
 1   919					     __a  0
 2   920					     IF	($-START+0) AND	1
 2   921					     NOP
 2   922				     @_CNT__A =	@_CNT__A +  1
 2   923					     ENDIF
-1   924	      =MYCSEG:020B	     _M1 =   $+1
-    925	020A  01C8r FFFF 012Ar	       DW  _LIT,-1,_EXIT
-    926
-    927				      __W _UMMUL
-1   928					     __a  0
-2   929					     IF	($-START+0) AND	1
-2   930					     NOP
-2   931				     @_CNT__A =	@_CNT__A +  1
-2   932					     ENDIF
-1   933	      =MYCSEG:0211	     _UMMUL =	$+1
-    934	0210  01D6r 0205r 0216r	  +    DW  _STA,_0,$+2,$+2,$+2,_MULAD ,_MULAD ,_EXIT
-    935	      0218r 021Ar 01E2r	  +
-    936	      01E2r 012Ar
-    937
-    938				      __W _UMDIVM
-1   939					     __a  0
-2   940					     IF	($-START+0) AND	1
-2   941					     NOP
-2   942				     @_CNT__A =	@_CNT__A +  1
-2   943					     ENDIF
-1   944	      =MYCSEG:0221	     _UMDIVM =	 $+1
-    945	0220  01D6r 0205r 0226r	  +    DW  _STA,_0,$+2,$+2,$+2,_DIVSUB,_DIVSUB,_EXIT
-    946	      0228r 022Ar 01F0r	  +
-    947	      01F0r 012Ar
-    948
-    949	0230			     freemem:
-    950	0230  0001		       DW ENDMEM-FREEMEM-2
-    951				       ;__ENTRY	 '=:',_ENTRY
-    952	0232  00		       DB 0
-    953	0233			     EndMem:
-    954
-    955	      =0000		     lastw = ppppp
-    956
-    957	0233			     MyCseg  ends
-    958					     end  Start
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 18
+1   924	      =MYCSEG:023C	     _STPB    =	     $
+    925				       d_to  w
+1   926	023C  58		       pop   w
+    927	023D  AB		       stosw
+    928				       JMPS  _MAIN
+1   929	023E  EB 36			       jmp  SHORT _MAIN
+    930
+    931				      __L _LDP
+1   932					     __a  0
+2   933					     IF	($-START+0) AND	1
+2   934					     NOP
+2   935				     @_CNT__A =	@_CNT__A +  1
+2   936					     ENDIF
+1   937	      =MYCSEG:0240	     _LDP    =	    $
+    938	0240  FF 35		       PUSH  PW	[T]
+    939
+    940				      __L _2P
+1   941					     __a  0
+2   942					     IF	($-START+0) AND	1
+2   943					     NOP
+2   944				     @_CNT__A =	@_CNT__A +  1
+2   945					     ENDIF
+1   946	      =MYCSEG:0242	     _2P    =	   $
+    947	0242  47		       INC   T
+    948	0243			     @1P:
+    949	0243  47		       INC   T
+    950				       JMPS  _MAIN
+1   951	0244  EB 30			       jmp  SHORT _MAIN
+    952
+    953				      __L _1P
+1   954					     __a  0
+2   955					     IF	($-START+0) AND	1
+2   956					     NOP
+2   957				     @_CNT__A =	@_CNT__A +  1
+2   958					     ENDIF
+1   959	      =MYCSEG:0246	     _1P    =	   $
+    960				       JMPS  @1p
+1   961	0246  EB FB			       jmp  SHORT @1p
+    962
+    963				      __l _and
+1   964					     __a  0
+2   965					     IF	($-START+0) AND	1
+2   966					     NOP
+2   967				     @_CNT__A =	@_CNT__A +  1
+2   968					     ENDIF
+1   969	      =MYCSEG:0248	     _and    =	    $
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 18
+nf70.asm
+
+
+
+    970				       d_to  w
+1   971	0248  58		       pop   w
+    972	0249  23 F8		       and   t,w
+    973				       jmps  _main
+1   974	024B  EB 29			       jmp  SHORT _main
+    975
+    976				      __l _0
+1   977					     __a  0
+2   978					     IF	($-START+0) AND	1
+2   979	024D  90			     NOP
+2   980	      =0005		     @_CNT__A =	@_CNT__A +  1
+2   981					     ENDIF
+1   982	      =MYCSEG:024E	     _0	   =	  $
+    983				       ddup
+1   984				       to_d  t
+2   985	024E  57		       PUSH   t
+    986				       ddup
+1   987				       to_d  t
+2   988	024F  57		       PUSH   t
+    989
+    990				      __l _xor
+1   991					     __a  0
+2   992					     IF	($-START+0) AND	1
+2   993					     NOP
+2   994				     @_CNT__A =	@_CNT__A +  1
+2   995					     ENDIF
+1   996	      =MYCSEG:0250	     _xor    =	    $
+    997				       d_to  w
+1   998	0250  58		       pop   w
+    999	0251  33 F8		       xor   t,w
+   1000				       jmps  _main
+1  1001	0253  EB 21			       jmp  SHORT _main
+   1002
+   1003				      __l _for
+1  1004					     __a  0
+2  1005					     IF	($-START+0) AND	1
+2  1006	0255  90			     NOP
+2  1007	      =0006		     @_CNT__A =	@_CNT__A +  1
+2  1008					     ENDIF
+1  1009	      =MYCSEG:0256	     _for    =	    $
+   1010	0256  8B 34		       mov   I,[I]
+   1011
+   1012				      __l _push
+1  1013					     __a  0
+2  1014					     IF	($-START+0) AND	1
+2  1015					     NOP
+2  1016				     @_CNT__A =	@_CNT__A +  1
+2  1017					     ENDIF
+1  1018	      =MYCSEG:0258	     _push    =	     $
+   1019				       d_to  w
+1  1020	0258  58		       pop   w
+   1021	0259  97		       xchg  w,t
+   1022				       skipr c	 ; jmps	@rpush
+1  1023	025A  B9 0000			     mov   c,0
+1  1024					     org   $-2
+   1025
+   1026	025B			     @NESTz:
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 19
+nf70.asm
+
+
+
+   1027	025B  48		       dec   w
+   1028	025C			     @NEST:
+   1029	025C  96		       xchg  w,i
+   1030	025D			     @rpush:
+   1031				       to_r  w
+1  1032				       x
+2  1033	025D  87 EC			     Xchg  R,D
+1  1034	025F  50		       PUSH   w
+1  1035				       x
+2  1036	0260  87 EC			     Xchg  R,D
+   1037				       JMPs  _MAIN
+1  1038	0262  EB 12			       jmp  SHORT _MAIN
+   1039
+   1040				     ; LOGICAL	    COMMANDS  XOR AND not
+   1041
+   1042				      __l _add2d
+1  1043					     __a  0
+2  1044					     IF	($-START+0) AND	1
+2  1045					     NOP
+2  1046				     @_CNT__A =	@_CNT__A +  1
+2  1047					     ENDIF
+1  1048	      =MYCSEG:0264	     _add2d    =      $
+   1049				       d_to  w
+1  1050	0264  58		       pop   w
+   1051	0265  03 F8		       add   t,w
+   1052				       to_d  t
+1  1053	0267  57		       PUSH   t
+   1054
+   1055				      __l _2div
+1  1056					     __a  0
+2  1057					     IF	($-START+0) AND	1
+2  1058					     NOP
+2  1059				     @_CNT__A =	@_CNT__A +  1
+2  1060					     ENDIF
+1  1061	      =MYCSEG:0268	     _2div    =	     $
+   1062	0268  D1 DF		       rcr   t,1
+   1063				       jmps  _main
+1  1064	026A  EB 0A			       jmp  SHORT _main
+   1065
+   1066				     ; MAIN  LOOP  INNER INTERPRETTER
+   1067
+   1068				      __l _go
+1  1069					     __a  0
+2  1070					     IF	($-START+0) AND	1
+2  1071					     NOP
+2  1072				     @_CNT__A =	@_CNT__A +  1
+2  1073					     ENDIF
+1  1074	      =MYCSEG:026C	     _go    =	   $
+   1075	026C  8B F7		       mov   i,t
+   1076				       jmps  @drop
+1  1077	026E  EB 3E			       jmp  SHORT @drop
+   1078
+   1079				      __L _pop
+1  1080					     __a  0
+2  1081					     IF	($-START+0) AND	1
+2  1082					     NOP
+2  1083				     @_CNT__A =	@_CNT__A +  1
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 20
+nf70.asm
+
+
+
+2  1084					     ENDIF
+1  1085	      =MYCSEG:0270	     _pop    =	    $
+   1086				       ddup
+1  1087				       to_d  t
+2  1088	0270  57		       PUSH   t
+   1089	0271  8B 7E 00		       MOV   T,[R]
+   1090
+   1091				      __l _rDROP
+1  1092					     __a  0
+2  1093					     IF	($-START+0) AND	1
+2  1094					     NOP
+2  1095				     @_CNT__A =	@_CNT__A +  1
+2  1096					     ENDIF
+1  1097	      =MYCSEG:0274	     _rDROP    =      $
+   1098				       i2    r
+1  1099	0274  45			     inc   r
+1  1100	0275  45			     inc   r
+   1101
+   1102				      __l _MAIN
+1  1103					     __a  0
+2  1104					     IF	($-START+0) AND	1
+2  1105					     NOP
+2  1106				     @_CNT__A =	@_CNT__A +  1
+2  1107					     ENDIF
+1  1108	      =MYCSEG:0276	     _MAIN    =	     $
+   1109	0276  AD		       lodsw
+   1110	0277  A8 01		       test  wl,1
+   1111	0279  75 E0		       Jnz   @NESTz
+   1112	027B  FF E0		       JMP   w
+   1113	027D			     @JPDROP:
+   1114				       drop
+1  1115				       d_to  t
+2  1116	027D  5F		       pop   t
+   1117
+   1118				      __l _jump
+1  1119					     __a  0
+2  1120					     IF	($-START+0) AND	1
+2  1121					     NOP
+2  1122				     @_CNT__A =	@_CNT__A +  1
+2  1123					     ENDIF
+1  1124	      =MYCSEG:027E	     _jump    =	     $
+   1125	027E  8B 34		       MOV   I,[I]
+   1126				       JMPS  _MAIN
+1  1127	0280  EB F4			       jmp  SHORT _MAIN
+   1128
+   1129				      __L _ZSKIP
+1  1130					     __a  0
+2  1131					     IF	($-START+0) AND	1
+2  1132					     NOP
+2  1133				     @_CNT__A =	@_CNT__A +  1
+2  1134					     ENDIF
+1  1135	      =MYCSEG:0282	     _ZSKIP    =      $
+   1136	0282  0B FF		       or    t,t
+   1137	0284  75 F0		       jnz   _main
+   1138	0286			     _SKDROP:
+   1139				       drop
+1  1140				       d_to  t
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 21
+nf70.asm
+
+
+
+2  1141	0286  5F		       pop   t
+   1142	0287			     @skip:
+   1143	0287  AD		       lodsw
+   1144				       JMPS  _MAIN
+1  1145	0288  EB EC			       jmp  SHORT _MAIN
+   1146
+   1147				      __L _NEXT
+1  1148					     __a  0
+2  1149					     IF	($-START+0) AND	1
+2  1150					     NOP
+2  1151				     @_CNT__A =	@_CNT__A +  1
+2  1152					     ENDIF
+1  1153	      =MYCSEG:028A	     _NEXT    =	     $
+   1154	028A  FF 4E 00		       DEC   PW	[R]
+   1155				       skipr c
+1  1156	028D  B9 0000			     mov   c,0
+1  1157					     org   $-2
+   1158
+   1159				      __l _ifm
+1  1160					     __a  0
+2  1161					     IF	($-START+0) AND	1
+2  1162					     NOP
+2  1163				     @_CNT__A =	@_CNT__A +  1
+2  1164					     ENDIF
+1  1165	      =MYCSEG:028E	     _ifm    =	    $
+   1166	028E  47		       inc   t
+   1167	028F			     @ifm1:
+   1168	028F  4F		       dec   t
+   1169	0290  79 EC		       Jns   _jump
+   1170	0292			     _skip:
+   1171				       JMPS  @SKIP
+1  1172	0292  EB F3			       jmp  SHORT @SKIP
+   1173
+   1174				      __l _ifm1
+1  1175					     __a  0
+2  1176					     IF	($-START+0) AND	1
+2  1177					     NOP
+2  1178				     @_CNT__A =	@_CNT__A +  1
+2  1179					     ENDIF
+1  1180	      =MYCSEG:0294	     _ifm1    =	     $
+   1181				       jmps  @ifm1
+1  1182	0294  EB F9			       jmp  SHORT @ifm1
+   1183
+   1184				      __l _ifd
+1  1185					     __a  0
+2  1186					     IF	($-START+0) AND	1
+2  1187					     NOP
+2  1188				     @_CNT__A =	@_CNT__A +  1
+2  1189					     ENDIF
+1  1190	      =MYCSEG:0296	     _ifd    =	    $
+   1191				       ddup
+1  1192				       to_d  t
+2  1193	0296  57		       PUSH   t
+   1194				      __l _if
+1  1195					     __a  0
+2  1196					     IF	($-START+0) AND	1
+2  1197	0297  90			     NOP
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 22
+nf70.asm
+
+
+
+2  1198	      =0007		     @_CNT__A =	@_CNT__A +  1
+2  1199					     ENDIF
+1  1200	      =MYCSEG:0298	     _if    =	   $
+   1201	0298  0B FF		       or    t,t
+   1202	029A  75 EA		       JNZ   _SKDROP
+   1203	029C			     _JPDROP:
+   1204				       JMPS  @JPDROP
+1  1205	029C  EB DF			       jmp  SHORT @JPDROP
+   1206
+   1207				      __l _0x
+1  1208					     __a  0
+2  1209					     IF	($-START+0) AND	1
+2  1210					     NOP
+2  1211				     @_CNT__A =	@_CNT__A +  1
+2  1212					     ENDIF
+1  1213	      =MYCSEG:029E	     _0x    =	   $
+   1214	029E  0B FF		       or    t,t
+   1215	02A0  74 0C		       jz    @drop
+   1216				      __a 1
+1  1217					     IF	($-START+1) AND	1
+1  1218	02A2  90			     NOP
+1  1219	      =0008		     @_CNT__A =	@_CNT__A +  1
+1  1220					     ENDIF
+   1221				       skipa
+1  1222	02A3  3D			     DB	   03DH
+   1223
+   1224				      __l _at		     ; @
+1  1225					     __a  0
+2  1226					     IF	($-START+0) AND	1
+2  1227					     NOP
+2  1228				     @_CNT__A =	@_CNT__A +  1
+2  1229					     ENDIF
+1  1230	      =MYCSEG:02A4	     _at    =	   $
+   1231	02A4  8B 3D		       mov   t,[t]
+   1232				       jmps  _main
+1  1233	02A6  EB CE			       jmp  SHORT _main
+   1234
+   1235				      __l _j		     ; j
+1  1236					     __a  0
+2  1237					     IF	($-START+0) AND	1
+2  1238					     NOP
+2  1239				     @_CNT__A =	@_CNT__A +  1
+2  1240					     ENDIF
+1  1241	      =MYCSEG:02A8	     _j	   =	  $
+   1242				       ddup
+1  1243				       to_d  t
+2  1244	02A8  57		       PUSH   t
+   1245	02A9  8B 7E 02		       mov   T,[R+2]
+   1246				       JMPS  _main
+1  1247	02AC  EB C8			       jmp  SHORT _main
+   1248	02AE			     @drop:
+   1249				       drop
+1  1250				       d_to  t
+2  1251	02AE  5F		       pop   t
+   1252				       jmps  _main
+1  1253	02AF  EB C5			       jmp  SHORT _main
+   1254
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 23
+nf70.asm
+
+
+
+   1255				      __l _lda		     ; a@
+1  1256					     __a  0
+2  1257					     IF	($-START+0) AND	1
+2  1258	02B1  90			     NOP
+2  1259	      =0009		     @_CNT__A =	@_CNT__A +  1
+2  1260					     ENDIF
+1  1261	      =MYCSEG:02B2	     _lda    =	    $
+   1262	02B2  8B C2		       mov   w,a
+   1263				       jmps  _pushw
+1  1264	02B4  EB 18			       jmp  SHORT _pushw
+   1265
+   1266				      __L _@EMITD
+1  1267					     __a  0
+2  1268					     IF	($-START+0) AND	1
+2  1269					     NOP
+2  1270				     @_CNT__A =	@_CNT__A +  1
+2  1271					     ENDIF
+1  1272	      =MYCSEG:02B6	     _@EMITD	=      $
+   1273	02B6  52		       push  dx
+   1274	02B7  8B D7		       MOV   DX,T
+   1275	02B9  B4 02		       MOV   AH,2
+   1276	02BB  CD 21		       INT   21H
+   1277	02BD  5A		       pop   dx
+   1278	02BE			     _drop:
+   1279				       JMPS  @drop
+1  1280	02BE  EB EE			       jmp  SHORT @drop
+   1281
+   1282				      __L _@KEYD
+1  1283					     __a  0
+2  1284					     IF	($-START+0) AND	1
+2  1285					     NOP
+2  1286				     @_CNT__A =	@_CNT__A +  1
+2  1287					     ENDIF
+1  1288	      =MYCSEG:02C0	     _@KEYD    =      $
+   1289	02C0  B4 08		       MOV   AH,8
+   1290	02C2  CD 21		       INT   21H
+   1291
+   1292				      __l _pushb
+1  1293					     __a  0
+2  1294					     IF	($-START+0) AND	1
+2  1295					     NOP
+2  1296				     @_CNT__A =	@_CNT__A +  1
+2  1297					     ENDIF
+1  1298	      =MYCSEG:02C4	     _pushb    =      $
+   1299	02C4  B4 00		       MOV   wH,0
+   1300				       JMPS  _PUSHW
+1  1301	02C6  EB 06			       jmp  SHORT _PUSHW
+   1302
+   1303				      __L _swap
+1  1304					     __a  0
+2  1305					     IF	($-START+0) AND	1
+2  1306					     NOP
+2  1307				     @_CNT__A =	@_CNT__A +  1
+2  1308					     ENDIF
+1  1309	      =MYCSEG:02C8	     _swap    =	     $
+   1310				       d_to  w
+1  1311	02C8  58		       pop   w
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 24
+nf70.asm
+
+
+
+   1312				       skipb
+1  1313	02C9  3C			     DB	   03CH
+   1314
+   1315				      __L _LIT
+1  1316					     __a  0
+2  1317					     IF	($-START+0) AND	1
+2  1318					     NOP
+2  1319				     @_CNT__A =	@_CNT__A +  1
+2  1320					     ENDIF
+1  1321	      =MYCSEG:02CA	     _LIT    =	    $
+   1322	02CA  AD		       LODSW
+   1323				       skipr c
+1  1324	02CB  B9 0000			     mov   c,0
+1  1325					     org   $-2
+   1326
+   1327				      __L _over
+1  1328					     __a  0
+2  1329					     IF	($-START+0) AND	1
+2  1330					     NOP
+2  1331				     @_CNT__A =	@_CNT__A +  1
+2  1332					     ENDIF
+1  1333	      =MYCSEG:02CC	     _over    =	     $
+   1334				       d_to  w
+1  1335	02CC  58		       pop   w
+   1336				       to_d  w
+1  1337	02CD  50		       PUSH   w
+   1338
+   1339				      __l _pushw
+1  1340					     __a  0
+2  1341					     IF	($-START+0) AND	1
+2  1342					     NOP
+2  1343				     @_CNT__A =	@_CNT__A +  1
+2  1344					     ENDIF
+1  1345	      =MYCSEG:02CE	     _pushw    =      $
+   1346				       ddup
+1  1347				       to_d  t
+2  1348	02CE  57		       PUSH   t
+   1349	02CF  97		       xchg  w,t
+   1350				       JMPS  _main
+1  1351	02D0  EB A4			       jmp  SHORT _main
+   1352
+   1353				      __L _cstr
+1  1354					     __a  0
+2  1355					     IF	($-START+0) AND	1
+2  1356					     NOP
+2  1357				     @_CNT__A =	@_CNT__A +  1
+2  1358					     ENDIF
+1  1359	      =MYCSEG:02D2	     _cstr    =	     $
+   1360	02D2  8B 05		       MOV   w,[T]
+   1361	02D4  47		       inc   t
+   1362				       jmps  _pushb
+1  1363	02D5  EB ED			       jmp  SHORT _pushb
+   1364
+   1365				      __L _cST@P
+1  1366					     __a  0
+2  1367					     IF	($-START+0) AND	1
+2  1368	02D7  90			     NOP
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 25
+nf70.asm
+
+
+
+2  1369	      =000A		     @_CNT__A =	@_CNT__A +  1
+2  1370					     ENDIF
+1  1371	      =MYCSEG:02D8	     _cST@P    =      $
+   1372	02D8  97		       XCHG  w,T
+   1373	02D9  87 FA		       XCHG  T,A
+   1374	02DB  AA		       STOSB
+   1375
+   1376				      __l _sta
+1  1377					     __a  0
+2  1378					     IF	($-START+0) AND	1
+2  1379					     NOP
+2  1380				     @_CNT__A =	@_CNT__A +  1
+2  1381					     ENDIF
+1  1382	      =MYCSEG:02DC	     _sta    =	    $
+   1383	02DC  87 D7		       XCHG  a,t
+   1384				       JMPS  @drop
+1  1385	02DE  EB CE			       jmp  SHORT @drop
+   1386
+   1387				      __L _cLD@P
+1  1388					     __a  0
+2  1389					     IF	($-START+0) AND	1
+2  1390					     NOP
+2  1391				     @_CNT__A =	@_CNT__A +  1
+2  1392					     ENDIF
+1  1393	      =MYCSEG:02E0	     _cLD@P    =      $
+   1394	02E0  87 F2		       XCHG  I,A
+   1395	02E2  AC		       LODSB
+   1396	02E3  87 F2		       XCHG  I,A
+   1397				       JMPS  _pushb
+1  1398	02E5  EB DD			       jmp  SHORT _pushb
+   1399
+   1400				      __l _do_tab
+1  1401					     __a  0
+2  1402					     IF	($-START+0) AND	1
+2  1403	02E7  90			     NOP
+2  1404	      =000B		     @_CNT__A =	@_CNT__A +  1
+2  1405					     ENDIF
+1  1406	      =MYCSEG:02E8	     _do_tab	=      $
+   1407	02E8  57		       push  t
+   1408	02E9  E8 FEED		       call  @astr
+   1409	02EC  58		       pop   w
+   1410	02ED  03 F9		       add   t,c
+   1411	02EF  FD		       std
+   1412	02F0  F3> AE		       rep   scasb
+   1413	02F2			     @do_tabx:
+   1414	02F2  FC		       cld
+   1415	02F3  8B F9		       mov   t,c
+   1416	02F5  50		       push  w
+   1417	02F6  75 02		       jne   _jtable
+   1418	02F8  58		       pop   w
+   1419	02F9  47		       inc   t
+   1420
+   1421				      __l _jtable
+1  1422					     __a  0
+2  1423					     IF	($-START+0) AND	1
+2  1424					     NOP
+2  1425				     @_CNT__A =	@_CNT__A +  1
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 26
+nf70.asm
+
+
+
+2  1426					     ENDIF
+1  1427	      =MYCSEG:02FA	     _jtable	=      $
+   1428	02FA  D1 E7		       shl   t,1
+   1429
+   1430				      __l _jrel
+1  1431					     __a  0
+2  1432					     IF	($-START+0) AND	1
+2  1433					     NOP
+2  1434				     @_CNT__A =	@_CNT__A +  1
+2  1435					     ENDIF
+1  1436	      =MYCSEG:02FC	     _jrel    =	     $
+   1437	02FC  03 F7		       add   i,t
+   1438	02FE  E9 FF7C		       JMP   @JPDROP
+   1439
+   1440				      __L _MULAD     ;	1 AR AND IF T ADD THEN U2/ ;
+1  1441					     __a  0
+2  1442					     IF	($-START+0) AND	1
+2  1443	0301  90			     NOP
+2  1444	      =000C		     @_CNT__A =	@_CNT__A +  1
+2  1445					     ENDIF
+1  1446	      =MYCSEG:0302	     _MULAD    =      $
+   1447	0302  58		       POP   w
+   1448	0303  A8 01		       TEST  wL,1
+   1449	0305  74 02		       JE    @MUL
+   1450	0307  03 FA		       ADD   T,A
+   1451	0309			     @MUL:
+   1452	0309  D1 DF		       RCR   T,1
+   1453	030B  D1 D8		       RCR   w,1
+   1454				       JMPs  @DIV
+1  1455	030D  EB 0D			       jmp  SHORT @DIV
+   1456
+   1457				      __L _DIVSUB    ;	1 AR AND IF T ADD THEN U2/ ;
+1  1458					     __a  0
+2  1459					     IF	($-START+0) AND	1
+2  1460	030F  90			     NOP
+2  1461	      =000D		     @_CNT__A =	@_CNT__A +  1
+2  1462					     ENDIF
+1  1463	      =MYCSEG:0310	     _DIVSUB	=      $
+   1464	0310  58		       POP   w
+   1465	0311  D1 E0		       SHL   w,1
+   1466	0313  D1 D7		       RCL   T,1
+   1467	0315  3B FA		       CMP   T,A
+   1468	0317  72 03		       JB    @DIV
+   1469	0319  2B FA		       SUB   T,A
+   1470	031B  40		       INC   w
+   1471	031C			     @DIV:
+   1472	031C  50		       PUSH  w
+   1473	031D  E9 FF56		       JMP   _MAIN
+   1474
+   1475				      __l _0swap
+1  1476					     __a  0
+2  1477					     IF	($-START+0) AND	1
+2  1478					     NOP
+2  1479				     @_CNT__A =	@_CNT__A +  1
+2  1480					     ENDIF
+1  1481	      =MYCSEG:0320	     _0swap    =      $
+   1482	0320  33 C0		       xor   w,w
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 27
+nf70.asm
+
+
+
+   1483				       jmps  @div
+1  1484	0322  EB F8			       jmp  SHORT @div
+   1485
+   1486				     ; __W _ZEQ
+   1487				     ;	DW  _IF,_M1
+   1488				     ; __W _0
+   1489				     ;	DW  _LIT,0,_EXIT
+   1490				     ; __W _M1
+   1491				     ;	DW  _LIT,-1,_EXIT
+   1492
+   1493	0324			     freemem:
+   1494	0324  0001		       DW ENDMEM-FREEMEM-2
+   1495				       ;__ENTRY	 '=:',_ENTRY
+   1496	0326  00		       DB 0
+   1497	0327			     EndMem:
+   1498
+   1499	      =0000		     lastw = ppppp
+   1500
+   1501	0327			     MyCseg  ends
+   1502					     end  Start
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 28
 Symbol Table
 
 
@@ -1049,180 +1643,271 @@ Symbol Table
 
 Symbol Name		Type   Value			   Cref	(defined at #)
 
-??DATE			Text   "08/29/15"
+??0000			Byte   MYCSEG:0118		   299	#301
+??DATE			Text   "09/03/15"
 ??FILENAME		Text   "nf70	"
-??TIME			Text   "16:12:59"
+??TIME			Text   "00:18:23"
 ??VERSION		Number 0314
-@1M			Near   MYCSEG:0121		   328	#347
-@1P			Near   MYCSEG:014D		   #495	 508
+@1M			Near   MYCSEG:0203		   731	#750
+@1P			Near   MYCSEG:0243		   #948	 961
+@@1			Near   MYCSEG:012A		   #346	 347
+@@2			Near   MYCSEG:012E		   345	#347
+@@ACC1			Near   MYCSEG:019C		   #495	 496
+@ABORT			Near   MYCSEG:0107		   #287	 318
+@AC_BS			Near   MYCSEG:016A		   #461	 485
+@AC_CR			Near   MYCSEG:0164		   #460	 485
+@AC_OTH			Near   MYCSEG:0182		   #473	 485
+@ASTR			Near   MYCSEG:01D9		   #631	 1408
 @CPU			Text   0101H
-@CURSEG			Text   MYCSEG			   #234
-@DIV			Near   MYCSEG:01FC		   895	#898
-@DOES			Near   MYCSEG:0133		   #407
-@DOES2			Near   MYCSEG:0131		   #403
-@DOES3			Near   MYCSEG:012F		   #399
-@DROP			Near   MYCSEG:01AC		   610	#742  774  852
+@CURSEG			Text   MYCSEG			   #235
+@DIV			Near   MYCSEG:031C		   1455	 1468  #1471  1484
+@DOES			Near   MYCSEG:021F		   #841
+@DOES2			Near   MYCSEG:021D		   534	#837
+@DOES3			Near   MYCSEG:021B		   #833
+@DO_TABX		Near   MYCSEG:02F2		   #1413
+@DROP			Near   MYCSEG:02AE		   1077	 1215  #1248  1280  1385
+@D_TOP			Number -0800			   #245	 246  289
+@EXIT2			Near   MYCSEG:01ED		   #672
 @FILENAME		Text   NF70
-@JPDROP			Near   MYCSEG:0185		   #646	 716
-@MUL			Near   MYCSEG:01E9		   876	#878
-@NEST			Near   MYCSEG:0164		   #561
-@NESTZ			Near   MYCSEG:0163		   #559	 644
-@RETURN			Near   MYCSEG:0135		   300	#409
-@RPUSH			Near   MYCSEG:0165		   #563
-@R_TOP			Number -0400			   #243	 244  302
-@SKIP			Near   MYCSEG:018F		   #675	 703
-@S_TOP			Number -0800			   #244	 245  302
-@TBUF			Number -0100			   #240	 241
-@TIB			Number -0200			   #241	 243
-@VOCTOP			Number -1000			   #245
-@WORDSIZE		Text   2			   #234
-@_CNT__A		Number 0007			   #102	 343  #343  527	 #527  540  #540  753  #753  824  #824	836  #836 +
-							   871	#871
-A			Number DX			   #224	 756  840  850	861  863  877  894  896
+@IFM1			Near   MYCSEG:028F		   #1167  1182
+@JPDROP			Near   MYCSEG:027D		   #1113  1205	1438
+@LITX2			Near   MYCSEG:01E9		   648	#657
+@M1			Near   MYCSEG:015E		   433	#449
+@MAIN1			Near   MYCSEG:020E		   763	#782
+@MUL			Near   MYCSEG:0309		   1449	 #1451
+@NEST			Near   MYCSEG:025C		   #1028
+@NESTZ			Near   MYCSEG:025B		   #1026  1111
+@PUSHWX			Near   MYCSEG:01EB		   #667
+@RETURN			Near   MYCSEG:0221		   296	#843
+@RPTR			Near   MYCSEG:0231		   617	630  #898
+@RPUSH			Near   MYCSEG:025D		   #1030
+@R_TOP			Number -0400			   #244	 245  288
+@SKIP			Near   MYCSEG:0287		   #1142  1172
+@TBUF			Number -0100			   #241	 242
+@TIB			Number -0200			   #242	 244
+@VOCTOP			Number -1000			   #246
+@WORDSIZE		Text   2			   #235
+@_CNT__A		Number 000D			   #102	 644  #644  680	 #680  746  #746  778  #778  980  #980	1007	  +
+							   #1007  1198	#1198  1219  #1219  1259  #1259	 1369  #1369  1404  #1404 +
+							   1444	 #1444	1461  #1461
+A			Number DX			   #225	 894  1262  1373  1383	1394  1396  1450  1467	1469
 AT_			Number 0004			   #24
-C			Number CX			   #225	 375  437  462	556  689
-D			Number SP			   #222	 293  566  569
-ENDMEM			Near   MYCSEG:0233		   950	#953
-FREEMEM			Near   MYCSEG:0230		   #949	 950
-I			Number SI			   #220	 287  396  401	402  405  406  408  411	 460  543  543	562  608  +
-							   658	658  861  863
-LASTW			Number 0000			   #955
-NACC			Number BX			   #231
-NBASE			Number DI			   #230
+C			Number CX			   #226	 635  809  871	899  904  915  1023  1156  1324	 1410  1415
+D			Number SP			   #223	 289  1033  1036
+ENDMEM			Near   MYCSEG:0327		   1494	 #1497
+FREEMEM			Near   MYCSEG:0324		   #1493  1494
+I			Number SI			   #221	 633  637  684	685  694  695  703  830	 835  836  839	840  842  +
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 29
+Symbol Table
+
+
+
+							   845	903  913  1010	1010  1029  1075  1125	1125  1394  1396  1437
+LASTW			Number 0000			   #1499
+NACC			Number BX			   #232
+NBASE			Number DI			   #231
 PB			Text   byte  ptr		   #21
 PD			Text   dword ptr		   #19
-PPPPP			Number 0000			   #100	 955
-PW			Text   word  ptr		   #20	337  485  687
+PPPPP			Number 0000			   #100	 1499
+PW			Text   word  ptr		   #20	740  938  1154
 QQQQQ			Number 0000			   #99	100
-R			Number BP			   #221	 290  386  387	396  422  460  566  569	 622  632  633	687  739
-R_TOP			Word   MYCSEG:0112		   287	#302
-SELF0			Near   MYCSEG:0100		   #281
-START			Byte   MYCSEG:0100		   #247	 296  311  322	332  341  354  366  380	 391  417  428	442  455  +
-							   467	480  489  502  512  525	 538  547  577	590  603  614  626  637	  +
-							   653	664  682  694  707  720	 731  751  762	778  788  797  811  822	  +
-							   834	845  856  869  886  904	 912  920  929	940  958
-T			Number DI			   #223	 318  337  346	348  373  408  422  435	 485  494  496	519  532  +
-							   554	584  586  595  608  621	 622  649  669	669  674  699  699  712	  +
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 19
-Symbol Table
-
-
-
-							   712	725  725  738  739  745	 768  804  805	827  828  839  840  850	  +
-							   877	879  893  894  896
+R			Number BP			   #222	 288  820  821	830  856  903  913  1033  1036	1089  1099  1100  +
+							   1154	 1245
+SELF0			Near   MYCSEG:0100		   #282
+START			Byte   MYCSEG:0100		   #248	 292  303  312	322  331  340  352  360	 368  378  386	395  403  +
+							   411	420  428  436  444  453	 466  478  489	500  508  516  525  537	  +
+							   546	554  563  571  580  589	 612  625  642	651  661  678  688  698	  +
+							   714	725  735  744  757  767	 776  788  800	814  825  851  862  876	  +
+							   889	908  920  933  942  955	 965  978  992	1005  1014  1044  1057	  +
+							   1070	 1081  1093  1104  1120	 1131  1149  1161  1176	 1186  1196  1209 +
+							   1217	 1226  1237  1257  1268	 1284  1294  1305  1317	 1329  1341  1355 +
+							   1367	 1378  1389  1402  1423	 1432  1442  1459  1477	 1502
+T			Number DI			   #224	 533  620  633	670  671  703  721  740	 749  751  762	762  772  +
+							   781	807  842  856  869  902	 938  947  949	972  985  988  999  1021  +
+							   1051	 1053  1062  1075  1088	 1089  1116  1136  1136	 1141  1166  1168 +
+							   1193	 1201  1201  1214  1214	 1231  1231  1244  1245	 1251  1274  1348 +
+							   1349	 1360  1361  1372  1373	 1383  1407  1410  1415	 1419  1428  1437 +
+							   1450	 1452  1466  1467  1469
 TO_			Number 0002			   #23
 VL_			Number 0006			   #25
-W			Number AX			   #226	 317  360  448	473  518  519  531  532	 553  554  560	562  567  +
-							   583	584  645  756  805  827	 839  874  880	881  891  892  897  899
-WH			Number AH			   #228	 793
-WL			Number AL			   #227	 318  643  875
-_0			Number MYCSEG:0205		   #916	 934  945
-_1M			Number MYCSEG:011A		   #326
-_1P			Number MYCSEG:0150		   #506
-_2DIV			Number MYCSEG:0170		   #594
-_2M			Number MYCSEG:0120		   #345
-_2P			Number MYCSEG:014C		   #493
-_@EMITD			Number MYCSEG:01B4		   #766
-_@KEYD			Number MYCSEG:01BE		   #782
-_ABORT			Near   MYCSEG:0108		   #286
-_ADD2D			Number MYCSEG:016C		   #581
-_AND			Number MYCSEG:0152		   #516
-_AT			Number MYCSEG:01A2		   #724
-_CLD@P			Number MYCSEG:01DA		   #860
-_CST@P			Number MYCSEG:01D2		   #838
-_CSTR			Number MYCSEG:01CC		   #826
-_DIVSUB			Number MYCSEG:01F0		   #890	 945  945
-_DROP			Near   MYCSEG:01BC		   #772
-_DROPX			Number MYCSEG:0126		   #370
-_DUP			Number MYCSEG:013C		   #432
-_EX			Number MYCSEG:0142		   #459
-_EXIT			Number MYCSEG:012A		   #395	 917  925  934	945
-_FOR			Number MYCSEG:015E		   #542
-_GO			Number MYCSEG:0174		   #607
-_IF			Number MYCSEG:019C		   #711	 909
-_IFM			Number MYCSEG:0196		   #698
-_J			Number MYCSEG:01A6		   #735
-_JPDROP			Near   MYCSEG:01A0		   #714
-_JUMP			Number MYCSEG:0186		   #657	 700
-_LDA			Number MYCSEG:01B0		   #755
-_LDP			Number MYCSEG:014A		   #484
-_LIT			Number MYCSEG:01C8		   #815	 917  925
-_M1			Number MYCSEG:020B		   909	#924
-_MAIN			Number MYCSEG:017E		   350	413  451  476  498  521	 534  571  597	#641  660  670	678  727  +
-							   741	747  807  882  900
-_MULAD			Number MYCSEG:01E2		   #873	 934  934
-_NEXT			Number MYCSEG:0192		   #686
-_NIPX			Number MYCSEG:0124		   #358
-_POP			Number MYCSEG:0178		   #618
-_PUSH			Number MYCSEG:0160		   #551
-_PUSHB			Number MYCSEG:01C2		   #792	 830  865
-_PUSHW			Number MYCSEG:01C4		   758	#801  818
-_RDROP			Number MYCSEG:017C		   398	#630
-_RDROPX			Number MYCSEG:0128		   #384
-_SKDROP			Near   MYCSEG:018E		   #671	 713
-_SKIP			Near   MYCSEG:019A		   #701
-_STA			Number MYCSEG:01D6		   #849	 934  945
-_STM			Number MYCSEG:011C		   #336
-_STMB			Number MYCSEG:0116		   #315
-_STP			Number MYCSEG:013E		   #446
-Turbo Assembler	 Version 3.2	    08/29/15 16:12:59	    Page 20
+W			Number AX			   #227	 632  632  635	637  671  720  794  882	 926  971  972	998  999  +
+							   1020	 1021  1027  1029  1034	 1050  1051  1112  1262	 1311  1335  1337 +
+							   1349	 1360  1372  1409  1416	 1418  1447  1453  1464	 1465  1470  1472 +
+							   1482	 1482
+WH			Number AH			   #229	 1299
+WL			Number AL			   #228	 636  721  1110	 1448
+_0			Number MYCSEG:024E		   #440	 460  #982
+_0SWAP			Number MYCSEG:0320		   336	#1481
+_0X			Number MYCSEG:029E		   461	#1213
+_1M			Number MYCSEG:01FC		   461	471  473  #729
+_1P			Number MYCSEG:0246		   #959
+_2DIV			Number MYCSEG:0268		   #1061
+_2M			Number MYCSEG:0202		   #748
+_2P			Number MYCSEG:0242		   #946
+_@EMIT			Number MYCSEG:014D		   #399
+_@EMITD			Number MYCSEG:02B6		   408	#1272
+_@KEY			Number MYCSEG:0145		   #382
+_@KEYD			Number MYCSEG:02C0		   391	#1288
+_@RLDP			Number MYCSEG:01D0		   #616
+_A1M			Number MYCSEG:017B		   #470
+_ABORT			Number MYCSEG:011A		   #316
+_ABS			Number MYCSEG:0206		   #761
+_ACCEPT			Number MYCSEG:0199		   #493
+_AC_TAB			Number MYCSEG:018D		   #482	 496
+_ADD			Number MYCSEG:01AD		   #520
+_ADD2D			Number MYCSEG:0264		   521	#1048
+_AND			Number MYCSEG:0248		   460	#969
+_ASTR			Number MYCSEG:01D6		   357	#629
+_AT			Number MYCSEG:02A4		   #1230
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 30
 Symbol Table
 
 
 
-_STPB			Number MYCSEG:0146		   #471
-_UMDIVM			Number MYCSEG:0221		   #944
-_UMMUL			Number MYCSEG:0211		   #933
-_XCHG			Number MYCSEG:0138		   #421
-_XOR			Number MYCSEG:0158		   #529
-_ZEQ			Number MYCSEG:0201		   #908
-_ZSKIP			Number MYCSEG:018A		   #668
+_BL			Number MYCSEG:01BB		   #558
+_BS			Number MYCSEG:01C1		   #575
+_BYE			Number MYCSEG:0161		   308	#457
+_CEMIT			Number MYCSEG:01B0		   #529	 551  568
+_CLD@P			Number MYCSEG:02E0		   373	#1393
+_CST@P			Number MYCSEG:02D8		   473	#1371
+_CSTR			Number MYCSEG:02D2		   365	542  #1359
+_DIVSUB			Number MYCSEG:0310		   594	#1463
+_DO_TAB			Number MYCSEG:02E8		   483	#1406
+_DROP			Near   MYCSEG:02BE		   496	#1278
+_DROPX			Number MYCSEG:0212		   521	705  #804
+_DUP			Number MYCSEG:0228		   473	#866
+_EMIT			Number MYCSEG:0151		   373	#407  473
+_EQ			Number MYCSEG:0157		   #424
+_EX			Number MYCSEG:0238		   #912
+_EXECUTE		Number MYCSEG:011D		   #326	 346
+_EXIT			Number MYCSEG:0216		   373	391  416  460  471  473	 585  594  674	#829
+_E_BL			Number MYCSEG:01B9		   461	#550
+_E_BS			Number MYCSEG:01BF		   461	461  #567
+_FOR			Number MYCSEG:0256		   345	#1009
+_GO			Number MYCSEG:026C		   327	#1074
+_IF			Number MYCSEG:0298		   433	#1200
+_IFD			Number MYCSEG:0296		   496	#1190
+_IFM			Number MYCSEG:028E		   #1165
+_IFM1			Number MYCSEG:0294		   #1180
+_J			Number MYCSEG:02A8		   346	#1241
+_JPDROP			Near   MYCSEG:029C		   #1203
+_JREL			Number MYCSEG:02FC		   #1436
+_JTABLE			Number MYCSEG:02FA		   1417	 #1427
+_JUMP			Number MYCSEG:027E		   #1124  1169
+_KEY			Number MYCSEG:0149		   #390	 496
+_LDA			Number MYCSEG:02B2		   461	471  496  #1261
+_LDB			Number MYCSEG:01B5		   #541
+_LDP			Number MYCSEG:0240		   #937
+_LIT			Number MYCSEG:02CA		   336	#1321
+_LITX			Number MYCSEG:01EA		   559	576  #665
+_LITX2			Number MYCSEG:01E6		   383	441  450  #646
+_LITX3			Number MYCSEG:01E8		   400	#655
+_LOOPS			Number MYCSEG:0127		   #344	 373
+_M1			Number MYCSEG:015F		   #448
+_MAIN			Number MYCSEG:0276		   753	784  847  885  896  929	 951  974  1001	 1038  1064  #1108  1127  +
+							   1137	 1145  1233  1247  1253	 1351  1473
+_MD_LOOPS		Number MYCSEG:011F		   #335	 585  594
+_MULAD			Number MYCSEG:0302		   585	#1446
+_NEG			Number MYCSEG:020A		   513	#771
+_NEXT			Number MYCSEG:028A		   347	#1153
+_NIPA			Number MYCSEG:022E		   373	#893
+_NIPX			Number MYCSEG:0210		   542	#792
+_NOP			Number MYCSEG:0155		   408	#415
+_NOT			Number MYCSEG:020C		   #780
+_OVER			Number MYCSEG:02CC		   461	494  505  #1333
+_OVERM			Number MYCSEG:01A9		   #504
+_POP			Number MYCSEG:0270		   #1085
+_PUSH			Number MYCSEG:0258		   #1018
+_PUSHB			Number MYCSEG:02C4		   #1298  1363	1398
+_PUSHW			Number MYCSEG:02CE		   1264	 1301  #1345
+_RDROP			Number MYCSEG:0274		   347	832  #1097
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 31
+Symbol Table
+
+
+
+_RDROPX			Number MYCSEG:0214		   347	#818
+_SETV			Number MYCSEG:01F4		   383	#702
+_SETV2			Number MYCSEG:01F2		   400	#692
+_SETV3			Number MYCSEG:01F0		   #682
+_SKDROP			Near   MYCSEG:0286		   #1138  1202
+_SKIP			Near   MYCSEG:0292		   #1170
+_STA			Number MYCSEG:02DC		   336	471  494  #1382
+_STM			Number MYCSEG:01FE		   #739
+_STMB			Number MYCSEG:01F8		   #718
+_STP			Number MYCSEG:022A		   #880
+_STPB			Number MYCSEG:023C		   #924
+_SUB			Number MYCSEG:01AB		   #512
+_SWAP			Number MYCSEG:02C8		   #1309
+_TCSTR			Number MYCSEG:0139		   #364
+_TPSTR			Number MYCSEG:0137		   297	#356
+_TYPE			Number MYCSEG:013B		   #372
+_UMDIVM			Number MYCSEG:01CB		   #593
+_UMMUL			Number MYCSEG:01C5		   #584
+_XCHG			Number MYCSEG:0224		   #855
+_XOR			Number MYCSEG:0250		   425	461  #996
+_ZEQ			Number MYCSEG:0159		   #432
+_ZSKIP			Number MYCSEG:0282		   #1135
 
 Macro Name						   Cref	(defined at #)
 
 CF_TO							   #78
-DDUP							   #27	433  619  736  802
-DROP							   #31	371  647  672  743
-D_TO							   #39	316  359  372  410  447	 472  517  530	552  582  648  673  744
-I2							   #86	385  400  404  631
-JMPS							   #43	327  349  397  412  450	 475  497  507	520  533  570  596  609	  +
-							   659	677  702  715  726  740	 746  757  773	806  817  829  851  864
-RCHG							   #82	289  292
+DDUP							   #27	531  668  867  900  983	 986  1086  1191  1242	1346
+DROP							   #31	805  1114  1139	 1249
+D_TO							   #39	719  793  806  844  881	 925  970  997	1019  1049  1115  1140	  +
+							   1250	 1310  1334
+I2							   #86	683  693  819  834  838	 1098
+JMPS							   #43	317  647  673  704  730	 752  783  831	846  884  895  928  950	  +
+							   960	973  1000  1037	 1063  1076  1126  1144	 1171  1181  1204  1232	  +
+							   1246	 1252  1263  1279  1300	 1350  1362  1384  1397	 1454  1483
+RCHG							   #82	619
 R_TO							   #72
-SKIPA							   #47
-SKIPB							   #51	361  423
+SKIPA							   #47	1221
+SKIPB							   #51	795  857  1312
 SKIPBR							   #55
-SKIPR							   #60	374  436  461  555  688
-TO_D							   #35	434  585  620  737  803
-TO_R							   #66	564
+SKIPR							   #60	808  870  914  1022  1155  1323
+TO_D							   #35	532  669  868  901  984	 987  1052  1087  1192	1243  1336  1347
+TO_R							   #66	1031
 W2P							   #91
-X							   #95	565  568
-__A							   #126	 295  310  321	331  340  353  365  379	 390  416  427	441  454  +
-							   466	479  488  501  511  524	 537  546  576	589  602  613  625  636	  +
-							   652	663  681  693  706  719	 730  750  761	777  787  796  810  821	  +
-							   833	844  855  868  885  903	 911  919  928	939
-__C							   #133	 294
-__CONST							   #204
-__D							   #138
-__DEFER							   #179
-__DEFERO						   #174
-__ENTRY							   #152
-__L							   #147	 309  320  330	339  352  364  378  389	 415  426  440	453  465  +
-							   478	487  500  510  523  536	 545  575  588	601  612  624  635  651	  +
-							   662	680  692  705  718  729	 749  760  776	786  795  809  820  832	  +
-							   843	854  867  884
+X							   #95	1032  1035
+__A							   #126	 291  302  311	321  330  339  351  359	 367  377  385	394  402  +
+							   410	419  427  435  443  452	 465  477  488	499  507  515  524  536	  +
+							   545	553  562  570  579  588	 611  624  641	650  660  677  687  697	  +
+							   713	724  734  743  756  766	 775  787  799	813  824  850  861  875	  +
+							   888	907  919  932  941  954	 964  977  991	1004  1013  1043  1056	  +
+							   1069	 1080  1092  1103  1119	 1130  1148  1160  1175	 1185  1195  1208 +
+							   1216	 1225  1236  1256  1267	 1283  1293  1304  1316	 1328  1340  1354 +
+							   1366	 1377  1388  1401  1422	 1431  1441  1458  1476
+__C							   #133	 290
+__CONST							   #205
+__D							   #138	 530
+__DEFER							   #180
+__DEFERO						   #175
+Turbo Assembler	 Version 3.2	    09/03/15 00:18:23	    Page 32
+Symbol Table
+
+
+
+__ENTRY							   #153
+__L							   #148	 310  523  610	623  640  649  659  676	 686  696  712	723  733  +
+							   742	755  765  774  786  798	 812  823  849	860  874  887  906  918	  +
+							   931	940  953  963  976  990	 1003  1012  1042  1055	 1068  1079  1091 +
+							   1102	 1118  1129  1147  1159	 1174  1184  1194  1207	 1224  1235  1255 +
+							   1266	 1282  1292  1303  1315	 1327  1339  1353  1365	 1376  1387  1400 +
+							   1421	 1430  1440  1457  1475
 __LN							   #119
 __NAM							   #104
-__NAM2							   #111
-__POINT							   #189
-__QUAN							   #194
-__VALUE							   #169
-__VAR							   #159
-__VECTOR						   #184
-__W							   #142	 902  910  918	927  938
-__XT							   #164
+__NAM2							   #111	 298
+__POINT							   #190
+__QUAN							   #195
+__VALUE							   #170
+__VAR							   #160
+__VECTOR						   #185
+__W							   #143	 320  329  338	350  358  366  376  384	 393  401  409	418  426  +
+							   434	442  451  464  476  487	 498  506  514	535  544  552  561  569	  +
+							   578	587
 
 Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
 
-MYCSEG			16  0233 Para	none		   #234	 236  236  236	236
+MYCSEG			16  0327 Para	none		   #235	 237  237  237	237
 
