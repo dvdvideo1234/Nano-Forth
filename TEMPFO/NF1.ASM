@@ -139,9 +139,9 @@ Start   Label byte
 
 SELF0:  CALL SELF2
 SELF1:
-   _entry   '.',XT_nUMO
-   _entry   'ENTRY',XT_ENTRY
-   _entry   'H.',XT_HPRT
+   _entry   '.',_nUMO
+   _entry   'ENTRY',_ENTRY
+   _entry   'H.',_HPRT
    _entry   ':',XT_COLON
 COL@ = $-2
    _entry   '',0
@@ -789,9 +789,9 @@ _does1: call _does  ; like :
         dw xt_ex,xt_dropx
 
         _colon xt_times ; for j execute next rdrop drop ;
-        dw xt_for,_xtimes
-_times  dw xt_j,xt_execute,xt_next,_times
-_xtimes dw xt_rdrop,xt_dropx
+        dw xt_for,_x1times
+_1times  dw xt_j,xt_execute,xt_next,_1times
+_x1times dw xt_rdrop,xt_dropx
 
 ; -----------------------
 ; Dictionary Search
@@ -862,8 +862,8 @@ comp_num dw XT_ZER,xt_EXIT
         _colon  xt_numo
         DW XT_XSPC      ;; !!! ; : . DUP 0< IF '- EMIT NEG THEN .. ;
         _COLONP XT_nprt       ; : .. #1 ?DUP IF .. THEN EMIT ;
-        DW XT_LIT,10,XT_DM,XT_?DUP,XT_0BR,_DD,XT_nprt
-_DD:    _COLONP  XT_PDIG
+        DW XT_LIT,10,XT_DM,XT_?DUP,XT_0BR,_1DD,XT_nprt
+_1DD:    _COLONP  XT_PDIG
            DW XT_DIG,XT_EMIT,XT_EXIT
 
         _colon xt_cr
@@ -877,9 +877,9 @@ _DD:    _COLONP  XT_PDIG
 
         _colon xt_list
         dw xt_last,xt_xdrop
-_list   dw XT_DUP,XT_ONE,XT_DUMP,XT_SPACE
+_1list   dw XT_DUP,XT_ONE,XT_DUMP,XT_SPACE
         DW xt_str,xt_HPRT,XT_1P,xt_COUNT,XT_0EX
-        DW xt_1m,xt_count,xt_plus,xt_br,_list
+        DW xt_1m,xt_count,xt_plus,xt_br,_1list
 
         _COLON   XT_Hprt
            DW XT_XSPC
@@ -931,9 +931,9 @@ _list   dw XT_DUP,XT_ONE,XT_DUMP,XT_SPACE
         dw xt_ex,xt_dropx
 
         _colon xt_times ; for j execute next rdrop drop ;
-        dw xt_for,_xtimes
-_times  dw xt_j,xt_execute,xt_next,_times
-_xtimes dw xt_rdrop,xt_dropx
+        dw xt_for,_x1times
+_1times  dw xt_j,xt_execute,xt_next,_1times
+_x1times dw xt_rdrop,xt_dropx
 
 
 freemem:
