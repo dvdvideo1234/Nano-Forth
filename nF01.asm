@@ -1,4 +1,4 @@
-locals  @@
+;locals  @@
 pd  equ dword ptr
 pw  equ word  ptr
 pb  equ byte  ptr
@@ -10,114 +10,101 @@ _VAL =  2
 SKP2   MACRO reg
 LOCAL ADR,DIFF
 ADR = $
-	mov   reg,0
+        mov   reg,0
 DIFF = $-ADR-3
-	IF DIFF
-		NOT_WORD_REGISTR
-	ENDIF
-	org   $-2
+        IF DIFF
+                NOT_WORD_REGISTR
+        ENDIF
+        org   $-2
     ENDM
 
 SKP1   MACRO reg
 LOCAL ADR,DIFF
 ADR = $
-	mov   reg,0
+        mov   reg,0
 DIFF = $-ADR-2
-	IF DIFF
-		NOT_BYTE_REGISTR
-	ENDIF
-	org   $-1
+        IF DIFF
+                NOT_BYTE_REGISTR
+        ENDIF
+        org   $-1
     ENDM
 
-
-;PushReg  MACRO
-;        jmp  _PushAx
-;      ENDM
-;SWAPREG MACRO
-;         JMP _SWAPAX
-;        ENDM
-;DROPREG MACRO
-;         JMP XDROP
-;        ENDM
-;next  MACRO
-;        jmp  @MAIN
-;      ENDM
 
 JMPS  MACRO  LBL
         jmp  SHORT LBL
       ENDM
 
-X     MACRO
-        xchg sp,bp
-      ENDM
+X   MACRO
+	xchg sp,bp
+  ENDM
 
-MSG		macro   Amsg
+MSG	macro   Amsg
   local endstr
   db    endstr-$-1
   db    Amsg
 endstr  label   byte
-        endm
+  endm
 
-VAR    macro   LBL,dat
-		XT		LBL,@VAR
-		DW      dat
-        ENDM
+VAR macro   LBL,dat
+	XT	LBL,@@VAR
+	DW  dat
+  ENDM
 
 PRIM   macro   LBL
-		XT		LBL,$+2
-        ENDM
+	XT	LBL,$+2
+  ENDM
 
 XT     macro   LBL,token
-LBL     DW      TOKEN
-        ENDM
+LBL DW      TOKEN
+  ENDM
 
 colon   macro  lbl
-		XT		LBL,@colon
-        endm
+	XT	LBL,@@colon
+  endm
 
 value   macro  lbl,dat
-        dw @setvar
-        cnst lbl,dat
-        endm
+	dw @@setvar
+	cnst lbl,dat
+  endm
 
 vectinc macro  lbl,dat
-		DW  @setvar
-lbl		dw 	@deferO,dat
-        endm
+	DW  @@setvar
+lbl	dw  @@deferO,dat
+  endm
 
-defer 	macro  lbl,dat
-		xt 	lbl,@defer
-		dw dat
-        endm
+defer   macro  lbl,dat
+	xt lbl,@@defer
+	dw dat
+  endm
 
 vector macro  lbl,dat
-		DW  @setvar
-		defer lbl,dat
-        endm
+	DW  @@setvar
+	defer lbl,dat
+  endm
 
 point  macro  lbl,dat
-		DW		@point
-lbl		dw		@topnt,dat
+	DW	@@topnt
+lbl dw  @@point,dat
         endm
 
 QUAN    MACRO  LBL,DAT
-        DW     	@var2,@setvar
-		cnst 	lbl,dat
-        ENDM
+	DW  @@var-2,@@setvar
+	cnst	lbl,dat
+  ENDM
 
 vQUAN   MACRO  LBL,DAT
-        DW     	@var2,@setvar
-		defer 	lbl,dat
-        ENDM
+	DW	@@var-2,@@setvar
+	defer   lbl,dat
+  ENDM
 
-cnst  	macro lbl,dat
-lbl     DW    @const,DAT
-        endm
+cnst    macro lbl,dat
+lbl	DW    @@const,DAT
+  endm
 
-entr  	macro nam,dat	; DO ENTRY
-        DW    DAT,0
-        MSG  nam
-        endm
+entr  macro nam,dat   ; DO ENTRY
+	DW    DAT,0
+	MSG  nam
+  endm
 
 ; INSTR: RTS XR XA RSTP RLDP (IF JUMP +2/ +* -/ PUSH POP DUP J (IF- NAND
 
@@ -127,394 +114,465 @@ MyCseg  segment para  use16
 
 
         org 100h
-		
+
 Start   Label byte
         mov  bx,1000h     ; only 64k allocate
         mov  ah,4ah
         int  21h
-@rst:	cld
+@@rst:  cld
         mov  sp,-768
-@QUIT:	MOV  bp,-260
-		call @troff
-        call @forth
- ;       DW LIT,12345,DD    ; !!!
-
+@@QUIT: MOV  bp,-260
+        call @@troff
+        call @@forth
         dw  lbrak
-xsyslp  dw	tib,entrance,eval,OK,br,xsyslp
+@@syslp  dw  tib,entrance,eval,OK,br,@@syslp
 
 ; -----------------------
 ; Constants
 ; -----------------------
 
-        CNST  TEN,10
-        CNST  zer,0
-        CNST  ALINE,64
-        CNST  CBL,' '
-        CNST  tbUF,-258
+	defer ACCEPT,@@ACPT
+	defer errV,NOOP
+	defer   OK,NOOP
+	CNST  ALINE,64
+	cnst  NUMA,0
 
 ; -------------------
-; Peek and Poke 
+; Peek and Poke
 ; -------------------
 
-	PRIM  stp
-		pop   [bx]
-@2P:	INC   BX
-@1P:	INC   BX
-@MAIN1: jmp   @MAIN
+  PRIM  stp
+        pop   [bx]
+@2P:    INC   BX
+@1P:    INC   BX
+@@MAIN1:jmp   @MAIN
 
-	PRIM SKIPSTR
-		PUSH	BX
-		MOV		BX,[BP]
-		call	@COUNT
-		add		BX,AX
-@XR:	xchg	BX,[BP]			;XR
-        jmpS   @MAIN1
+  XT LD,@@nop_                              ; @
+	mov  BX,[BX]
+    RET
 
-@XA:	xchg	DX,[BP]			;XA
-        jmpS   @MAIN1
+;  PRIM ldp
+;    PUSH  [BX]
+;    jmpS   @2P
 
-	XT LD,nop_				; @
-		mov		BX,[BX]
-		RET
-		
-	PRIM ldp   
-		PUSH  [BX]
-        jmpS   @2P
+  PRIM  stM
+	pop   [bx-2]
+@2M:
+    DEC   BX
+@1M:
+    DEC   BX
+	jmpS   @@MAIN1
 
-	PRIM ldM   
-		PUSH  [BX-2]
-@2M:	DEC   BX
-@1M:	DEC   BX
-        jmpS   @MAIN1
-		
-	PRIM  stM
-		pop   [bx-2]
-        JMPS @2M
-		
-	PRIM  CstM
-		pop   AX
-		MOV   [bx-1],AL
-        JMPS @1M
-		
-@RSST:	POP		AX
-		SKP1 CL
-@RSLD:	push	BX
-		xchg	SI,[BP]
-		call	DI
-@EX:	xchg	SI,[BP]
-        jmpS   @MAIN1
+@@SCAN:	POP CX AX
+	XCHG  BX,DI
+	xchg  AX,DI	
+	PUSH	CX
+	call  BX
+	POP	  BX
+	JE @@SCAN1
+	mov	CX,BX
+@@SCAN1:
+	INC CX
+    SUB  BX,CX
+	jmpS   @@MAIN1
 
-;	XT  WST,DROP2_			; !
-;		MOV   PW [BX],AX
-;        RET
-		
-    XT  WSTR,dup_			;STR
-        MOV   AX,[BX]
-@2:     INC   BX
-@1:     INC   BX
-        RET
+;  PRIM  CstM
+;	pop   AX
+;	MOV   [bx-1],AL
+;	JMPS @1M
 
-    XT  CST,DROP2_			; C!
-		SKP2	CX
-    xt  cstp,nip_			; C!+
-        MOV   [BX],AL
-        JMP  @1
+;  XT  SWAPST,@@DROP2_               ; SWAP!
+;	xchg AX,BX
+;;	SKP2 DI
+;
+;;  XT  STW,@@DROP2_                  ; !
+;	MOV   PW [BX],AX
+;	RET
 
-    XT  count,dup_			; CSTR
-        JMPS @COUNT
+;  XT  CST,@@DROP2_                   ; C!
+;	SKP2 DI
+;  xt  cstp,@@nip_                    ; C!+
+;    MOV   [BX],AL
+;    JMPS  @@1
+
+; -------------------
+; TRANSFER
+; -------------------
+
+@@RSST:
+	POP	AX
+	xchg    AX,bx
+	SKP1 CL
+@@RSLD:  
+	push    BX
+	xchg    SI,[BP]
+	call    DI
+@@EX:
+    xchg    SI,[BP]
+    jmpS   @@MAIN1
+
+@XA:
+    xchg    DX,[BP]                 ;XA
+    jmpS   @@MAIN1
+
+  xt STRS,@@RSLD					; string skip
+	MOV     BX,si
+	XOR		ah,ah
+	lodsb
+	add		si,AX
+	ret
+
+@XR:
+	xchg    BX,[BP]                 ;XR
+    jmpS   @@MAIN1
+
+  XT	RLDP,@@RSLD                 ;@R+
+	LODSW
+	xchg    AX,bx
+	RET
+
+  XT    RSTP,@@RSST                 ;!R+
+	mov		[SI],AX
+	LODSW
+	RET
+
+  XT    CRSTP,@@RSST                 ;C!R+
+	mov		[SI],AL
+	INC		SI
+	RET
+
+  XT  ldp,@@nup_                   ; @+
+	skp2 di
+  XT  WSTR,@@dup_                   ;STR
+    MOV   AX,[BX]
+@@2: INC   BX
+@@1: INC   BX
+	RET
+
+  XT  ldpb,@@nup_                   ; C@+
+	skp2 di
+  XT  count,@@dup_                   ; CSTR
+    JMPS @@COUNT
 
 ; -----------------------
 ; Terminal Input / Output
 ; -----------------------
 
-        XT  acpt,SwAp_
-        XCHG   AX,BX
-        MOV    [BX],AX
-        MOV    DX,BX
-        MOV    AH,10
-        INT    21H
-        INC    BX
-@COUNT: MOV    AL,[BX]
-        INC    BX
-@LOBYTE:MOV    AH,0
-        RET
+  XT  @@acpt,@@SwAp_
+	XCHG   AX,BX
+	MOV    [BX],AX
+	MOV    DX,BX
+	MOV    AH,10
+	INT    21H
+	INC    BX
+@@COUNT:
+	MOV    AL,[BX]
+	INC    BX
+@@LOBYTE:
+	MOV    AH,0
+	RET
 
-        XT  demit,DRoP_
-@DEMIT:  xchg Bx,dx
-        mov  ah,2
-        int  021h
-        RET
+  XT  demit,@@DRoP_
+	mov dx,bx
+	mov  ah,2
+	int  021h
+	RET
 
-        XT  dkey,dup_
-@DKEY:  mov  ah,7
-        int  021h
-        JMP  @LOBYTE
+  XT  dkey,@@dup_
+	mov  ah,7
+	int  021h
+	JMPs  @@LOBYTE
 
-states dw @ARW,numBER,clit,perform,at_comma
+states dw @@ARW,numBER,clit,perform,at_comma
 
 ; -------------------
 ; Variables
 ; -------------------
 
-        vQUAN	key,dkey
-		DW		@var2
-        vectinc emit,demit
-        defer 	ACCEPT,ACPT
-        defer 	OK,NOOP
-        defer 	errV,NOOP
-        POINT  entrance,doINIT
-        POINT  FOUND,0
-        value  ltb,0
-        value  etb,0
-        value  cntc,0
-        VALUE  tib,128
-        VALUE   h,freemem
-		QUAN	t,-2000
+	POINT  	entrance,doINIT
+	POINT  	FOUND,0
+	value  	ltb,0
+	value  	etb,0
+
+	vQUAN   key,dkey
+			DW	@@var-2
+	vectinc emit,demit
+	value  	cntc,0
+	value  	tbUF,-258
+	VALUE  	tib,128
+	VALUE   h,@@freemem
+	VALUE   ERRMSG,0
+	VALUE   t,-2000
+	
+  COLON TRET
+	DW T,EX,T+_TO,RTS
+	
+  COLON HRET
+	DW H,EX,H+_TO,RTS
 
 ; -------------------
 ; Initialisation  and main loop
 ; -------------------
 
-        COLON eval
+  COLON eval
         dw TOEVAL,ltb+_TO,etb+_TO
-@EVALDO:dw TOKEN,?BR,@EVALX,Found
-        dw states,perform,br,@EVALDO
-@EVALX	DW DROPX
+  COLON evaldo
+@@EVALDO:
+	dw TOKEN,?BR,@@EVALX,Found
+    dw states,perform,br,@@EVALDO
+@@EVALX  DW DROPX
 
-	XT QUIT,@QUIT
-	
-	XT ABORT,@RST 
-	
+  XT QUIT,@@QUIT
+  
+  XT ABORT,@@RST
+
 ; -------------------
 ; Memory
 ; -------------------
 
-        XT	MAKESTR,cnip_
-		mov	 [BX],CL		; SET strlen
-		XOR	 CH,CH
-		LEA	 DI,[BX+1]
-		ADD	 DI,CX			; AFTER END ADDRESS
-		mov	 PB [DI],'`'		;after str flag
-@CPUSHU:
-        ADD  AX,CX
-@CMOVEU:
-        STD
-		XCHG AX,SI
-		cmpsb
-@CMOVE: REP  MOVSB
-        XCHG AX,SI
-        CLD
-@troff:	RET
+  XT	MAKESTR,@@cnip_
+	mov [BX],CL                ; SET strlen
+	XOR CH,CH					; CUT LEN TO 255
+	LEA DI,[BX+1]
+	ADD DI,CX                  ; AFTER END ADDRESS
+	mov PB [DI],'`'            ;after str flag
+@@CPUSHU:
+	ADD  AX,CX
+@@CMOVEU:
+	STD
+	DEc	AX
+	DEC DI
+@@CMOVE:
+	XCHG AX,SI
+	REP  MOVSB
+	XCHG AX,SI
+	CLD
+@@troff: 
+	RET
 
-	XT	CPUSHU,cnip_
-        MOV  DI,BX
-		sub		BX,CX
-		JMPS	@CPUSHU
-		
-	xt	CMOVEU,DROP3_
-        MOV  DI,BX
-		JMPS	@CMOVEU
+  XT    CPUSHU,@@cnip_
+	MOV DI,BX
+	sub	BX,CX
+	JMPS @@CPUSHU
 
-	XT 	CMOVE,DROP3_
-        MOV  DI,BX
-		XCHG AX,SI
-		JMPS @CMOVE	
-		
+  xt	CMOVEU,@@DROP3_
+	MOV  DI,BX
+	JMPS @@CMOVEU
+
+  XT	CMOVE,@@DROP3_
+	MOV  DI,BX
+	JMPS @@CMOVE
+
 ; ------------------------
 ; ENRTY LIST
 ; ------------------------
-
-	COLON LISTUP
-		DW H,WSTR,T,CPUSHU,T+_TO,RTS
-
-	COLON ENTRY
-        DW TOKEN,ZEQ,Z?,TBUF,COUNT,STRP,T
-        DW CPUSHU,ZSWAP,STM,STM,T+_TO,RTS
+  COLON STRT
+	dw count,STRP
+  COLON memUP
+	DW TRET,CPUSHU,RTS
+	
+  COLON ENTRY
+	DW TOKEN?,STRT
+	DW ZSWAP,TPUSH
+  COLON TPUSH
+	DW TRET,STM,RTS
 
 ; ------------------------
 ; parsing
 ; ------------------------
-; 	  si	cx BX
-; 0 0 ADR LEN BASE  -> WLO WHI ADR1 LEN1 | LEN1 <> 0 ERR [ADR1] = UNVALUED CHAR 
+; si  cx 
+; ADR LEN -> NUM LEN1 | LEN1 <> 0 ERR [ADR1] = UNVALUED CHAR
 
-        XT  numb,Dinu_
-        push BP SI
-		mov	 BP,SP
-        xchg ax,SI  ; ENDBUF
-		dec	BX
-		dec	BX
-		mov	BH,AH
-		INC	BX
-		INC	BX
-        CALL @NUM
-        XCHG SI,AX
-        POP  SI BP
-		mov	 BX,CX
-@EXNUM:	RET
+  XT  numb,@@Binu_
+	push 	SI
+	xchg 	ax,SI  	; START ADR
+	mov		BL,10	; NUM BASE
+	XOR		ax,ax
+	XOR		DI,DI	; ZERO ACCUM
+	CALL @@NUM
+	XCHG	DI,AX	; RESULT NUMBER IN AX
+	mov		NUMA+_VAL,SI
+	POP 	SI
+	mov		BX,CX
+@@EXNUM: 
+	RET
 
-@Nm:	mov	DI,[BP+4]	;HI
-        xchg ax,DI
-        mul  BX
-		push	AX
-		mov	 AX,[BP+6]	;LO
-        mul  BX
-		ADD	 AX,di
-		pop	 DI
-		ADC	 DX,DI
-		mov	 [BP+4],DX	
-		mov	 [BP+6],AX	
-@NUM:   JCXZ @EXNUM	
-		XOR	 ax,ax
-		lodsb
-		DEC	 cx
-		cmp  al,'9'+1
-        jc   @n
-        ;AND  Al,0DFH	; no case sensivity
-        cmp  al,'A'      
-        jc   @EXNUM2
-        sub  al,7
-@n:		sub  al,'0'
-        cmp  ax,BX
-        jc   @NM
-@EXNUM2:
-		INC	 cx
-		DEC	 si
-        RET
+@@Nm:xchg 	ax,DI
+    mul  	BX
+	xchg 	ax,DI
+    ADD		DI,AX
+@@NUM:   JCXZ @@EXNUM
+	lodsb
+	DEC      cx
+	CMP		AL,'$'
+	JNE	@@NM2
+	mov		BL,16
+	JMPS	@@NUM
+@@NM2:
+	cmp  	al,'9'+1
+	jc   @@n
+	;AND  Al,0DFH   ; no case sensivity
+	cmp  al,'A'
+	jc   @@EXNUM2
+	sub  al,7
+@@n: sub  al,'0'
+	cmp  ax,BX
+	jc   @@NM
+@@EXNUM2:
+	INC      cx
+	DEC      si
+	RET
 
 ; CHAR buflen ADR -> ADR1 LEN1 buflen1
-  XT PARS,Dinu_
-	pop dx			; retadr
-	mov		DI,BX
-	SUB  	DI,CX	   
-	CMP  	AL,' '
-	JNE  	@@SKIPX
-	JCXZ 	@@SKIPX
-	REPE 	SCASB
-	JE   	@@SKIPX
-	DEC  	DI
-	INC  	CX
-@@SKIPX:
-	push  	di di     ;  START OF THE WORD
-	JCXZ  	@@WEX
-	REPNE 	SCASB
-	JNE   	@@WEX
-	DEC   	DI
-@@WEX:          ; END OF THE WORD  IN DI
-	POP		AX 	; START OF THE WORD
-	xchg	ax,di
-	SUB   	ax,di   ; LENGTH OF THE WORD
-	mov		BX,cx	; CX REMAIN LENGTH OF THE BUFFER
-	jmp		dx		;return
+  XT PARS,@@drop_
+    pop   dx cx
+	mov     DI,BX
+	SUB     DI,CX
+	mov	AL,' '
+	inc CX
+@@P1:
+	DEC	CX
+	JZ @@PSKIPX
+	SCASB
+	JAE @@P1       ;{ SPACE IS ABOVE OR EQUAL TO }
+	DEC     DI
+@@PSKIPX:
+	push    di  di  ;{;  START OF THE WORD}
+	JCXZ @@PWEX
+	inc CX
+@@P3:
+	DEC	CX
+	JZ @@PWEX        ; END OF THE WORD  IN DI
+	SCASB           ;{ SPACE IS BELOW THEN}
+	JB @@P3
+	DEC     DI
+@@PWEX:          ;{; END OF THE WORD  IN DI}
+	POP	AX      ;{; START OF THE WORD}
+	SUB     di,ax   ; LENGTH OF THE WORD
+	push  di cx
+	jmp dx             ;return
 
- colon PARSE
-	dw ltb,etb,pars,etb+_to,RTS
+  XT SCANB,@@SCAN
+	REPNE SCASB
+	RET
 	
- colon Aword
-	dw parse,tbuf,makestr,RTS
+  colon PARSE
+        dw ltb,etb,pars,ltb+_to,tbuf,makestr,RTS
 
- colon token
-	dw Cbl,Aword,ldb,rts
-	
+  colon token?
+	DW EXNZ?
+  colon token
+        dw PARSE,dupw
+  colon ldb
+		dw ldpb,dropx
+
 ; -------------------
 ; Inner Interpreter
 ; -------------------
 
-@forth: pop si
-        JMPS  @MAIN
+@@forth:
+	pop si
+	JMPS  @MAIN
 
-@DEFERO:INC   PW [CNTC+_AT]
-@DEFER: push  bx
-        MOV   bx,di
-@perform:mov  bx,[bx]
-@exec:  pop   ax
-        xchg  ax,bx
-        JMPS  @nop1
+@@DEFERO:
+	INC   PW [CNTC+_VAL]
+@@DEFER:
+	push  bx
+	MOV   bx,di
+@@perform:
+	mov	DI,[bx]
+	pop Bx
+	SCASW
+	JMPS  @@nop1
 
-@arD:   SHL   bx,1       ; array of Dwords
-@arw:   SHL   bx,1       ; array of words
-@arb:   ADD   bx,di ; array of bytes
+		SHL   bx,1       ; array of Dwords
+@@arw:  SHL   bx,1       ; array of words
+		ADD   bx,di ; array of bytes
 		JMPS  @MAIN
 
 noop:
-@colon:	cmp	  al,1
-		xchg  ax,di
-        JMPS  @pcpush
-		
-@topnt:	mov  [di],si
-        JMPS  @RET
-		
-@point:	mov   SI,[di+2]
-        JMPS  @MAIN
-		
-@const:	mov   ax,[di]
-        JMPS  @pushw
-		
-@var2:	scasw
-@var1:	scasw
-@var: 	MOV   ax,di
-        JMPS  @pushw
-		
-@does2: scasw
-@does1: scasw
-@does:  pop   ax
+@@colon: cmp   al,1
+        xchg  ax,di
+        JMPS  @@pcpush
+
+@@topnt: 
+	mov   [di+2],si		; LIKE RETURN
+	JMPS  @@RET
+
+@@point:
+	mov   AX,[di]		; LIKE COLON
+	JMPS  @@pcpush
+
+@@const:mov   ax,[di]
+        JMPS  @@pushw
+
+		scasw
+		scasw
+@@var:   MOV   ax,di
+        JMPS  @@pushw
+
+		scasw
+		scasw
+@@does:  pop   ax
         push  bx
         MOV   bx,di
-@pcpush:XCHG  AX,SI
-@rpush: dec   bp
+@@pcpush:XCHG  AX,SI
+@@rpush: dec   bp
         dec   bp
         mov   [bp],AX
         JMPS  @MAIN
 
-SWAP_:  POP   AX           ; NIP DUP SWAP
-DUP_:   CALL  DI
-@pushw: push  bx
-@swapw: xchg  ax,bx
+@@SWAP_:  
+	POP   AX           ; NIP DUP SWAP
+@@DUP_:   
+	CALL  DI
+@@pushw: 
+	push  bx
+	xchg  ax,bx
 
-@MAIN:	lodsw
-@nop1:  xchg  di,ax
-        LEA   DI,[DI+2]    ; !!!
-        jmp   Pw [di-2]    ; !!!
+@MAIN:
+	mov	DI,[SI]
+	CMPSW
+@@nop1:	
+	jmp   Pw [di-2]    ; !!!
 
-DINU_:  POP   CX
-NINU_:  POP   AX
-NUP_:   CALL  DI
-@NUP:   PUSH  AX
+@@BINU_:  PUSH BX
+@@DINU_:  POP   CX
+@@NINU_:  POP   AX
+@@NUP_:   CALL  DI
+		PUSH  AX
         JMPS  @MAIN
 
-	prim ldb
-@LDB:   MOV   AL,[BX]
-@PHb:	MOV   AH,0
-        JMPS  @pushw
-		
-@setvar: mov   [di+2],bx
-        JMPS  @drop
-		
-@0ex:   or    bx,bx
-        jNe   @DROP
-@DROPX: pop   bx
-@RET:  mov   si,Pw [bp]
+@@setvar: mov   [di+2],bx
+        JMPS  @@drop
+
+@@0ex:   or    bx,bx
+        jNe   @@DROP
+@@DROPX: pop   bx
+@@RET:   mov   si,Pw [bp]
 @rdrop: inc   bp
         inc   bp
         JMPS  @MAIN
-		
-DROP3_: POP   CX        ;DRP3
-DROP2_: POP   AX        ;DRP2
-DROP_:  CALL  DI        ;DRP
-@drop:  pop   bx
-        JMPS  @MAIN
-		
-@FOR:	mov   SI,[SI]
-@push:  pop   ax
+
+@@DROP3_: POP   CX        ;DRP3
+@@DROP2_: POP   AX        ;DRP2
+@@DROP_:  CALL  DI        ;DRP
+@@drop:  pop   bx
+        JMPS @MAIN
+
+@FOR:   mov   SI,[SI]
+@@push:  pop   ax
         xchg  ax,bx
-        jmp   @rpush
-@pop:   push  bx
+        jmps @@rpush
+		
+@@pop:   push  bx
         mov   bx,[bp]
         jmpS  @rdrop
-		
-cnip_:  POP   cX
-nip_:   POP   AX
-nop_:   CALL  DI
-        JMPS  @MAIN
+
+@@cnip_:  POP   cX
+@@nip_:   POP   AX
+@@nop_:   CALL  DI
+        JMPS @MAIN
 
 ; -------------------
 ; Inner Interpreter
@@ -523,278 +581,253 @@ nop_:   CALL  DI
 ; String
 ; -------------------
 
-@DBG:	jmp	@MAIN1		; PREPARE SPACE AND ADDRESS
+@DBG:   jmp     @@MAIN1          ; PREPARE SPACE AND ADDRESS
 
-    XT STRP,niNU_
-		INC	ax
-		DEC   BX
-		ret
-		
+  XT STRP,@@niNU_
+    INC   ax
+    DEC   BX
+    ret
+
 ;    XT STRM,niNU_
-;		INC	Bx
-;		DEC AX
-;		ret
-		
+;               INC     Bx
+;               DEC AX
+;               ret
+
 ; -----------------------
 ; searching
 ; -----------------------
 
-  XT find,NINU_
-@FIND:  
-	push  SI	
-	MOV   DI,BX	
+  XT find,@@NINU_
+    mov   DI,ax
+@@FIND2:
+    push  SI
+	mov	  si,bx
     XOR   cX,CX
-    SKP2  SI
-@FND:
-	add   DI,cx
-	mov   Bx,DI
-    LEA   DI,[DI+4]
-    mov   cl,[Di]
-    jcxz  @not_fnd
+@@FND:
+    add   sI,cx
+    mov   Bx,sI
+    LEA   sI,[sI+4]
+    mov   cl,[sI]
+    jcxz  @@not_fnd
     inc   cx
-	MOV   SI,AX
+    push  di
     repe  cmpsb
-    jNZ   @fnd
-	mov	  CL,2		;fnd_ok:
-    ADD	  [BX+2],CX
-	xchg  AX,BX	
-@not_fnd:
-	POP	  SI
-	MOV  Bx,CX
+	pop   di
+    jNZ   @@fnd
+    mov   CL,2          ;fnd_ok:
+    ADD   [BX+2],CX
+    xchg  AX,BX
+@@not_fnd:
+    POP   SI
+    MOV   Bx,CX
     RET
 
-  XT Cfind,NINU_
-	mov	DI,ax
-	push	BX 
-	INC		PB [DI]
-	call	@FIND
-	pop		DI
-	DEc		PB [DI]
-	JCXZ  @FND2
-	RET
-@FND2:	
-	mov		BX,DI
-	call	@FIND
-	INC		bx
-	RET
+  XT Cfind,@@NINU_
+    mov   DI,ax
+    push  bx 
+    INC   PB [DI]
+    call  @@FIND2
+    DEc   PB [DI]
+    JCXZ  @@FND2
+	pop   di
+    RET
+@@FND2:
+	pop   bx
+    call  @@FIND2
+    INC   bx
+    RET
 
 ; -------------------
 ; Maths / Logic / registers
 ; -------------------
 
-        xt Zeq,nop_
-        CMP    BX,1
-@SBB:   SBB    BX,BX
-        rET
+  xt Zeq,@@nop_
+    CMP    BX,1
+@@SBB:
+    SBB    BX,BX
+    rET
 
-        xt lit,dup_
-		LODSW
-        RET
+  xt ULESS,@@nip_
+    SUB   AX,BX
+    JMPS @@SBB
 
-        xt andW,nip_
-        AND   BX,AX
-        RET
+  xt ZLESS,@@nop_
+    SHL  BX,1
+    JMPS @@SBB
 
-        xt XORW,nip_
-        XOR   BX,AX
-        RET
+  xt lit,@@dup_
+    LODSW
+    RET
 
-        xt ULESS,nip_
-        SUB   AX,BX
-        JMPS @SBB
+  xt andW,@@nip_
+    AND   BX,AX
+    RET
 
-;        XT UMIN,nip_
-;        CMP   AX,BX
-;        JNC   @@1
-;        XCHG  AX,BX
-;@@1:    RET
-;
-;    xt decW,drop_
-;        DEC   PW [BX]
-;        RET
-;
-;    xt INCW,drop_
-;        INC   PW [BX]
-;        RET
+  xt XORW,@@nip_
+    XOR   BX,AX
+    RET
 
-        XT  TOEVAL,ninu_
-        ADD   AX,BX
-        RET
+  XT  TOEVAL,@@ninu_
+    ADD   AX,BX
+    RET
 
-  xt pl2div,NINU_
-		ADD	ax,bx
-		mov	bx,AX
-		rcr	bx,1
-		RET
+  xt pl2div,@@NINU_
+	ADD     ax,bx
+	mov     bx,AX
+	rcr     bx,1
+	RET
 
-  xt plmul,NINU_
-		TEST	al,1
-		jz	@pl1
-		ADD		bx,dx
-@pl1:	rcr		bx,1
-		rcr		ax,1
-		RET
+  xt plmul,@@NINU_
+	TEST	al,1
+	jz	@@pl1
+	ADD	bx,dx
+@@pl1:
+	rcr	bx,1
+	rcr	ax,1
+	RET
 
-  xt midiv,NINU_			; -/
-		SHL		ax,1
-		rcl		bx,1
-		CMP		bx,dx
-		jNC	@mi1
-		sub		bx,dx
-@mi1:	INC		AX
-		RET
-		
-; -------------------
-; TRANSFER
-; -------------------
-
-  XT	RLDP,@RSLD				;@R+
-		JMPS	@RSTP
-
-  XT	RSTP,@RSST				;!R+
-		mov		[SI],bx
-@RSTP:	xchg	AX,bx
-		LODSW
-		RET
+  xt midiv,@@NINU_                        ; -/
+	SHL	ax,1
+	rcl	bx,1
+	CMP	bx,dx
+	jNC	@@mi1
+	sub	bx,dx
+	INC	AX
+@@mi1:
+	RET
 
 ; -------------------
 ; Stack
 ; -------------------
 
-        xt dupW,dup_
-        MOV AX,BX
-        RET
+  xt dupW,@@dup_
+    MOV AX,BX
+    RET
 
-        xt j,dup_
-        MOV AX,[Bp+2]
-        RET
+  xt j,@@dup_
+    MOV AX,[Bp+2]
+    RET
 
-        xt swap,SwAp_
-        RET
+;  xt nip,@@nip_
+;    RET
 
-        XT drop,@DROP
-        xt popW,@pop
-        xt pushW,@push
+  XT drop,@@DROP
+  xt popW,@@pop
+  xt pushW,@@push
 
-        xt ZSWAP,nup_
-        xor ax,ax
-        ret
+  xt ZSWAP,@@nup_
+    MOV ax,0
+BYE = $-2	
+    ret
 
-;        _COLON TIMES
-;        DW 1M,BRM,_TMS2,PUSH
-;_TMS:   DW J,EXECUTE,NEXT,_TMS,POP
-;_TMS2:  DW RDROP,DROPX
+;  xt SWAP,@@SWAP_
+;    ret
 
 ; -----------------------
 ; Colon Definition
 ; -----------------------
 
-    COLON COMPILE
-		DW RLDP,COMMA,RTS
-		
-@COMPERF: 
-		call @does  ; STR , PERFORM
-        dw WsTR,comma,perform,RTS
+  COLON COMPILE
+	DW RLDP,COMMA,RTS
 
-    COLON  AT_COMMA
-		DW LD
-    COLON  COMMA
-        DW H,STP,H+_TO,RTS
+@@COMPERF:
+	call @@does  ; STR , PERFORM
+    dw WsTR,comma,perform,RTS
 
-    xt litcom,@COMPERF
-          dw lit,comma
+  COLON  AT_COMMA
+    DW LD
+  COLON  COMMA
+    DW HRET,STP,RTS
 
-    COLON clit
-        dw number,litcom,RTS
+  xt litcom,@@COMPERF
+    dw lit,comma
+
+  COLON clit
+    dw number,litcom,RTS
 
 ; -------------------
 ; Compilation
 ; -------------------
 
-    COLON SEMI						;  "," !!!
-		DW COMPILE,RTS
-	COLON lbrak         ; interpreter search
-        dw found+_TO,T,find,RTS
+  COLON SEMI                        ;  "," !!!
+	DW COMPILE,RTS
+	
+  COLON lbrak         				; interpreter search			; 	
+	dw found+_TO,T,find,RTS
 
-    COLON COL						;  ":" !!!
-		DW H,ENTRY,COMPILE,@colon
-	COLON rbrak         ; compiler search
-        dw  found+_TO,T,CFIND,RTS
+  COLON COL                         ;  ":" !!!
+	DW H,ENTRY,COMPILE,@@colon
+	
+  COLON rbrak         				; compiler search
+	dw  found+_TO,T,CFIND,RTS
 
 ; -------------------
 ; Flow Control
 ; -------------------
 
-    XT ZBR,NOP_			; (#IF		DOES NOT CHANGES DATA STACK
-		SKP2 CX
+  XT ZBR,@@NOP_                 ; (#IF          DOES NOT CHANGES DATA STACK
+	SKP2 CX
 
-    XT ?BR,DRoP_		; (IF
-		or		BX,BX
-		jZ	@jump
-@skip:  lodsw
-        RET
+  XT ?BR,@@DRoP_                ; (IF
+	or	BX,BX
+	jZ	@@jump
+@@skip:  lodsw
+	RET
 
-    XT MIF,NOP_			; (MIF		DOES NOT CHANGES DATA STACK
-		INC		BX
-@IFM:	DEC		BX
-		JS	@SKIP
-@jump:  mov   si,[si]
-        RET
-		
-	XT br,NOP_
-		jMPS @jump
+  XT MIF,@@NOP_                 ; (MIF          DOES NOT CHANGES DATA STACK
+	INC	BX
+@@IFM:   
+	DEC	BX
+	JS	@@SKIP
+@@jump:  
+	mov   si,[si]
+	RET
 
-	XT IFM,NOP_			; (MIF	
-		JMPS @IFM
+  XT br,@@NOP_
+	jMPS @@jump
 
-	XT NEXT,NOP_			; (NEXT		DOES NOT CHANGES DATA STACK
-		DEc	PW [BP]
-		JMPS @IFM+1
+  XT IFM,@@NOP_                     ; (MIF
+	JMPS @@IFM
 
-;        xt skip,NOP_
-;        JMP   @SKIP
+  XT NEXT,@@NOP_                    ; (NEXT         DOES NOT CHANGES DATA STACK
+	DEc	PW [BP]
+	JMPS @@IFM+1
 
-;        xt exec,@exec
-        xt perform,@perform
-;        XT RDROP,@RDROP
-
-        XT RTS,@RET
-        XT DROPx,@DROPX
-        xt ZRET,@0ex
-        xt EX,@ex
-
-;        _xt 1Px,_1Px
-;        _xt 2Px,_2Px
-
-;        _xt call,_call
-;        _xt for,_for
-;        _xt next,_next
+  xt perform,@@perform
+  XT RTS,@@RET
+  XT DROPx,@@DROPX
+  xt ZRET,@@0ex
+  XT EX,@@EX
 
 ; -----------------------
 ; Dictionary Search AND ERRORS
 ; -----------------------
 
 doINIT:
-		dw count,LISTUP,entrance+_to,NOOP,ALINE,accept,rts
-
-	COLON Z?					; ?ABORT
-		DW SKIPSTR,SWAP,?BR,@EVALX,ERRV,ABORT
-
-    COLON number
-        dw ZSWAP,ZSWAP,count,TEN,numb,Z?
-		MSG "?"
-		DW	DROP,DROPX
+	dw STRT,H,WSTR,memUP,evaldo,entrance+_to
+	DW ALINE,accept,rts
 
 
-freemem:
-	dw lastw-freemem
-;  _entry   '.',DD
-;   entr   'BYE',ZER+2,0
+  COLON EXNZ?	; ?ABORT
+    DW EX
+  COLON NZ?	; ?ABORT
+    DW ZEQ
+  COLON Z?	; ?ABORT
+	DW STRS,ERRMSG+_TO,ZRET,ERRV,ABORT
+
+  COLON number
+	dw  count,numb,Z?
+	MSG "?"
+	DW	RTS
+
+
+@@freemem:
+        dw @@lastw-@@freemem
    entr   '=:',ENTRY,0
    entr   '',0,0   ; LAST WORD
 
 
-lastw = $
+@@lastw = $
 
 MyCseg  ends
         end  Start
@@ -802,12 +835,12 @@ MyCseg  ends
 ; -----------------------
 ; Outer Interpreter TEST
 ; -----------------------
-		
-        XT DIG,nop_
+
+        XT DIG,@@nop_
         CMP BL,10
-        JL  @@1
+        JL  @@11
         ADD BL,7
-@@1:    ADD BL,'0'
+@@11:   ADD BL,'0'
         RET
 
 ;   :     XT DIV,@Dinu
@@ -842,6 +875,32 @@ MyCseg  ends
         DW LIT,'!',emit   ; !!!
         DW abort
 
-		
 
-
+
+_SCANER:POP  AX
+        XCHG AX,BX
+        POP  CX
+        POP  DI
+        push cs
+        pop  es
+        MOV  DX,CX
+        CALL BX
+        JE   @@1
+        MOV  CX,DX
+@@1:    INC  CX
+        SUB  DX,CX
+        XCHG AX,DX
+        SWAPREG
+
+	POP CX AX
+	XCHG  BX,DI
+	xchg  AX,DI	
+	PUSH	CX
+	call  BX
+	POP	  BX
+	JE @@SCAN
+	mov	CX,BX
+@@SCAN:
+	INC CX
+    SUB  BX,CX
+	

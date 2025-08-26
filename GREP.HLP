@@ -1,0 +1,20 @@
+Turbo GREP  Version 3.0  Copyright (c) 1991 Borland International
+Syntax:  GREP [-rlcnvidzuwo] searchstring file[s]
+
+Options are one or more option characters preceeded by "-", and optionally
+followed by "+" (turn option on), or "-" (turn it off).  The default is "+".
+   -r+  Regular expression search	-l-  File names only
+   -c-  match Count only		-n-  Line numbers
+   -v-  Non-matching lines only		-i-  Ignore case
+   -d-  Search subdirectories		-z-  Verbose
+   -u-  Update default options		-w-  Word search
+   -o-  UNIX output format		     Default set: [0-9A-Z_]
+
+A regular expression is one or more occurrences of:  One or more characters
+optionally enclosed in quotes.  The following symbols are treated specially:
+   ^  start of line		$  end of line
+   .  any character		\  quote next character
+   *  match zero or more	+  match one or more
+
+   [aeiou0-9]	match a, e, i, o, u, and 0 thru 9
+   [^aeiou0-9]	match anything but a, e, i, o, u, and 0 thru 9

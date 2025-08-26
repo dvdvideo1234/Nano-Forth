@@ -307,14 +307,19 @@ XFROMF: JMP   SI
 
 X3RAT:  CALL _RFRS@
         DB   6
+		
 X2RAT:  CALL _RFRS@
         DB   4
+		
 X3RFR:  CALL _RFRS_
         DB   6
+		
 X2RFR:  CALL _RFRS_
         DB   4
+		
 XRFR:   CALL _RFRS_
         DB   2
+		
 _RFRS_: DB   0B9H
 _RFRS@: XOR  CX,CX
         POP  DI
@@ -329,15 +334,19 @@ _RFRS@: XOR  CX,CX
         JNE  @@1
         ADD  BP,CX
         NEXT
+		
 xnip:   pop  ax
         next
+		
 X2TOR:  SUB  BP,4
         POP  CX
         JMP  SHORT _2TOR
+		
 @MYARY: MOV  AX,OFFSET Uv0
         PUSH AX
 MYARY:  SHL  BX,1
         JMP  XPLUS
+		
 XDOP:   POP   DI
 _DOP1:  lodsw
         mov   Cx,8000h
@@ -360,12 +369,14 @@ XTOR:   DEC   BP
         DEC   BP
 X_TOR:  MOV   [BP],BX
         dropREG
+		
 xnext:  MOV   CX,[BP]
         JCXZ  XLEAVE
         DEC   CX
         MOV   [BP],CX
         MOV   SI,[BP+2]
         next
+		
 XBTOD:  XCHG  AX,BX
         CBW
         XCHG  AX,BX
@@ -373,6 +384,7 @@ XsTOd:  PUSH  BX
 X0LESS: SHL   BX,1
 XCARRY: SBB   BX,BX
         JMP   _NEXT
+		
 XNZBRAN:OR    BX,BX
         jNe   XBR_DR
         INC   BX
@@ -385,6 +397,7 @@ XDO:    pop   dI
 XBR_DR: POP   BX
 XBRAN:  mov   si,[si]
         JMP   _next
+		
 XPLOOP: ADD   [bp+0],BX
         jno   XBR_DR
 XLEAVDR:POP   BX
@@ -396,8 +409,10 @@ xrdrop: inc  bp
 XLOOP:  inc   word ptr [bp+0]
         jno   XBRAN
         Jmp  short XLEAVE
+		
 xbp:    int  3
         JMP SHORT _next
+		
 jsr4:   scasw
 jsr3:   scasw
 jsr2:   scasw
@@ -409,41 +424,52 @@ XJMP:   mov  si,di
 XPC2PLS:INC  SI
 XPC1PLS:INC  SI
         JMP  SHORT _next
+		
 XOF:    POP  AX
         XCHG BX,AX
         CMP  AX,BX
         JNZ  XBRAN
         JMP  SHORT XPC2_DR
+		
 XQDUP:  OR   BX,BX
         JZ   _NEXT
 XDUP:   PUSH BX
         JMP  SHORT _next
+		
 XMABS:  POP  AX
         SUB  BX,AX
 xAbs:   or   bx,bx
         jns  xnegat2
+		
 XNEGATE:NEG  BX
         DB   0B9H
 XNOT:   NOT  BX
 XNEGAT2:JMP  SHORT _next
+
 XAND:   POP  AX
         AND  BX,AX
         JMP  SHORT _next
+		
 XORE:   POP  AX
         OR   BX,AX
         JMP  SHORT _next
+		
 XXORX:  POP  AX
         XOR  BX,AX
         JMP  SHORT _next
+		
 XSPgT:  push BX
         mov  bx,sp
         jmp  short _next
+		
 XRPgT:  MOV  ax,bp
         jmp  short _pushax
+		
 XSPST:  MOV  SP,BX
         DB   0B9H
 XRPST:  MOV  BP,BX
         jmp  short xDROP
+		
 XSTR:   MOV  DI,SP
         SCASW
         ADD  SS:[DI],BX
@@ -451,14 +477,18 @@ xsubt:  neg  bx
 XPLUS:  POP  AX
 _plus:  ADD  BX,AX
         JMP  SHORT _next
+		
 XRAT:   mov  Ax,[bp]
         JMP  SHORT _PUSHAX
+		
 dovar2: scasw
 dovar1: scasw
 DOVAR:  JMP  SHORT DOVARZ
+
 XPC2_DR:LODSW
 xdrop:  pop  bx
         JMP  SHORT _NEXT
+		
         scasw
         scasw
 _does:  x
@@ -473,36 +503,45 @@ _next:  lodsw
 _ex:    xchg di,ax
         jmp  pw [di]
         JMP  DEBUGerr
+		
 X0EXIT: OR    BX,BX
         POP   BX
         JNE   _NEXT
         JMP  XEXIT
+		
 XTUCK:  POP  AX
         PUSH BX
         PUSH AX
         NEXT
+		
 XM2STO: DEC  pw [BX]
 XM1STO: DEC  pw [BX]
         DROPREG
+		
 XP2STO: INC  pw [BX]
 XP1STO: INC  pw [BX]
         DROPREG
+		
 XSTORE2:POP  [BX]
         inc  bx
         inc  bx
 XSTORE1:POP  [BX]
         DROPREG
+		
 XSTOREA:   ; L!
         POP  [BX+2]
         jmp  short xstore1
+		
 XXORTO: POP  AX
         XOR  [BX],AX
         DROPREG
+		
 XM1STOR:MOV  AX,-1
         DB   0B9H
 XZSTOR: XOR  AX,AX
 XNSTOR: MOV  [BX],AX        ; NOT USED YET
         DROPREG
+		
 XCSTOR: POP  AX
 XBSTOR: MOV  [BX],AL        ; NOT USED YET
 DDD:    DROPREG
@@ -510,17 +549,22 @@ DDD:    DROPREG
 XPSTORE:POP  AX
         ADD  [BX],AX
         DROPREG
+		
 XSWAP:  POP  AX
         PushReg
+		
 XOVER:  POP  AX
         PUSH AX
         PushReg
+		
 XROT:   POP  CX aX      ; ax cx bx->
         PUSH CX         ; cx bx ax
         PushReg
+		
 XMROT:  POP  aX cX      ; cx ax bx->
         PUSH bx CX      ; bx cx ax
         swapReg
+		
 DO2CON2:SCASW
 DO2CON1:SCASW
 DO2CON: SCASW
@@ -529,6 +573,7 @@ DO2CON0:PUSH BX
 XTWOAT: PUSH [BX+2]
 xFETCH: MOV  BX,[BX]
         NEXT
+		
 XCOUNT: inc  bx
         PUSH BX
         DEC  BX
@@ -536,24 +581,29 @@ XCAT:   MOV  BH,[BX]
 xhi:    xchg bh,bl
 xlo:    MOV  BH,0
         NEXT
+		
 XDUP2:  Pop  aX
         push ax
         PUSH BX
         push ax
         NEXT
+		
 SUB4TH: x
         push  si
         x
 J4th:   POP   SI
         JMP  SHORT _next
+		
 XTWOATA:   ; TO FADR
         PUSH  [BX]
         inc   bx
         inc   bx
         jmp   short xfetch
+		
 _Zero:  push bx
         XOR  bx,BX
         next
+		
 _m1:    push bx
         XOR  bx,BX
         db   0b9h
@@ -561,10 +611,12 @@ X3MINUS:DEC  BX
 XTWOMI: DEC  BX
 XONEMI: DEC  BX
 _0mi:   NEXT
+
 XUCHK:  POP  AX
         SUB  AX,BX
         JC   LCHK2
         JMP  SHORT LCHK1
+		
 XCHK:   POP  AX
         SUB  AX,BX
         DB   0B9H
@@ -577,6 +629,7 @@ LCHK2:  DEC  DI
 LCHK3:  MOV  AL,[DI+3]
         CBW
         SWAPREG
+		
 X2PWR:  XOR  AX,AX
         INC  AX
         PUSH AX
@@ -587,6 +640,7 @@ XSHIFT: OR   BX,BX
         NEG  CX
         shR  BX,CL
         NEXT
+		
 X64SLS: SHR  BX,1
 X32SLS: SHR  BX,1
 X16SLS: SHR  BX,1
@@ -594,20 +648,24 @@ X8SLS:  SHR  BX,1
 X4SLS:  SHR  BX,1
 X2SLS:  SHR  BX,1
         NEXT
+		
 XP2SLS: POP  AX
         ADD  BX,AX
         RCR  BX,1
         NEXT
+		
 X8STAR: SHL  BX,1
 X4STAR: SHL  BX,1
 X2STAR: MOV  CL,1
 X2STAR_:SHL  BX,CL
         NEXT
+		
 XUMSTAR:POP  AX
         MUL  BX
         PUSH AX
         MOV  BX,DX
         NEXT
+		
 XPICK:  SHL  BX,1
         ADD  BX,SP
         MOV  BX,SS:[BX]
@@ -620,24 +678,29 @@ XSKPSW: CALL _XSKPS
         lodsW
         add  si,ax
         RET
+		
 XSKPS:  CALL _XSKPS
         mov  bx,si
         xor  ax,ax
         lodsb
         add  si,ax
         RET
+		
 _XSKPS: POP  CX
         push bx
         xchg si,[bp]
         CALL CX
 X_CO:   XCHG SI,[BP]
         next
+		
 XSWAP2: POP  cX aX DI
 _SWAP2Z:PUSH cX BX DI
         swapreg
+		
 XOVER2: POP  cX aX DI
         PUSH DI aX  ;cX BX DI ;swapreg
         JMP  SHORT _SWAP2Z
+		
 XDMINUS:CALL _DNEGAT
 XDPLUS: POP  AX
         POP  DX
@@ -646,6 +709,7 @@ XDPLUS: POP  AX
         adC bx,Dx
         PUSH CX
         next
+		
 XUMSLSM:POP  dX
         DB   0B9H
 XUMSLS: XOR  DX,DX
@@ -656,6 +720,7 @@ XUMSLS: XOR  DX,DX
         DIV  BX
         PUSH DX
 @@1:    swapreg
+
 xTary:  shl  bx,1
 x5ary:  ADD  DI,bx
 xqary:  shl  bx,1
@@ -664,20 +729,25 @@ XBARY:  ADD  BX,DI
 XTWOPL: INC  BX
 XONEPL: INC  BX
         next
+		
 xcntdo: pop  ax
         add  bx,ax
         jmp  _pushax
+		
 xdabs:  or   bx,bx
         jns  no_abs
 XDNEGAT:CALL _DNEGAT
 no_abs: NEXT
+
 XI:     XOR   DI,DI
 _ILOOP: mov   ax,[bp+0+DI]
         sub   ax,[bp+2+DI]
         PushReg
+		
 _CALL:  SCASW
         CALL  DI
         NEXT
+		
 _MOVER: POP  DX
         POP  DI AX
         push cs
@@ -685,11 +755,13 @@ _MOVER: POP  DX
         MOV  CX,BX
         CALL DX
         DROPREG
+		
 XSTRPLS:POP  AX
         MOV  DI,[BX]
         ADD  [BX],AX
         LEA  DI,[BX+DI+2]
         JMP  SHORT _XSTRST
+		
 XSTRSTO:POP  AX
         MOV  DI,BX
         STOSW
@@ -701,10 +773,12 @@ _move1: XCHG SI,AX
         XCHG SI,AX
         CLD
 _movex: RET
+
 XMOVE:  CALL _MOVER
 SMARTM: CMP  DI,AX
         JBE  _MOVE1
         JMP  SHORT _MOVEU
+		
 XCMOVUP:CALL _MOVER
 _MOVEU: ADD  DI,CX
         ADD  AX,CX
@@ -712,6 +786,7 @@ _MOVEU: ADD  DI,CX
         DEC  DI
         STD
         JMP  SHORT _MOVE1
+		
 _FILLER:PUSH  BX
         SCASW
         MOV   BX,[DI]
@@ -722,6 +797,7 @@ xfill:  POP     CX
         xchg ax,bx
         REP  stosb
         DROPREG
+		
 XROLL:  ADD  BX,BX
         MOV  DI,SP
         PUSH SS:[DI+BX]
@@ -730,6 +806,7 @@ XROLL:  ADD  BX,BX
         CALL _MOVEU
 XDROP2: POP  BX
         JMP  XDROP
+		
 XROLLM: ADD  BX,BX
         MOV  CX,BX
         ADD  CX,SP
@@ -756,6 +833,7 @@ _SCANER:POP  AX
         SUB  DX,CX
         XCHG AX,DX
         SWAPREG
+		
 XWLOD:  SHL  BX,1
 XNLOD:  MOV  CX,BX
         POP  DI
@@ -776,6 +854,7 @@ XNLOD:  MOV  CX,BX
 @@3:    CLD
         MOV   SI,DX
         DROPREG
+		
 XWSTO:  SHL  BX,1
 XNSTO:  MOV  CX,BX
         POP  DI
@@ -788,12 +867,15 @@ XNSTO:  MOV  CX,BX
         POP  AX
         STOSB
 @@3:    DROPREG
+
 XSCANW: CALL _SCANER
         REPNE SCASW
         RET
+		
 XSCANB: CALL _SCANER
         REPNE SCASB
         RET
+		
 XSCANL: CALL _SCANER
         PUSH SI
         OR   BX,BX
@@ -807,6 +889,7 @@ XSCANL: CALL _SCANER
         LOOPNE  @@2
 @@3:    POP  SI
         RET
+		
 XSCANS: OR   BX,BX
         POP  DI
         JE   @@4
@@ -847,6 +930,7 @@ XSCANS: OR   BX,BX
         PUSH AX
         SUB  AX,CX
         SWAPREG
+		
 XMTEXT: POP  DI
         POP  AX
         push cs
@@ -864,6 +948,7 @@ XMTEXT: POP  DI
         CBW
 @@1:    XCHG AX,CX
         SWAPREG
+		
 XSCANI: POP  AX
         XCHG AX,SI
         XOR  CX,CX
@@ -874,6 +959,7 @@ XSCANI: POP  AX
         LOOP @@2
 @@1:    XCHG AX,SI
         SWAPREG
+		
 XMINS@: mov  ax,[di+2]
         DB   0B1H
 XALLOTM:POP  AX
@@ -881,20 +967,24 @@ XALLOTM:POP  AX
 _MINS@: ADD  PW [BX],ax
         MOV  AX,[BX]
         SWAPREG
+		
 X@PLUS: mov  AX,[di+2]
 _@PLUS: ADD  AX,[BX]
 X2CHG:  XCHG PW [BX],AX
         SWAPREG
+		
 XATSWAP:POP  AX
         DB   0B9H
 XATSWP2:POP  AX
         XCHG AX,BX
         JMP  SHORT X2CHG
+		
 X@SWAP: POP  DI
         MOV  AX,[DI]
         XCHG AX,[BX]
         STOSW
         DROPREG
+		
 X@PLSTO:POP  AX
         OR   AX,AX
         JS   _MINS@
@@ -903,6 +993,7 @@ X@NPACK:MOV   BX,[BX]
 xUNpack:XOR   ax,AX
         xchg  Al,bh
         PUSHREG
+		
 xpack:  pop   ax
         xchg  bl,bh
         mov   bl,al
@@ -912,6 +1003,7 @@ CALL_D2:PUSH BX
         CALL PW [DI+2]
         POP  BX
         NEXT
+		
 XaLPHA: XCHG AX,BX
         XOR  AH,AH
         CMP  AL,10
@@ -929,11 +1021,13 @@ XEXEC:  XCHG AX,BX
 _ex2:   jmp  _ex
 xSetUv: mov  pw userv,bx
 x_set:  dropreg
+
 XBlit:  lodsb
 push_al:xor  AH,ah
         db   0b1h
 XLIT:   LODSW
         PUSHREG
+		
 XDLIT:  LODSW
         XCHG  AX,CX
         LODSW
@@ -949,6 +1043,7 @@ _psh2:  NEXT
         POP  AX
         PUSH [DI]
         JMP  SHORT _PSH2
+		
 ExecAt2:scasw
 ExecAt1:scasw
 ExecAt: scasw
@@ -963,6 +1058,7 @@ XVBLK:  INC   BX            ; : VBLK  DUP
         JNZ   execAt1       ;          THEN THEN ;
 @@1:    POP   BX            ;
         jmp   short execAt  ;
+		
 xqcomm: inc  bx
         pop  bx
         jz   xEXEC
@@ -986,6 +1082,7 @@ xcommD: call _comp      ; D,
         pop  ax
         stosw
         jmp  short _comp_
+		
 xcompb: push bx         ;compileb
         lodsb
         xchg ax,bx
@@ -994,12 +1091,14 @@ xcommab:call _comp      ;,
 _comp_: xchg cx,di
         mov  [di],cx
         dropreg
+		
 xcompw: lodsw
         push bx
         xchg ax,bx
 xcomma: call _comp      ;,
         stosw
         jmp  short _comp_
+		
 x_hold: call  doUvar1
         call  start_h
         dec   di
@@ -1009,10 +1108,12 @@ XCFAst: SCASW
         mov  di,[di]
         MOV  [DI],BX
         DROPREG
+		
 Start_h:xchg ax,bx
         mov  cx,di
         mov  di,[di]
         ret
+		
 x0max:  push bx
         xor  bx,bx
 xmax:   pop  ax
@@ -1025,11 +1126,13 @@ xmin:   pop  ax
 _mm:    jGE  NEXT@@2
         xchg ax,bx
 NEXT@@2:next
+
 xnamCf: mov   al,[bx]
         and   ax,31
         add   bx,ax
 xtreePl:inc   bx
         jmp   xtwopl
+		
 X_FIND:
   MOV   DX,SI
 @@1:
@@ -1073,6 +1176,7 @@ X_FIND:
 @@8:
   MOV   SI,DX
   SWAPREG       ; _FIND_
+  
 _strequ:
   mov   cx,255
 _strequ1:
@@ -1089,6 +1193,7 @@ _strcmp:
 _l5:
   add     si,cx
 _l6:  ret
+
 X_W:  mov   di,bx ; _WORD ;X_W:            ; _WORD  ;
       pop   bx            ;  mov   di,bx            ;
       pop   ax            ;  pop   bx               ;
@@ -1162,6 +1267,7 @@ XC2I:   ;
   INC   DX
   SUB   pw [bp],DX ; dbl
   jmp   short @@2
+  
 outitoc:
   dec   si
   sub   [bp+2],si
@@ -1182,6 +1288,7 @@ okdig:  sub   al,'0'
         cmp   ax,di
         cmc
 notdig: ret
+
 convn:  lodsb
         call  digit?
         jc    notdig
@@ -1202,28 +1309,35 @@ _mul:   xchg  ax,cx
         mul   di
         add   bx,ax
 @@1:    ret
+
 setvar2:scasw
 setvar1:scasw
 setvar: scasw
 setvar0:MOV   [DI],BX
         DROPREG
+		
 DOCON2: SCASW
 DOCON1: SCASW
 DOCON:  SCASW
 DOCON0: MOV  AX,[DI]
         PUSHREG
+		
 XUVAR@@:call  doUvar
         MOV   DI,[DI]
         jmp   short doCon0
+		
 XUVAR@: scasw
 XUVAR@0:call  doUvar1
         jmp   short doCon0
+		
 XtoUVAR:SCASW
 XtoUVR: call  doUvar
         jmp   short Setvar0
+		
 X@UVAR: call  doUvar
         xchg  ax,di
         pushReg
+		
 _comp:  mov  cx,offset start_h
         push cx
         push cs
@@ -1239,6 +1353,7 @@ USERV   =    $-2
 xcatf:  mov  al,[bx]
         cbw
         swapreg
+		
 Wreset: cli
         cld
         pop  SI
@@ -1248,6 +1363,7 @@ Wreset: cli
         xor  BX,BX
         sti
         NEXT
+		
 xPause: push bx         ;       CALL J4TH
         X               ;       DW   TBP
         push si         ;       DW   TFROMF
@@ -1258,6 +1374,7 @@ xPause: push bx         ;       CALL J4TH
         mov  [di+6],sp
         mov  Si,[di+2]
         NEXT
+		
 XWAKE:  DEC  SI         ;TWAKE  dw JSR,TRFR,TFROMF
         DEC  SI
         mov  pw userv,SI
@@ -1300,12 +1417,14 @@ toname2:
   shr   ax,1
   inc   ax
   swapreg
+  
 XRESOLV:CALL HEREADR
         PUSH  BX
         MOV   BX,[DI]
 XSWPSTO:POP   DI
         MOV   [DI],BX
         DROPREG
+		
 X4COUNT:CALL  X2COUNT
         XCHG  AX,CX
 X2COUNT:MOV   AX,[BX]
@@ -1317,14 +1436,17 @@ XDCOUNT:CALL  X4COUNT
         JMP   _PUSH2
 XWCOUNT:CALL  X2COUNT
         PUSHREG
+		
 XMULT2: POP   AX
         IMUL  BX
         PUSH  AX
         MOV   BX,DX
         NEXT
+		
 XMULT1: POP   AX
         IMUL  BX
         SWAPREG
+		
 _DIVmAX:CWD
 _DIVMOD:XOR   DI,DI
         OR    BX,BX
@@ -1351,18 +1473,22 @@ _DIVMOD:XOR   DI,DI
         DB    0DH
 @@6:    XOR   BX,BX
         RET
+		
 XMULDIV:POP   DX
         POP   AX
         IMUL  DX
         CALL  _DIVMOD
         NEXT
+		
 XDIVMOD:POP   AX
         CALL  _DIVMAX
         PUSH  DX
         NEXT
+		
 XDIV:   POP   AX
         CALL  _DIVMAX
         NEXT
+		
 XMOD:   POP   AX
         CALL  _DIVMAX
         MOV   BX,DX
@@ -1376,11 +1502,13 @@ cnt_GT0:mov  cx,di               ; mov  cx,di
         add  di,cx               ; add  di,cx
         mov  Ax,[DI]             ; mov ax,[di]
         RET
+		
 _HND_AT:scasw
         CALL cnt_GT0
         xchg cx,di
         DEC  pw [di]
         PUSHREG
+		
 _HND_TO:add  di,4
         inc  pw [di]
         CALL cnt_GT0
@@ -1416,6 +1544,7 @@ OUTC_1P:MOV  DI,OFFSET toOUTC
         CALL DOuVAR
         INC  PW [DI]
         RET
+		
 regout: call outWord
 space1: mov  al,' '
         jmp short outc
@@ -1533,17 +1662,20 @@ _INT_10:PUSH  BP
         INT   10H
         POP   BP
         RET
+		
 _V_PAGE:PUSH  AX
         MOV   AH,15
         CALL  _INT_10
         POP   DX
         RET
+		
 CURSIZE:POP   AX
         MOV   AH,BL
         MOV   CH,1
         XCHG  AX,CX
         CALL  _INT_10
         DROPREG
+		
 GETCURS:PUSH  BX   ;CALL  _V_PAGE
         MOV   BH,VPAG
         MOV   AH,3
@@ -1557,12 +1689,14 @@ GETCURS:PUSH  BX   ;CALL  _V_PAGE
         PUSH  CX
         MOV   BX,CX
         NEXT
+		
 XY_GOTO:POP   DX
         MOV   DH,BL
         MOV   BH,VPAG
         MOV   AH,2  ; CALL  _V_PAGE
         CALL  _INT_10
         DROPREG
+		
 XCLRSCR:PUSH  BX
         MOV   BH,ATTR
         MOV   DH,24
@@ -1576,6 +1710,7 @@ XCLRSCR:PUSH  BX
 
 XFLIP:  XCHG  BL,BH
         NEXT
+		
 DO_SWAP: SCASW
         SCASW
         MOV   AX,[DI+2]
@@ -1585,6 +1720,7 @@ DO_SWAP: SCASW
         MOV   [DI],CX
         XCHG  AX,SI
         NEXT
+		
 setproc:SCASW
         x
         push si
@@ -1615,6 +1751,7 @@ PARSET: LEA  AX,[BP-2]
         LOOP @@3
 @@4:    X
         DROPREG
+		
 XRETURN:DB   0B9H
 GETFRAM:XOR  CX,CX
         MOV  BP,FRAME
@@ -1624,6 +1761,7 @@ GETFRAM:XOR  CX,CX
         POP  SI
 @@1:    X
         NEXT
+		
 GETLOC: CALL XLOC3
         DW   XGET-1
         MOV  AX,[DI+6]
@@ -1633,6 +1771,7 @@ XGET:   ADD  AX,FRAME
         MOV  DI,AX
         MOV  AX,SS:[DI]
         PUSHREG
+		
 SETLOC: CALL XLOC2
         DW   XSET-1
         MOV  AX,[DI+4]
@@ -1642,6 +1781,7 @@ XSET:   ADD  AX,FRAME
         XCHG BX,AX
         MOV  SS:[BX],AX
         DROPREG
+		
 ATLOC:  CALL XLOC1
         DW   XAT-1
         MOV  AX,[DI+2]
@@ -1649,6 +1789,7 @@ ATLOC:  CALL XLOC1
         LODSW
 XAT:    ADD  AX,FRAME
         PUSHREG
+		
 XLOC3:  SCASW
 XLOC2:  SCASW
 XLOC1:  SCASW
@@ -1672,17 +1813,21 @@ X?SS:   MOV     AX,SS
         DB      0B9H
 X?CS:   MOV     AX,cs
         PUSHREG
+		
 X?FRAME:MOV  DI,[DI+4]
         MOV  AX,[DI]
         PUSHREG
+		
 XFRAME: MOV  DI,[DI+2]
         MOV  [DI],BX
         DROPREG
+		
 X@SELFP:MOV  BX,[BX]    ; ADDRES OF FIELD WORD CFA
         MOV  AX,[BX+2]  ; OFFSET IN RECORD
         MOV  BX, PW USERV
         ADD  AX,[BX+UvSELF-Uv0]
         SWAPREG
+		
 XSELFP: SCASW
         PUSH BX
         MOV  AX,[DI]
@@ -1690,6 +1835,7 @@ XSELFP: SCASW
         ADD  AX,[BX+UvSELF-Uv0]
         XCHG AX,BX
         JMP  JSR
+		
 XMNAME: POP   DI
         XCHG  SI,BX
         MOV   CX,63
@@ -2678,6 +2824,7 @@ XEX?TR: X
         DW   @MYARY     ;DW   xorig      ; ORIGIN+
         DW   XQARY      ; 4* ARRAY
         DW   _NEXT
+		
  NF 'UNPACK'
         DW   xUNpack      ;
 apack   DW   xpack      ;
