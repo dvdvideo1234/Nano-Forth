@@ -5,25 +5,25 @@ code segment 'CODE'
      assume  cs: code
 
 
-; function  DigChar(n: byte): char;  {assembler;}
-; VAR C: CHAR ABSOLUTE N;
-; BEGIN
-;   IF N > 9 THEN N := N + 7;
-;   N := N + BYTE('0');
-;   DIGTOCHAR := C;
-; END;
+INCPTR:
+  INC   WORD PTR ES:[BX]
+  LES   DI,ES:[BX]
+  RET
 
-;       public  DigChar
-DigChar  PROC NEAR
 
-    POP   DX AX
+       public  DigChar
+
+DigChar  PROC FAR
+  pop  cx DI
+    POP  AX
+  PUSH DI CX
+
     cmp   al,10
     jb    @@1
     add   al,7
-
 @@1:
     add   al,'0'
-    JMP   DX
+    RET
 
 DigChar     ENDP
 
@@ -31,13 +31,13 @@ DigChar     ENDP
 ;function getc(var where: pchar): char; assembler;
 
         public  GETC
-GETC PROC NEAR
-
-  POP   DX BX ES
-  INC   WORD PTR ES:[BX]
-  LES   DI,ES:[BX]
+GETC PROC FAR
+  pop  cx DI
+    POP  BX ES
+  PUSH DI CX
+  CALL  INCPTR
   MOV   AL,ES:[DI-1]
-  JMP   DX
+  RET
 
 GETC    ENDP
 
@@ -45,45 +45,50 @@ GETC    ENDP
 ;  asm
 
         public  PUTC
-PUTC PROC NEAR
-
-  POP   DX AX BX ES
-  INC   WORD PTR ES:[BX]
-  LES   DI,ES:[BX]
-  MOV   ES:[DI-1],AL
-  JMP   DX
+PUTC PROC FAR
+  pop  cx DI
+    POP  BX ES AX
+  PUSH DI CX
+  CALL  INCPTR
+  DEC   DI
+  STOSB
+  RET
 
 PUTC  ENDP
 
 ; function  incw(var acc: word; w: INTEGER): boolean;assembler;
 
         public  INCW
-INCW PROC NEAR
-    POP  DX AX DI ES
-    add ES:[DI],Ax
+INCW PROC FAR
+  pop  cx DI
+    POP  AX BX ES
+  PUSH DI CX
+    add ES:[BX],Ax
     rcl al,1
     AND al,1
-    JMP DX
+    RET
 
 INCW   endP
 
 ; function  XCHGw(WHAT: WORD; var d: word): word; assembler;
 
         public  XCHGW
-XCHGW PROC NEAR
-
-    POP  DX DI ES AX
-    xchg  ax,ES:[dI]
-    JMP  DX
+XCHGW PROC FAR
+  pop  cx DI
+    POP  BX ES AX
+  PUSH DI CX
+    xchg  ax,ES:[BX]
+    RET
 
 XCHGW endP
 
 ; FUNction  RelADR(inw, Mask: WORD): WORD;  assembler;
 
         public  RELADR
-RELADR PROC NEAR
-
-    POP  BX DX AX
+RELADR PROC FAR
+  pop  cx DI
+    POP   DX AX
+  PUSH DI CX
     shr   dx,1
     shl   dx,1
     mov   cx,dx
@@ -93,19 +98,20 @@ RELADR PROC NEAR
 nodec:
     and   ax,dx
     sub   ax,cx
-    JMP  BX
+    RET
 
 RELADR    endP
 
 ;  function Avg(a, b: intEGER): intEGER; assembler;
 
         public  AVG
-AVG PROC NEAR
-
-    POP  BX DX AX
+AVG PROC FAR
+  pop  cx DI
+    POP  DX AX
+  PUSH DI CX
     add   ax,dx
     rcr   ax,1
-    JMP  BX
+    RET
 
 AVG endP
 
@@ -113,21 +119,23 @@ AVG endP
 ;  function divmod(var w: dword; d: word): word; assembler;
 
         public  DIVMOD
-DIVMOD PROC NEAR
-
-    POP  CX BX DI ES   ;POINTER TO DWORD  DIVIDER}
+DIVMOD PROC FAR
+  pop  cx DI
+    POP   BX AX ES   ;POINTER TO DWORD  DIVIDER}
+  PUSH DI CX
+    XCHG AX,DI
       XOR  DX,DX        ;{CLEAR HI WORD}
-      MOV  AX,ES:[DI+2]
-      PUSH DI
-      DIV  BX
       SCASW           ; BUMP DI
+	  STD
+      MOV  AX,ES:[DI]
+      DIV  BX
       STOSW
       MOV  AX,ES:[DI]
-      POP  DI
       DIV  BX
       STOSW
+	  CLD
       xchg ax,dx   ;  {IN DX  IS MODULO OF DIVISION}
-      JMP  CX
+      RET
 
 DIVMOD endP
 
@@ -135,7 +143,7 @@ DIVMOD endP
 ;  FUNCTION  FREG: POINTER; ASSEMBLER;
 
         public  FREG
-FREG PROC NEAR
+FREG PROC FAR
      MOV AX,BP
      MOV DX,SS
      RET
@@ -149,23 +157,10 @@ CALRETADR PROC FAR
 
     LES AX,[BP+2]
     MOV DX,ES
-    RET FAR
+    RET
 
 CALRETADR  ENDP
 
 
-;  FUNCTION  WPICK(VAR P): POINTER;
-
-        public  WPICK
-WPICK PROC NEAR
-
-    POP  CX DI ES
-    LES  AX,ES:[DI]
-    MOV  DX,ES
-    JMP  CX
-
-WPICK  ENDP
-
 code ends
      end
-

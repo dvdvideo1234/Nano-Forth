@@ -10,7 +10,7 @@ USES STRLIB;
     CARDINAL = LONGINT;
 
 
-  function ascUnPack(s, d: pchar; l: WORD): WORD;
+  function  ascUnPack(s, d: pchar; l: WORD): WORD;
   function  ascPack(s, d: pchar; l: WORD): WORD;
   function  strPack(s: shortstring): shortstring;
   function  strUnPack(s: str85): shortstring;
@@ -25,6 +25,7 @@ USES STRLIB;
   function  byteTobin(n: byte): str15;
   function  WordTohex(n: word): str15;
 
+  FUNCTION  STKPTR: WORD;
 
   function  RelADR(inw, Mask: WORD): WORD;
   function  divmod(var w: dword; d: word): word;
@@ -33,18 +34,9 @@ USES STRLIB;
   function  getc(var where: pchar): char;
   procedure putc(what: char; var where: pchar);
   function  DigChar(n: byte): char;
-  FUNCTION  WPICK(VAR P): POINTER;
 
 
 implementation
-
-  function  DigChar(n: byte): char;
-  VAR C: CHAR ABSOLUTE N;
-  BEGIN
-    IF N > 9 THEN N := N + 7;
-    N := N + BYTE('0');
-    DIGCHAR := C;
-  END;
 
 
   function  RelADR(inw, Mask: WORD): WORD;       EXTERNAL;
@@ -53,45 +45,22 @@ implementation
   FUNCTION  CALRETADR: POINTER;                  EXTERNAL;
   function  getc(var where: pchar): char;        EXTERNAL;
   procedure putc(what: char; var where: pchar);  EXTERNAL;
-{  function  DigChar(n: byte): char;              EXTERNAL;}
+  function  DigChar(n: byte): char;              EXTERNAL;
   FUNCTION  FREG: POINTER;                       EXTERNAL;
   FUNCTION  CALRETADR: POINTER;                  EXTERNAL;
-  FUNCTION  WPICK(VAR P): POINTER;               EXTERNAL;
- {$L ASMLIB.OBJ}
 
-{
- function getc(var where: pchar): char; assembler;
-   asm
-     PUSH  DS
-     LDS   BX,WHERE
-     LES   DI,[BX]
-     INC   WORD PTR [BX]
-     POP   DS
-     MOV   AL,ES:[DI]
-   end;
+{$L ASMLIB.OBJ}
 
-  procedure putc(what: char; var where: pchar);assembler;
-  asm
-     PUSH  DS
-     LDS   BX,WHERE
-     LES   DI,[BX]
-     INC   WORD PTR [BX]
-     POP   DS
-     MOV   AL,WHAT
-     STOSB
-  end;
+  FUNCTION  STKPTR: WORD;
+  VAR P: WORD;
+  BEGIN
+    ASM
+      LEA AX,[BP+4]
+      MOV P,AX
+    END;
+    STKPTR := P;
+  END;
 
-  function  DigChar(n: byte): char;
-    label noInc;
-  asm
-    MOV AL,N
-    cmp   al,10
-    jb    noInc
-    add   al,7
-  noInc:
-    add   al,'0'
-  end;
-}
   function ascPack(s, d: pchar; l: WORD): WORD;
   var oldd: pchar; ch : char; c: byte absolute ch;
     procedure getc1; begin ch := getc(s); dec(l); end;
@@ -159,48 +128,6 @@ implementation
     byteTobin := RES;
   end;
 
-{
-  function  incw(var acc: word; w: INTEGER): boolean;assembler;
-  asm
-    LES DI,ACC
-    MOV DX,W
-    add ES:[DI],dx
-    mov al,0
-    rcl al,1
-  end;
-
-  function  XCHGw(WHAT: WORD; var d: word): word; assembler;
-  asm
-    LES DI,D
-    MOV AX,WHAT
-    xchg  ax,ES:[dI]
-  end;
-
-Function  RelADR(inw, Mask: WORD): WORD;  assembler;
-label nodec;
-asm
-   MOV  AX,INW
-   MOV  DX,MASK
-    shr   dx,1
-    shl   dx,1
-    mov   cx,dx
-    jcxz  nodec
-    dec   dx
-    and   cx,ax
-nodec:
-    and   ax,dx
-    sub   ax,cx
-end;
-
-  function Avg(a, b: intEGER): intEGER; assembler;
-  asm
-    MOV   AX,A
-    MOV   DX,B
-    add   ax,dx
-    rcr   ax,1
-  end;
-}
-
   function  NToStr(n: longint): str15;
   VAR RES: STR15;
   begin res := '';
@@ -244,45 +171,6 @@ end;
         else  NToHex := LongToHex(n);
     end;
 
-{
-  function divmod(var w: dword; d: word): word; assembler;
-  asm
-      LES  DI,W         POINTER TO DWORD
-      MOV  BX,D         DIVIDER
-      XOR  DX,DX        CLEAR HI WORD
-      MOV  AX,ES:[DI+2]
-      DIV  BX
-      MOV  ES:[DI+2],AX
-      MOV  AX,ES:[DI]
-      DIV  BX
-      MOV  ES:[DI],AX   IN DX  IS MODULO OF DIVISION
-      xchg ax,dx
-  end;
-
-  VAR VA, VB, VC: WORD;
-
-
-  FUNCTION  FREG: WORD; ASSEMBLER;
-    ASM
-      MOV AX,BP
-    END;
-
-
-
-  FUNCTION  CALLERETADR: POINTER;  ASSEMBLER; FAR CALLER
-  ASM
-    LES AX,[BP+2]
-    MOV DX,ES
-  END;
-
-  FUNCTION  HERE: POINTER;
-  VAR P: POINTER;
-  BEGIN
-    HERE := CALLERETADR;
-  END;
-
-  F-}
-
   PROCEDURE DUMP(VAR SRS; LEN: WORD);
   VAR AR: ARRAY[0..255] OF BYTE ABSOLUTE SRS;
       I, T: INTEGER;  RES, TXT: STR85;  C : CHAR;
@@ -302,13 +190,6 @@ end;
     END;
   END;
 
-{  FUNCTION  WPICK(VAR P): WORD;
-  VAR W: WORD ABSOLUTE P;
-  BEGIN
-    WPICK := W;
-  END;
-}
-
   {$F+}
   PROCEDURE TESTPARAM(VAR A; C: WORD);
   VAR P, Q: POINTER; FR: WORD;
@@ -319,7 +200,7 @@ end;
       WRITELN('STR8');
       DUMP(A,18);
       WRITELN('WPICK');
-      DUMP(POINTER(@WPICK)^,18);
+      DUMP(POINTER(@DUMP)^,18);
 
       WRITELN( 'PARAMS ',
         LONGTOHEX(DWORD(@A)),' ' ,
@@ -338,37 +219,37 @@ end;
     END;
 {$F-}
 
-{  ASM
-    POP  AX
-    POP  BX
-    POP  CX
-    POP  DX
-    PUSH AX
-    MOV  VA,BX
-    MOV  VB,CX
-    MOV  VC,DX
-  END;
-}
   PROCEDURE TEST;
   VAR SRS, DST: STRING;
-  DD: DWORD;  DVD: WORD;
+  DD: DWORD; DELTA: INTEGER; DVD: WORD;
+  CH: CHAR;  PC: PCHAR;
   BEGIN
     SRS := ^A^B^C'4~_^"';
-    WRITELN('function  DigChar(n: byte): char;');
-    WRITELN('DigChar 0 = ',DigChar(0));
-    WRITELN('DigChar 9 = ',DigChar(9));
-    WRITELN('DigChar 10= ',DigChar(10));
+    WRITELN('function  DigChar(n: byte): char;',CHAR($6E));
+    CH := DigChar(11);
+    WRITELN('DigChar ',11,' = ',CH);
 
-    {;DST := STRUNPACK(SRS);
-    WRITELN(DST,BOOLTXT(STRPACK(DST)=SRS));}
-    TESTPARAM(SRS,3);
-{    WRITELN(VA,' ',VB,' ',VC);
+    WRITELN('DST := STRUNPACK(SRS)');
+    DST := STRUNPACK(SRS);
+    WRITELN(DST,BOOLTXT(STRPACK(DST)=SRS));
+{    TESTPARAM(SRS,3);
+    WRITELN(VA,' ',VB,' ',VC);}
 
-  function  getc(var where: pchar): char;
-  procedure putc(what: char; var where: pchar);
-  function  strPack(s: shortstring): shortstring;
-  function  strUnPack(s: str85): shortstring;
+  WRITELN('function  getc(var where: pchar): char');
+  PC := @CH;
+  WRITELN('getc = ',GETC(PC),' ',BOOLTXT((PC-1)=(@CH)));
 
+
+  WRITELN('procedure putc(what: char; var where: pchar)');
+  PC := @CH;
+  PUTC('A',PC);
+  WRITELN('PUTc = ',BOOLTXT(CH='A'),' ',BOOLTXT((PC-1)=(@CH)));
+
+  WRITELN('function  divmod(var w: dword; d: word): word');
+  DD := 70;
+  DVD := divmod(DD, 17);
+  WRITELN('DIVMOD = ',BOOLTXT(DVD=(70 MOD 17)),' ',BOOLTXT(DD=(70 DIV 17)));
+{
   function  strToNum(s: shortstring): longint;
   procedure stradd(var sd: shortstring; ss: shortstring; del: char);
   function  NToHex(n: dword; chars: byte): str15;
@@ -380,7 +261,6 @@ end;
   function  WordTohex(n: word): str15;
 
   function  RelADR(inw, Mask: WORD): WORD;
-  function  divmod(var w: dword; d: word): word;
 }
     READLN;
   END;

@@ -1,7 +1,10 @@
-program UP3(input,aotput);
+program UP3(input,oUtput);
 
-USES STRLIB;
+USES STRLIB, FILIB;
 
+  VAR TF: BOOLEAN;
+      TPLS: LONGSTR;
+      TUPLEF: TEXT;
 
   procedure perform;
   var
@@ -22,14 +25,31 @@ USES STRLIB;
         CUT3 := GETOKEN(RES);
         RES := CUTSTR(CUT3,':');
         cut3[1] := '$';
-        IF ((CUT2 = 'WORD') OR (CUT2 = 'NEAR')) AND (RES='MYCSEG')
-            THEN   writeln(OUTPUT,cut3 + ' =: ' + CUT1);
+        IF ((CUT2 = 'WORD') OR (CUT2 = 'NEAR')) AND (RES='MYCSEG') THEN
+        BEGIN
+          IF TF THEN BEGIN
+            RES := FINDTUPLE(CUT1,TPLS);
+            IF RES <> '' THEN CUT1 := RES;
+          END ELSE WRITELN(TUPLEF,CUT1+','+CUT1);
+          writeln(OUTPUT,cut3 + ' =: ' + CUT1);
+        END;
       END;
     end;
-    {writeln(ln);}
   end;
 
 begin
     {TEST;}
+    TF := GETUPLES('NF01.UP2',TPLS);
+    IF NOT TF THEN BEGIN
+      ASSIGN(TUPLEF,'NF01.UP1');
+      REWRITE(TUPLEF);
+    END;
+
     perform;
+    {FINDTUPLE('ABORT',TPLS);}
+
+    IF NOT TF
+    THEN CLOSE(TUPLEF)
+    ELSE WITH TPLS DO
+       FREEMEM(CP,REM);
 end.

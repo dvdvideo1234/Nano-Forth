@@ -59,7 +59,7 @@ IMPLEMENTATION
 	inc CX
 @@3:
 	DEC	CX
-	JZ @@SKIPX
+	JZ @@WEX
 	SCASB           { SPACE IS BELOW THEN}
 	JB @@3
 	DEC     DI

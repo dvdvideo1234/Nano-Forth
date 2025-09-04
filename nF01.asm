@@ -145,7 +145,7 @@ Start   Label byte
         pop   [bx]
 @2P:    INC   BX
 @1P:    INC   BX
-@@MAIN1:jmp   @MAIN
+@@MAIN1:jmp   @MAIN			; @@MAIN1 MUST BE EQU TO $13C
 
   XT LD,@@nop_                              ; @
 	mov  BX,[BX]
@@ -163,18 +163,18 @@ Start   Label byte
     DEC   BX
 	jmpS   @@MAIN1
 
-@@SCAN:	POP CX AX
-	XCHG  BX,DI
-	xchg  AX,DI	
-	PUSH	CX
-	call  BX
-	POP	  BX
-	JE @@SCAN1
-	mov	CX,BX
-@@SCAN1:
-	INC CX
-    SUB  BX,CX
-	jmpS   @@MAIN1
+;@@SCAN:	POP CX AX
+;	XCHG  BX,DI
+;	xchg  AX,DI	
+;	PUSH	CX
+;	call  BX
+;	POP	  BX
+;	JE @@SCAN1
+;	mov	CX,BX
+;@@SCAN1:
+;	INC CX
+;    SUB  BX,CX
+;	jmpS   @1P
 
 ;  PRIM  CstM
 ;	pop   AX
@@ -185,9 +185,9 @@ Start   Label byte
 ;	xchg AX,BX
 ;;	SKP2 DI
 ;
-;;  XT  STW,@@DROP2_                  ; !
-;	MOV   PW [BX],AX
-;	RET
+  XT  STW,@@DROP2_   ; !
+	STOSW
+	RET
 
 ;  XT  CST,@@DROP2_                   ; C!
 ;	SKP2 DI
@@ -273,7 +273,7 @@ Start   Label byte
 	RET
 
   XT  demit,@@DRoP_
-	mov dx,bx
+	mov dx,DI
 	mov  ah,2
 	int  021h
 	RET
@@ -292,7 +292,7 @@ states dw @@ARW,numBER,clit,perform,at_comma
 	POINT  	entrance,doINIT
 	POINT  	FOUND,0
 	value  	ltb,0
-	value  	etb,0
+	value  	etb,250
 
 	vQUAN   key,dkey
 			DW	@@var-2
@@ -300,7 +300,9 @@ states dw @@ARW,numBER,clit,perform,at_comma
 	value  	cntc,0
 	value  	tbUF,-258
 	VALUE  	tib,128
-	VALUE   h,@@freemem
+		DW @@SETVAR
+XBEGIN:		
+	CNST    h,@@freemem
 	VALUE   ERRMSG,0
 	VALUE   t,-2000
 	
@@ -356,11 +358,9 @@ states dw @@ARW,numBER,clit,perform,at_comma
 	JMPS @@CPUSHU
 
   xt	CMOVEU,@@DROP3_
-	MOV  DI,BX
 	JMPS @@CMOVEU
 
   XT	CMOVE,@@DROP3_
-	MOV  DI,BX
 	JMPS @@CMOVE
 
 ; ------------------------
@@ -381,7 +381,7 @@ states dw @@ARW,numBER,clit,perform,at_comma
 ; parsing
 ; ------------------------
 ; si  cx 
-; ADR LEN -> NUM LEN1 | LEN1 <> 0 ERR [ADR1] = UNVALUED CHAR
+; ADR LEN -> NUM LEN1 | LEN1 <> 0 ERR [ADR1] = UNVALUETED CHAR
 
   XT  numb,@@Binu_
 	push 	SI
@@ -425,8 +425,7 @@ states dw @@ARW,numBER,clit,perform,at_comma
 
 ; CHAR buflen ADR -> ADR1 LEN1 buflen1
   XT PARS,@@drop_
-    pop   dx cx
-	mov     DI,BX
+    pop   Bx cx
 	SUB     DI,CX
 	mov	AL,' '
 	inc CX
@@ -450,11 +449,11 @@ states dw @@ARW,numBER,clit,perform,at_comma
 	POP	AX      ;{; START OF THE WORD}
 	SUB     di,ax   ; LENGTH OF THE WORD
 	push  di cx
-	jmp dx             ;return
+	jmp Bx             ;return
 
-  XT SCANB,@@SCAN
-	REPNE SCASB
-	RET
+;  XT SCANB,@@SCAN
+;	REPNE SCASB
+;	RET
 	
   colon PARSE
         dw ltb,etb,pars,ltb+_to,tbuf,makestr,RTS
@@ -480,7 +479,9 @@ states dw @@ARW,numBER,clit,perform,at_comma
 	push  bx
 	MOV   bx,di
 @@perform:
-	mov	DI,[bx]
+	mov	bx,[bx]
+@@EXEC: 
+	mov	DI,bx	
 	pop Bx
 	SCASW
 	JMPS  @@nop1
@@ -522,6 +523,8 @@ noop:
         mov   [bp],AX
         JMPS  @MAIN
 
+@@GETCX:
+	PUSH  CX
 @@SWAP_:  
 	POP   AX           ; NIP DUP SWAP
 @@DUP_:   
@@ -556,8 +559,9 @@ noop:
 
 @@DROP3_: POP   CX        ;DRP3
 @@DROP2_: POP   AX        ;DRP2
-@@DROP_:  CALL  DI        ;DRP
-@@drop:  pop   bx
+@@DROP_:  xchg	DI,BX
+@@CALDR:  CALL  BX        ;DRP
+@@drop:   pop   bx
         JMPS @MAIN
 
 @FOR:   mov   SI,[SI]
@@ -659,8 +663,9 @@ noop:
     LODSW
     RET
 
-  xt andW,@@nip_
+  xt Nand,@@nip_
     AND   BX,AX
+	NOT   BX
     RET
 
   xt XORW,@@nip_
@@ -716,12 +721,13 @@ noop:
   xt pushW,@@push
 
   xt ZSWAP,@@nup_
-    MOV ax,0
-BYE = $-2	
+    skp2 ax
+BYE dw 0	
     ret
 
-;  xt SWAP,@@SWAP_
-;    ret
+CSWAP:
+  xt SWAP,@@SWAP_
+    ret
 
 ; -----------------------
 ; Colon Definition
@@ -736,6 +742,7 @@ BYE = $-2
 
   COLON  AT_COMMA
     DW LD
+XREL:	
   COLON  COMMA
     DW HRET,STP,RTS
 
@@ -749,12 +756,23 @@ BYE = $-2
 ; Compilation
 ; -------------------
 
+  COLON XTHEN
+	DW  EX
+  COLON DOTHEN
+	DW H,SWAP,STW,RTS
+
+  COLON FIND?
+	DW EXNZ?
+  COLON TFIND
+    DW T,find,RTS
+  
   COLON SEMI                        ;  "," !!!
 	DW COMPILE,RTS
 	
   COLON lbrak         				; interpreter search			; 	
-	dw found+_TO,T,find,RTS
+	dw found+_TO,Tfind,RTS
 
+COLC:								; ":`" ON COMPILE TIME
   COLON COL                         ;  ":" !!!
 	DW H,ENTRY,COMPILE,@@colon
 	
@@ -765,38 +783,27 @@ BYE = $-2
 ; Flow Control
 ; -------------------
 
-  XT ZBR,@@NOP_                 ; (#IF          DOES NOT CHANGES DATA STACK
-	SKP2 CX
-
   XT ?BR,@@DRoP_                ; (IF
-	or	BX,BX
+	or	DI,DI
 	jZ	@@jump
-@@skip:  lodsw
-	RET
-
-  XT MIF,@@NOP_                 ; (MIF          DOES NOT CHANGES DATA STACK
-	INC	BX
-@@IFM:   
-	DEC	BX
-	JS	@@SKIP
-@@jump:  
-	mov   si,[si]
-	RET
-
-  XT br,@@NOP_
 	jMPS @@jump
 
   XT IFM,@@NOP_                     ; (MIF
-	JMPS @@IFM
+	DEC	BX
+	JNS	@@jump
+@@skip:  lodsw
+	RET
 
-  XT NEXT,@@NOP_                    ; (NEXT         DOES NOT CHANGES DATA STACK
-	DEc	PW [BP]
-	JMPS @@IFM+1
+  XT br,@@NOP_
+@@jump:  
+	mov   si,[si]
+	RET
 
   xt perform,@@perform
   XT RTS,@@RET
   XT DROPx,@@DROPX
   xt ZRET,@@0ex
+  XT EXEC,@@EXEC
   XT EX,@@EX
 
 ; -----------------------
@@ -810,15 +817,17 @@ doINIT:
 
   COLON EXNZ?	; ?ABORT
     DW EX
-  COLON NZ?	; ?ABORT
     DW ZEQ
+  COLON ZZ?	
+	DW Z?
+	MSG "?"
+	DW	RTS
+
   COLON Z?	; ?ABORT
 	DW STRS,ERRMSG+_TO,ZRET,ERRV,ABORT
 
   COLON number
-	dw  count,numb,Z?
-	MSG "?"
-	DW	RTS
+	dw  count,numb,ZZ?,RTS
 
 
 @@freemem:
@@ -875,32 +884,3 @@ MyCseg  ends
         DW LIT,'!',emit   ; !!!
         DW abort
 
-
-
-_SCANER:POP  AX
-        XCHG AX,BX
-        POP  CX
-        POP  DI
-        push cs
-        pop  es
-        MOV  DX,CX
-        CALL BX
-        JE   @@1
-        MOV  CX,DX
-@@1:    INC  CX
-        SUB  DX,CX
-        XCHG AX,DX
-        SWAPREG
-
-	POP CX AX
-	XCHG  BX,DI
-	xchg  AX,DI	
-	PUSH	CX
-	call  BX
-	POP	  BX
-	JE @@SCAN
-	mov	CX,BX
-@@SCAN:
-	INC CX
-    SUB  BX,CX
-	
