@@ -45,6 +45,30 @@ MSG	macro   Amsg
 endstr  label   byte
   endm
 
+Col3   macro  lbl
+LBL DW  @NEST3
+  endm
+
+col2   macro  lbl
+LBL DW  @NEST2
+  endm
+
+col    macro  lbl
+LBL DW  @NEST
+  endm
+
+RVAR3  macro  lbl
+LBL: DW  @PUSHW3
+  endm
+
+RVAR2  macro  lbl
+LBL: DW  @PUSHW2
+  endm
+
+RVAR   macro  lbl
+LBL: DW  @PUSHW
+  endm
+
 VAR macro   LBL,dat
 	XT	LBL,@@VAR
 	DW  dat
@@ -58,18 +82,14 @@ XT     macro   LBL,token
 LBL DW      TOKEN
   ENDM
 
-colon   macro  lbl
-	XT	LBL,@@colon
-  endm
-
 value   macro  lbl,dat
 	dw @@setvar
 	cnst lbl,dat
   endm
 
-vectinc macro  lbl,dat
-	DW  @@setvar
-lbl	dw  @@deferO,dat
+defCNT macro  lbl,dat
+	xt lbl,@@DEFCNT
+	dw  dat
   endm
 
 defer   macro  lbl,dat
@@ -125,7 +145,7 @@ Start   Label byte
         call @@troff
         call @@forth
         dw  lbrak
-@@syslp  dw  tib,entrance,eval,OK,br,@@syslp
+@@syslp  dw  tib,INIT_,eval,OK,br,@@syslp
 
 ; -----------------------
 ; Constants
@@ -283,20 +303,26 @@ Start   Label byte
 	int  021h
 	JMPs  @@LOBYTE
 
+  XT DUPC@,@@DUP_
+     MOV  AL,[BX]
+	JMPs  @@LOBYTE
+	 
+
 states dw @@ARW,numBER,clit,perform,at_comma
 
 ; -------------------
 ; Variables
 ; -------------------
 
-	POINT  	entrance,doINIT
+	POINT  	INIT_,doINIT
 	POINT  	FOUND,0
 	value  	ltb,0
 	value  	etb,250
 
-	vQUAN   key,dkey
-			DW	@@var-2
-	vectinc emit,demit
+		DW @@SETVAR
+	defer   key,dkey
+		DW @@SETVAR
+	defCNT  emit,demit
 	value  	cntc,0
 	value  	tbUF,-258
 	VALUE  	tib,128
@@ -306,22 +332,23 @@ XBEGIN:
 	VALUE   ERRMSG,0
 	VALUE   t,-2000
 	
-  COLON TRET
+  COL TRET
 	DW T,EX,T+_TO,RTS
 	
-  COLON HRET
-	DW H,EX,H+_TO,RTS
+;  COL HRET
+;	DW H,EX,H+_TO,RTS
 
 ; -------------------
 ; Initialisation  and main loop
 ; -------------------
 
-  COLON eval
+  COL eval
         dw TOEVAL,ltb+_TO,etb+_TO
-  COLON evaldo
+  COL evaldo
 @@EVALDO:
 	dw TOKEN,?BR,@@EVALX,Found
     dw states,perform,br,@@EVALDO
+	
 @@EVALX  DW DROPX
 
   XT QUIT,@@QUIT
@@ -366,16 +393,15 @@ XBEGIN:
 ; ------------------------
 ; ENRTY LIST
 ; ------------------------
-  COLON STRT
+  COL STRT
 	dw count,STRP
-  COLON memUP
+  COL memUP
 	DW TRET,CPUSHU,RTS
-	
-  COLON ENTRY
-	DW TOKEN?,STRT
-	DW ZSWAP,TPUSH
-  COLON TPUSH
-	DW TRET,STM,RTS
+
+  COL2 ENTRYH                        ; =H    HEADER
+  COL2 ENTRY                         ; =:    ALIAS
+    DW H	
+	DW TOKEN?,STRT,TRET,ZSWAP,STM,STM,RTS
 
 ; ------------------------
 ; parsing
@@ -423,9 +449,10 @@ XBEGIN:
 	DEC      si
 	RET
 
-; CHAR buflen ADR -> ADR1 LEN1 buflen1
+; ADR buflen  -> ADR1 LEN1 buflen1
   XT PARS,@@drop_
     pop   Bx cx
+	XCHG  DI,CX
 	SUB     DI,CX
 	mov	AL,' '
 	inc CX
@@ -454,16 +481,15 @@ XBEGIN:
 ;  XT SCANB,@@SCAN
 ;	REPNE SCASB
 ;	RET
-	
-  colon PARSE
-        dw ltb,etb,pars,ltb+_to,tbuf,makestr,RTS
 
-  colon token?
-	DW EXNZ?
-  colon token
-        dw PARSE,dupw
-  colon ldb
-		dw ldpb,dropx
+  COL3 token?
+  COL3 token
+  COL3 PARSE
+	DW XTOK?,XSETSTR
+    dw etb,ltb,pars,ltb+_to,RTS
+		
+  RVAR XSETSTR
+	DW tbuf,makestr,RTS
 
 ; -------------------
 ; Inner Interpreter
@@ -473,7 +499,7 @@ XBEGIN:
 	pop si
 	JMPS  @MAIN
 
-@@DEFERO:
+@@DEFCNT:
 	INC   PW [CNTC+_VAL]
 @@DEFER:
 	push  bx
@@ -491,8 +517,13 @@ XBEGIN:
 		ADD   bx,di ; array of bytes
 		JMPS  @MAIN
 
+
+@NEST3:
+  SCASW
+@NEST2:
+  SCASW
 noop:
-@@colon: cmp   al,1
+@NEST: cmp   al,1
         xchg  ax,di
         JMPS  @@pcpush
 
@@ -511,7 +542,15 @@ noop:
 		scasw
 @@var:   MOV   ax,di
         JMPS  @@pushw
-
+		
+@PUSHW3:
+  SCASW
+@PUSHW2:
+  SCASW
+@PUSHW:
+  xchg	AX,DI
+  JMPS  @@rpush
+  
 		scasw
 		scasw
 @@does:  pop   ax
@@ -523,8 +562,8 @@ noop:
         mov   [bp],AX
         JMPS  @MAIN
 
-@@GETCX:
-	PUSH  CX
+;@@DUPBX:
+;	PUSH  BX
 @@SWAP_:  
 	POP   AX           ; NIP DUP SWAP
 @@DUP_:   
@@ -730,53 +769,53 @@ CSWAP:
     ret
 
 ; -----------------------
-; Colon Definition
+; COL Definition
 ; -----------------------
 
-  COLON COMPILE
+  COL COMPILE
 	DW RLDP,COMMA,RTS
 
 @@COMPERF:
 	call @@does  ; STR , PERFORM
     dw WsTR,comma,perform,RTS
 
-  COLON  AT_COMMA
-    DW LD
+  RVAR3 XCOMMA
+  COL2  AT_COMMA
 XREL:	
-  COLON  COMMA
-    DW HRET,STP,RTS
+  COL2  COMMA
+    DW LD
+    DW H,STP,_TO+H,RTS
 
   xt litcom,@@COMPERF
     dw lit,comma
 
-  COLON clit
+  COL clit
     dw number,litcom,RTS
 
 ; -------------------
 ; Compilation
 ; -------------------
 
-  COLON XTHEN
-	DW  EX
-  COLON DOTHEN
+  RVAR2 XTHEN
+  COL DOTHEN
 	DW H,SWAP,STW,RTS
 
-  COLON FIND?
-	DW EXNZ?
-  COLON TFIND
+  COL2 TFIND?
+  COL2 TFIND
+	DW XNZ?
     DW T,find,RTS
   
-  COLON SEMI                        ;  "," !!!
+  COL SEMI                        ;  "," !!!
 	DW COMPILE,RTS
 	
-  COLON lbrak         				; interpreter search			; 	
+  COL lbrak         				; interpreter search			; 	
 	dw found+_TO,Tfind,RTS
 
 COLC:								; ":`" ON COMPILE TIME
-  COLON COL                         ;  ":" !!!
-	DW H,ENTRY,COMPILE,@@colon
+  COL COLON                         ;  ":" !!!
+	DW ENTRYH,COMPILE,@NEST
 	
-  COLON rbrak         				; compiler search
+  COL rbrak         				; compiler search
 	dw  found+_TO,T,CFIND,RTS
 
 ; -------------------
@@ -811,23 +850,23 @@ COLC:								; ":`" ON COMPILE TIME
 ; -----------------------
 
 doINIT:
-	dw STRT,H,WSTR,memUP,evaldo,entrance+_to
+	dw STRT,H,WSTR,memUP,evaldo,INIT_+_to
 	DW ALINE,accept,rts
 
-
-  COLON EXNZ?	; ?ABORT
-    DW EX
-    DW ZEQ
-  COLON ZZ?	
-	DW Z?
+  RVAR3 XTOK?                        ; ;TOK?
+  RVAR3  XNZ?                          ; #??
+  RVAR3  XZ?                           ; ??
+        DW DUPC@        ; DUP C@
+        DW ZEQ         ; LOGICAL INVERT -> #0 IS OK
+	DW ERROR?
 	MSG "?"
 	DW	RTS
 
-  COLON Z?	; ?ABORT
+  COL ERROR?	; ?ABORT
 	DW STRS,ERRMSG+_TO,ZRET,ERRV,ABORT
 
-  COLON number
-	dw  count,numb,ZZ?,RTS
+  COL number
+	dw  count,numb,XZ?,RTS
 
 
 @@freemem:
@@ -861,16 +900,16 @@ MyCseg  ends
 ;        MUL BX
 ;        JMP XDTOP
 
-        COLON P
+        COL P
         DW KEY,DROP,RTS
 
-        COLON ?DUP  ; : ?DUP DUP 0; DUP ;
+        COL ?DUP  ; : ?DUP DUP 0; DUP ;
         DW DUPW,ZRET,DUPW,RTS
 
-        COLON  DM  ; : #1 10 ZSWAP U/MOD >DIG SWAP ;
+        COL  DM  ; : #1 10 ZSWAP U/MOD >DIG SWAP ;
         DW LIT,10,ZSWAP,UDIVMOD,DIG,SWAP,RTS
 
-        COLON  NDOT         ; : .. #1 ?DUP IF .. THEN EMIT ;
+        COL  NDOT         ; : .. #1 ?DUP IF .. THEN EMIT ;
         DW DM,?DUP,?BR,@DD,NDOT
 @DD     DW EMIT,RTS    ; : . DUP 0< IF '- EMIT NEG THEN .. ;
 

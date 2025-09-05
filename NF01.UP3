@@ -1,201 +1,171 @@
-$14A =: `1M
-$13B =: `1P
-$149 =: `2M
-$13A =: `2P
-$389 =: @DBG
-$377 =: `FOR
-$34F =: `MAIN
-$36A =: `RDROP
-$15F =: `XA
-$16E =: `XR
-$240 =: ABORT
 $122 =: ACCEPT
-$12E =: 1L
-$446 =: @,
-$4AB =: (BR
-$42D =: BYE
-$3B6 =: CFIND
-$458 =: CLIT
-$267 =: CMOVE
-$263 =: CMOVE<
-$1EC =: CNTC
-$488 =: :
-$488 =: :`
-$44A =: ,
-$433 =: COMPILE
-$191 =: CSTR
-$25B =: CPUSH<
-$17E =: C!R+
-$430 =: CSWAP
-$1A7 =: DEMIT
-$1B0 =: DKEY
-$4BC =: (INIT
-$464 =: THEN`
-$424 =: DROP
-$4B4 =: ;DROP
-$419 =: DUP
-$1E6 =: EMIT
-$1C4 =: ENTR
-$279 =: `=:
-$204 =: ERRA
 $126 =: ERRV
-$1D6 =: ETIB
-$222 =: EVAL
-$22A =: (EVAL
-$4BA =: EX
-$4B8 =: EXEC
-$4CE =: ;NZ?
-$391 =: FIND
-$46E =: ?FIND
-$1CA =: FOUND
-$1FE =: H
-$218 =: |H
-$4A4 =: (IF-
-$41E =: J
-$1DE =: KEY
-$480 =: ,<`
-$13F =: @
-$303 =: C@
-$184 =: @+
-$18E =: C@+
-$3E0 =: LIT
-$452 =: LIT,
-$1D0 =: LTIB
-$242 =: S!
-$271 =: >T
-$40B =: -/
-$3E4 =: NAND
-$323 =: NOP
-$132 =: NUMA
-$28B =: NUMB
-$4E8 =: NUMBER
 $12A =: OK
-$2C6 =: (PARS
-$2E9 =: PARSE
-$4B0 =: PERFORM
-$3F5 =: +2/
-$3FE =: +*
-$426 =: POP
-$428 =: PUSH
-$23E =: QUIT
-$492 =: >,
+$12E =: 1L
+$132 =: NUMA
+$136 =: !+
+$13A =: `2P
+$13B =: `1P
+$13F =: @
+$144 =: !-
+$149 =: `2M
+$14A =: `1M
+$14D =: !
+$15F =: `XA
+$164 =: ("+
+$16E =: `XR
 $173 =: @R+
 $178 =: !R+
-$4B2 =: (;
-$47A =: ;`
-$1B8 =: STAT
-$144 =: !-
-$136 =: !+
-$38C =: STR1+
-$164 =: ("+
-$26B =: ">T
-$14D =: !
-$430 =: SWAP
-$20A =: T
-$1F2 =: TBUF
-$472 =: FND
-$1F8 =: TIB
-$3F0 =: >EVAL
-$2FD =: TOKEN
-$2F9 =: ?TOKEN
-$283 =: W>T
-$20E =: |T
-$3D4 =: U<
+$17E =: C!R+
+$184 =: @+
 $187 =: STR
-$1FE =: BEGIN`
-$3EB =: XOR
-$44A =: <RLS`
-$460 =: ;THEN
-$4DC =: Z?
-$3CC =: 0=
-$3DA =: 0<
-$4B6 =: 0;
-$42A =: 0SWAP
-$4D4 =: ??
+$18E =: C@+
+$191 =: CSTR
+$1A7 =: (DE
+$1B0 =: (DK
+$1B8 =: DUPC@
+$1BE =: OPER[
+$1CA =: INIT_
+$1D0 =: FOUND
+$1D6 =: LTIB
+$1DC =: ETIB
+$1E2 =: KEY
+$1E8 =: EMIT
+$1EE =: CNTC
+$1F4 =: TBUF
+$1FA =: TIB
+$200 =: BEGIN`
+$200 =: H
+$206 =: ERRM
+$20C =: T
+$210 =: |T
+$21A =: EVAL
+$222 =: (EVAL
+$236 =: QUIT
+$238 =: ABORT
+$23A =: S!
+$253 =: CPUSH<
+$25B =: CMOVE<
+$25F =: CMOVE
+$263 =: ">T
+$269 =: S>T
+$271 =: H=:
+$273 =: `=:
+$285 =: NUMB
+$2C0 =: (PARS
+$2E5 =: TOKEN?
+$2E7 =: TOKEN
+$2E9 =: PARSE
+$2F9 =: ;(S!
+$31B =: `NEST3
+$31C =: `NEST2
+$31D =: NOP
+$31D =: `NEST
+$335 =: `PUSHW3
+$336 =: `PUSHW2
+$337 =: `PUSHW
+$34D =: (@MAIN
+$368 =: `RDROP
+$375 =: `FOR
+$387 =: (@DBG
+$38A =: STR1+
+$38F =: FIND
+$3B4 =: CFIND
+$3CA =: 0=
+$3D2 =: U<
+$3D8 =: 0<
+$3DE =: LIT
+$3E2 =: NAND
+$3E9 =: XOR
+$3EE =: >EVAL
+$3F3 =: +2/
+$3FC =: +*
+$409 =: -/
+$417 =: DUP
+$41C =: J
+$422 =: DROP
+$424 =: POP
+$426 =: PUSH
+$428 =: 0SWAP
+$42B =: BYE
+$42E =: CSWAP`
+$42E =: SWAP
+$431 =: COMPILE
+$444 =: ;,
+$446 =: @,
+$448 =: ,
+$448 =: <RLS`
+$454 =: LIT,
+$45A =: CLIT
+$462 =: ;THEN
+$464 =: THEN`
+$46E =: TFIND?
+$470 =: FND
+$47A =: ;`
+$480 =: ,<`
+$488 =: :
+$488 =: :`
+$490 =: >,
+$4A2 =: (IF-
+$4A9 =: (BR
+$4AE =: @EXEC
+$4B0 =: (;
+$4B2 =: DROP;
+$4B4 =: 0;
+$4B6 =: EXEC
+$4B8 =: EX
+$4BA =: @INIT
+$4CC =: ;TOK?
+$4CE =: ;NZ?
+$4D0 =: ;Z?
+$4DC =: ??
+$4E8 =: NUMBER
 
-: ' ?TOKEN ?FIND @ ;
-' `FOR 	 =: (FOR		
-' `RDROP =: RDROP	
-' `XR	 =: XR		
-' `1P    =: 1+ 		
-' `1M    =: 1- 		
-' `2P    =: 2+ 		
-' `2M    =: 2- 		
-' `XA	 =: XA		
-
-: ;, EX , ;
-: ;SWAP EX SWAP ;
-: ;DROP EX DROP ;
+: ', ;,
+: ' TOKEN? FIND? @ ;
+: CODE,  ;, =H ;
+' `FOR 	 CODE, (FOR		
+' `2M    CODE, 2- 		
 : TO` ;, : 'TO ' 2- ;
-: AT` ;, : 'AT 'TO 2- ;
+0  LIKE 1L CODE, 0 ,
 : \` 0 TO LTIB ;
 ' \` =: \			\ WE HAVE COMMENTS ALREADY
-: TO 'TO EXEC ;		\ EXECUTE OTHER 
-: AT 'AT EXEC ;		\	METHODS OF VARIABLES
-
-: LIKE ' @ ;
-: CODE,  ;,
-: H=: H =: ;
-: C, |H 
-: C!+ PUSH C!R+ POP ;
-LIKE U< CODE, NIP $C3 C,
-: ;NIP EX NIP ;
-
-
-\ CONSTANTS
-
-32 LIKE 1L CODE, BL ,
-0  LIKE 1L CODE, 0 ,
-' LIT, @ 1+ STR + 		\ ADR DOES
-LIKE 1L CODE, @DOES ,	\ CONSTANT @DOES
-
-
-\ BASE OPERATIONS
-
-: I J ;				\ TOP OF THE RETURN STACK
-: TWICE I 			\ EXECUTE CODE AFTER TWICE
-: EXECUTE PUSH ;
-: XEP| XR EXECUTE POP ;
-: (& @R+ RDROP
-: AND NAND 
-: NOT DUP NAND ; 
-: DNOT NOT PUSH NOT POP ;
-: = XOR 0= ;
-: OR  DNOT NAND ; 
-: ?MSB DUP
-: MSB& (& ,< $8000 , 
-: (2OP 2DUP XOR MSB& XEP| 
-: 2ABS TWICE SWAP
-: ABS ?MSB 0;
-: NEG 1- NOT ;
-: - NEG
-: + +2/ DROP; ;		H 2-  TO H	\ BACK 2 BYTES
-: -ALLOT NEG
-: ALLOT |H + ;
 : MARK>` H
 : Z, 0 , ;
-: A@ XA I XA ;
-: 0A! 0
-: A! PUSH XA
-: EXIT rdrop ;
+: |H H EX TO H ;
 
 
 \ BASE STRING OPERATION
 
+' `PUSHW   CODE, ;DROP   ', DROP; 
 : TIMES PUSH XR
 : TIMES| (FOR MARK> BEGIN PUSH J EXECUTE 
-	CSWAP THEN POP (IF- <RELEASE
+	CSWAP THEN POP (IF- <RLS
 : .EXIT POP
-: 2DROP  NAND DROP; ; 2 -ALLOT
+: 2DROP  NAND ,< ', DROP; 
+
+
+\ STRINGS COMPILE
+
+: TOK, TOKEN?
+: ", CSTR STR1+ 
+: S, ;DROP TIMES| CSTR 
+: C, |H 
+: C!+ PUSH C!R+ POP ;
+: (", ("+ ", ;
 
 
 \ STRINGS OUTPUT
 
+' `2P      CODE, 2+ 		
+32 LIKE 1L CODE, BL ,
+
+' `PUSHW   CODE, ;SPC
+: SPC BL EMIT ;
+
 : (". ("+ 
 : ". CSTR 
 : TYPE ;DROP TIMES| CSTR EMIT ;
-: ;SPC EX
-: SPC BL EMIT ;
 : CR (". ,< 2 C, 13 C, 10 C, >, 0 TO CNTC ;
 : ID. ;SPC ". ;
 : `OK SPC (". ,< TOK, Ok >, CR 
@@ -206,11 +176,81 @@ LIKE 1L CODE, @DOES ,	\ CONSTANT @DOES
 ' `ERR ' ERRV 2+ !
 
 
-\ STRINGS COMPILE
+\ BASE MATH, LOGIC & OPERATIONS
 
-: TOK, TOKEN?
-: ", CSTR STR1+ ;DROP TIMES| CSTR C, ;
-: (", ("+ ", ;
+' `RDROP CODE, RDROP	
+' `XR	 CODE, XR		
+' `1P    CODE, 1+ 		
+' `1M    CODE, 1- 		
+' `XA	 CODE, XA		
+
+: AT` ;, : 'AT 'TO 2- ;
+: TO 'TO EXEC ;		\ EXECUTE OTHER 
+: AT 'AT EXEC ;		\	METHODS OF VARIABLES
+
+: (& @R+ RDROP
+: AND NAND 
+: NOT DUP NAND ; 
+: NEG 1- NOT ;
+: - NEG
+: + +2/ ,< ', DROP; 	\ MANUAL COMPILE DROP; 
+: -ALLOT NEG
+: ALLOT |H + ;
+
+
+\ METHODZ
+
+: LIKE ' @ ;
+' LIT, @ 1+ STR + 		\ ADR DOES
+LIKE 1L CODE, @DOES ,	\ CONSTANT @DOES
+: (;CODE POP T ! ;
+: DOES>` COMPILE (;CODE @DOES	\ INWORD DOES 
+: CALL, $E8 C,
+: REL, 2+ H - , ;	\ COMPILE  RELATIVE ADDRESS
+: VARIABLE 0
+: VAR ;,
+: CREATE =H  COMPILE ,< 'AT `PUSHW3 , >, ;
+: METODZ CREATE NEG , DOES>		\ CREATOR OF THE METHODS
+  >, @ @DOES + H SWAP CALL, ;	\ ALONE DOES
+0 METODZ DZ0> 		\ FIRST METHOD
+1 METODZ DZ1> 		\ SECOND METHOD  ( TO )
+2 METODZ DZ2> 		\ THIRD METHOD	 ( AT )
+: =H, CREATE , DOES> @ CODE, ;
+' `NEST2	=H, :2`		;
+' `NEST3	=H, :3`
+' `PUSHW	=H, :;`
+' `PUSHW2	=H, :;2`
+' `PUSHW3	=H, :;3`
+
+>, :; ;SWAP SWAP ;
+LIKE U< CODE, NIP $C3 C,
+>, :; ;NIP NIP ;
+
+
+: ?MSB DUP
+: MSB& (& ,< $8000 , 
+
+
+
+\ BASE OPERATIONS
+
+: I J ;				\ TOP OF THE RETURN STACK
+: TWICE I 			\ EXECUTE CODE AFTER TWICE
+: EXECUTE PUSH ;
+: XEP| XR EXECUTE POP ;
+: DNOT NOT PUSH NOT POP ;
+: = XOR 0= ;
+: OR  DNOT NAND ; 
+: (2OP 2DUP XOR MSB& XEP| 
+: 2ABS TWICE SWAP
+: ABS ?MSB 0;
+: A@ XA I XA ;
+: 0A! 0
+: A! PUSH XA
+: EXIT rdrop ;
+
+
+
 
 
 \ VARIABLE CREATORS
@@ -246,19 +286,6 @@ LIKE 1L CODE, @DOES ,	\ CONSTANT @DOES
 : CASE` 0 ;
 : ENDCASE` COMPILE DROP 
 	BEGIN DUP WHILE 
-
-\ METHODZ
-
-: DOES>` H T @ ! @DOES	\ INWORD DOES 
-: CALL, $E8 C,
-: REL, 2+ H - , ;	\ COMPILE  RELATIVE ADDRESS
-
-: METODZ CREATE NEG , DOES>		\ CREATOR OF THE METHODS
-  @ @DOES + H SWAP CALL, ;		\ ALONE DOES
- 
-0 METODZ DZ0> 		\ FIRST METHOD
-1 METODZ DZ1> 		\ SECOND METHOD  ( TO )
-2 METODZ DZ2> 		\ THIRD METHOD	 ( AT )
 
 
 \ MATH
