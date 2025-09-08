@@ -1,21 +1,22 @@
-program UP3(input,oUtput);
+program UP3;
 
 USES STRLIB, FILIB;
 
-  VAR TF: BOOLEAN;
+  VAR TF, OK: BOOLEAN;
       TPLS: LONGSTR;
-      TUPLEF: TEXT;
+      IFILE, OFILE, TUPLEF: TEXT;
+      FNAME: STRING;
 
   procedure perform;
   var
     orgstr, RES, CUT1, CUT2, CUT3 : string;
     ln: word;
   begin ln := 0;
-    while not eof(input) do begin
-      readln(INPUT,orgstr);
+    while not eof(IFILE) do begin
+      readln(IFILE,orgstr);
       IF (LENGTH(orgstr) >2)
          AND (orgstr[1] IN ['@'..'Z','a'..'z'])
-         AND (orgstr[2] <> '@')
+         AND (NOT (orgstr[2] IN ['@','_']))
       THEN BEGIN
         inc(ln);
         res := UPCASE(fixblanks(orgstr));
@@ -31,25 +32,45 @@ USES STRLIB, FILIB;
             RES := FINDTUPLE(CUT1,TPLS);
             IF RES <> '' THEN CUT1 := RES;
           END ELSE WRITELN(TUPLEF,CUT1+','+CUT1);
-          writeln(OUTPUT,cut3 + ' =: ' + CUT1);
+          writeln(OFILE,cut3 + ' =: ' + CUT1);
         END;
       END;
     end;
   end;
 
 begin
+    IF PARAMCOUNT = 0 THEN BEGIN
+      WRITELN('NO PARAMS');
+      EXIT;
+    END;
+    FNAME := PARAMSTR(1);
+    IF NOT FILEXIST(FNAME+'.LST') THEN BEGIN
+      WRITELN(FNAME+'.LST NOT EXIST');
+      EXIT;
+    END;
+
     {TEST;}
-    TF := GETUPLES('NF01.UP2',TPLS);
+    TF := GETUPLES(FNAME+'.TUP',TPLS);
     IF NOT TF THEN BEGIN
-      ASSIGN(TUPLEF,'NF01.UP1');
-      REWRITE(TUPLEF);
+      OK := OPENTEXT(FNAME+'.UP1',TUPLEF,TRUE);
+      IF NOT OK THEN BEGIN
+        WRITELN('CAN''T OPEN FILE '+FNAME+'.UP1');
+        EXIT;
+      END;
+    END;
+    OPENTEXT(FNAME+'.LST',IFILE,FALSE);         { FOR READING}
+    OK := OPENTEXT(FNAME+'.UP',OFILE,TRUE);     { FOR WRITING}
+    IF NOT OK THEN BEGIN
+      WRITELN('CAN''T OPEN FILE '+FNAME+'.UP');
+      EXIT;
     END;
 
     perform;
     {FINDTUPLE('ABORT',TPLS);}
 
     IF NOT TF
-    THEN CLOSE(TUPLEF)
-    ELSE WITH TPLS DO
-       FREEMEM(CP,REM);
+      THEN CLOSE(TUPLEF)
+      ELSE WITH TPLS DO FREEMEM(CP,REM);
+    CLOSE(IFILE);
+    CLOSE(OFILE);
 end.
