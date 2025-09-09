@@ -25,7 +25,6 @@ SKIPr   MACRO reg
         org   $-2
         ENDM
 
-
 X       MACRO
   xchg Rsp,DSP
         ENDM
