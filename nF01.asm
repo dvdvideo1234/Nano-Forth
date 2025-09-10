@@ -58,6 +58,10 @@ LBL DW  @NEST
   endm
 
 RVAR3  macro  lbl
+LBL: DW  @PUSHW4
+  endm
+
+RVAR3  macro  lbl
 LBL: DW  @PUSHW3
   endm
 
@@ -543,6 +547,8 @@ noop:
 @@var:   MOV   ax,di
         JMPS  @@pushw
 		
+@PUSHW4:
+  SCASW
 @PUSHW3:
   SCASW
 @PUSHW2:

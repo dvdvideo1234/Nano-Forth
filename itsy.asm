@@ -11,23 +11,29 @@
 ;ABC4 		SUBSTR ABC3,5					    ;ABC4 = "def,abc"
 ;ABC5 		SUBSTR ABC3,5,3					    ;ABC5 = "def"
 ;ABC6 		EQU 3+2+1						    ;ABC6 = 6 (numeric equate)
-;ABC7 		EQU %3+2+1						    ;ABC7 = "6" (text macro)
+;ABC7 		EQU %3+2+1						    ;ABC7 = "6" (textname macro)
 ;ABC8 		EQU %COMMA 1					    ;ABC8 = "4"
 
 ppp = 0
 qqq = 0
 
-SKIPA   MACRO
-        DB    03DH
-        ENDM
+SKIPA   MACRO		; change the carry
+  DB    03DH
+  ENDM
 
-SKIPB   MACRO
-        DB    03CH
-        ENDM
+SKIPB   MACRO		; change the carry
+  DB    03CH
+  ENDM
 
-SKIPr   MACRO reg
+SKIPR   MACRO reg	; does not change the carry
+  local diff
+diff = $
   mov   reg,0
-  org   $-2
+diff = $-diff-2
+  if diff
+    org $-1
+  endif
+  org   $-1
   ENDM
 
 aname macro cnam
@@ -38,7 +44,7 @@ len:
 end:
   endm
   
-header macro cnam,anam,imm
+header macro cnam,anam
 qqq = $
   dw ppp
 ppp = qqq
@@ -58,13 +64,13 @@ constant macro cnam,anam,data
 @_&anam dw data
   endm
   
-xt macro cnam,anam,adr
+xtname macro cnam,anam,adr
   header cnam,anam,0
   dw adr
   endm
 		
 primitive macro cnam,anam
-  xt cnam,anam,$+2
+  xtname cnam,anam,$+2
   endm
 		
 colon macro cnam,anam
@@ -74,6 +80,75 @@ colon macro cnam,anam
 
 jmps macro adr
   jmp short adr
+  endm
+
+lbl macro anam
+_&anam:
+ENDM
+
+dat macro anam,adr
+@_&anam dw adr
+ENDM
+
+xto macro anam,adr
+to_&anam dw adr
+ENDM
+
+xat macro anam,adr
+at_&anam dw adr
+ENDM
+
+xt macro anam,adr
+  lbl anam
+  dw adr
+  endm
+
+cnst macro anam,data
+  xt anam,@doconst
+  dat anam,data
+  endm
+  
+var macro anam,data
+  xt anam,@dovar
+  dat anam,data
+  endm
+  
+value macro anam,data
+  xto anam,@setvar
+  xt  anam,@dovar
+  dat anam,data
+  endm
+  
+vector macro anam,data
+  xto anam,@setvar
+  xt anam,@defer
+  dat anam,data
+  endm
+  
+point  macro anam,data
+  xto anam,@setpoint
+  xt anam,@dopoint
+  dat anam,data
+  endm
+
+twice3 macro anam
+  xt anam,@twice-2
+endm
+
+twice2 macro anam
+  xt anam,@twice-1
+endm
+
+twice macro anam
+  xt anam,@twice
+endm
+
+prim macro anam
+  xt anam,$+2
+  endm
+		
+col macro anam
+  xt anam,@docolon
   endm
 
 MyCseg  segment para  use16
@@ -93,160 +168,67 @@ Start   Label byte
 ; -------------------
 
 @abort:
-        skipr bp
-@bye:		
-		dw 0	;addres of bye
+        mov bp,0
         mov sp,-256
+        call @troff
         call @does
 		dw _lpar 						;init interpretter
-@cicle	dw _expect,_eval,_noop,_BRAN,@cicle
-_oper dw @wary,_execute,_to_num,_comma,_numc
+@cicle	dw _init,_eval,_nop,_BRAN,@cicle
 
-_semi	dw @dovar ;
-		
-@do_semi_code:
-        mov di,[@_last]
-        mov al,[di+2]
-        and ax,31
-        add di,ax
-        mov [di+3],si
-@rts:
-        mov si,[bp]
-@rdrop:		
-        inc bp
-        inc bp
-        jmps next
-@doconst:
-        mov ax,[di]
-        jmp @ph
+  lbl oper 
+	dw @wary,_@exec,_to_num,_@comma,_numc
+
 @accept:
-        pop dx
-		mov di,dx
-		mov [di],bx
-		mov ah,10
-		int 21h
-		lea bx,[di+1]
+	pop di
+	mov [di],bx
+	mov ah,10
+	call @dos
+	lea bx,[di+1]
 @count:
-        inc bx
-        push bx
-		dec bx
+	inc bx
+	push bx
+	dec bx
 @c@:		
-        mov bl,[bx]
+	mov bl,[bx]
 @lobyte:
-        mov bh,0
-        jmps next
+	mov bh,0
+	jmps next
+@dup:
+	push bx
+	jmps next
+@doconst:
+	mov ax,[di]
+	jmp @ph
+@XA:
+    xchg    DX,[BP]                 ;XA
+    jmps  next
+@@RSST:
+	POP	AX
+	xchg    AX,bx
+	SKIPR CL
+@@RSLD:  
+	push    BX
+	xchg    SI,[BP]
+	call    DI
+@@EX:
+    xchg    SI,[BP]
+    jmps  next
+
 @wary:
-		shl bx,1
+	shl bx,1
 @bary:
-		add bx,di
-        jmps next
-@strw:  
-		lea ax,[bx+2]
-		push ax
+	add bx,di
+	jmps next
+@str:  
+	lea ax,[bx+2]
+	push ax
+	jmps @fetch
+@fetch2:
+	push [bx+2]
 @fetch:
-        mov bx,[bx]
-        jmps next
-		
-@docolon:
-		SKIPB
-		db 1
-		xchg ax,di
-		jmps @pcpush
-		
-		scasw
-		scasw
-@does:
-		pop ax
-		push bx
-		mov	 bx,di
-@pcpush:		
-		xchg ax,si
-@rpushw:		
-		dec bp
-        dec bp
-        mov [bp],ax
-		skipa
+	mov bx,[bx]
+	jmps next
 
-; -------------------
-; Inner Interpreter
-; vvvvvvvvvvvvvvvvv
-
-@ph:
-        push bx
-@sw:
-        xchg ax,bx
-next:   
-		mov di,[si]
-		cmpsw
-next2:		
-        jmp [di-2]
-
-; ^^^^^^^^^^^^^^^^^^
-; Inner Interpreter
-; -------------------
-
-@for:
-	mov	si,[si]
-@pushw:
-	pop ax
-	xchg ax,bx
-	jmps @rpushw
-	
-@popw:
-		mov	ax,[bp]
-		inc bp
-		inc bp
-		jmps @ph
-		
-		scasw
-		scasw
-@dovar:  xchg ax,di
-        jmps @ph
-@dupe:
-        push bx
-        jmps next
-@swap:
-        pop ax
-        jmps @ph
-@lit:		
-        lodsw
-        jmps @ph
-@rote:
-        pop dx
-        pop ax
-        push dx
-        jmps @ph
-@execute:
-        mov di,bx
-		scasw
-        pop bx
-		jmps next2
-@zero_branch:
-        test bx,bx
-        pop bx
-        je @br
-@skip:		
-        lodsw
-        jmps next
-@mif:
-		inc bx
-@ifm:	
-		dec bx
-		js @skip
-@br:
-        mov si,[si]
-        jmps next
-@comma:		
-        mov di,[@_dp]
-        xchg ax,bx
-        stosw
-        mov [@_dp],di
-		skipa
-@store:		
-        pop [bx]
-@drp:		
-        pop bx
-        jmps next
 @minus:
 		neg bx
 @plus:
@@ -261,185 +243,322 @@ next2:
         sbb bx,bx
         jmps next		
 		
+@col_eval:
+	pop  ax
+	add  ax,bx
+	push ax
+	
+  lbl nop
+  
+@docolon:
+	SKIPB
+	db 1
+	xchg ax,di
+	jmps @pcpush
+@xr:
+	xchg bx,[bp]
+    jmps next
+@j:
+	mov	ax,[bp+2]
+	jmps @ph
+@pop:
+	mov	ax,[bp]
+	inc bp
+	inc bp
+	jmps @ph
+	
+	scasw
+	scasw
+@does:
+	pop ax
+	push bx
+	mov	 bx,di
+@pcpush:		
+	xchg ax,si
+@rpush:		
+	dec bp
+	dec bp
+	mov [bp],ax
+	skipa
+
+; -------------------
+; Inner Interpreter
+; vvvvvvvvvvvvvvvvv
+
+@ph:
+        push bx
+@sw:
+        xchg ax,bx
+next:   
+		mov di,[si]
+		cmpsw
+next1:		
+        jmp [di-2]
+
+; ^^^^^^^^^^^^^^^^^^
+; Inner Interpreter
+; -------------------
+
+@SETPOINT:
+	mov [di+2],si
+	jmps @rts
+@0ex:	
+	or bx,bx
+	je @dropx
+	skipa
+@store:		
+    pop [bx]
+@drop:		
+    pop bx
+    jmps next
+	
+@dropx:
+	pop bx
+@rts:
+	mov si,[bp]
+@rdrop:		
+	inc bp
+	inc bp
+@none:	
+	jmps next
 		
-  POP  CX DI
-  SUB   DI,CX
-  MOV   AL,' '
-  JNE   @@SKIPX
-  JCXZ  @@SKIPX
-  REPE  SCASB
-  JE    @@SKIPX
-  DEC   DI
-  INC   CX
+	scasw
+	scasw
+@twice:
+	mov ax,di
+	jmps @rpush
+@execute:
+	pop	ax
+	xchg ax,bx
+	skipa
+@DOPOINT:
+	mov ax,[di]
+	jmps @pcpush
+@for:
+	mov	si,[si]
+@push:
+	pop ax
+	xchg ax,bx
+	jmps @rpush
+
+	scasw
+	scasw
+@dovar:  
+	xchg ax,di
+	jmps @ph
+@swap:
+	pop ax
+	jmps @ph
+@lit:		
+	lodsw
+	jmps @ph
+@defer: 
+	push bx
+	mov	bx,di
+@exec@:
+	mov bx,[bx]
+@exec:
+	mov di,bx
+	scasw
+    pop bx
+	jmps next1
+	
+@zero_branch:
+	test bx,bx
+	pop bx
+	je @br
+@skip:		
+	lodsw
+	jmps next
+@mif:
+		inc bx
+@ifm:	
+	dec bx
+	js @skip
+@br:
+	mov si,[si]
+	jmps next
+@comma@:
+	mov bx,[bx]
+@comma:		
+	mov di,[@_dp]
+	xchg ax,bx
+	stosw
+	mov [@_dp],di
+	jmps @drop
+@setvar:
+		mov [di+2],bx
+		jmps @drop
+
+@@BINU_:  PUSH BX
+@@DINU_:  POP   CX
+@@NINU_:  POP   AX
+@@NUP_:   CALL  DI
+		PUSH  AX
+        jmps next2
+
+@@cnip_:  POP   cX
+@@nip_:   POP   AX
+@@nop_:   CALL  DI
+        jmps next2
+
+@@DROP3_: POP   CX        ;DRP3
+@@DROP2_: POP   AX        ;DRP2
+@@DROP_:  xchg	DI,BX
+@@CALDR:  CALL  BX        ;DRP
+		jmps @drop
+
+@pars:
+	mov	cx,bx
+	pop di ax
+	SUB   DI,CX
+	cmp   AL,' '
+	JNE   @@SKIPX
+	JCXZ  @@SKIPX
+	REPE  SCASB
+	JE    @@SKIPX
+	DEC   DI
+	INC   CX
 @@SKIPX:
-  MOV  BX,di      ;  START OF THE SOURCE
-  JCXZ  @@WEX
-
-  REPNE SCASB
-  JNE   @@WEX
-  DEC   DI
+	MOV  bX,di      ;  START OF THE SOURCE
+	JCXZ  @@WEX	
+	REPNE SCASB
+	JNE   @@WEX
+	DEC   DI
 @@WEX:
-
-		
-		
-		
-@word:
-        xchg ax,bx
-		mov di,[@_dp]
-        push di
-        mov dx,bx
-        mov bx,[@_tib]
-        mov cx,bx
-        add bx,[@_ltib]
-        add cx,[@_etib]
-@@wordf:  cmp cx,bx
-        je @@wordz
-        mov al,[bx]
-        inc bx
-        cmp al,dl
-        je @@wordf
-@@wordc:  inc di
-        mov [di],al
-        cmp cx,bx
-        je @@wordz
-        mov al,[bx]
-        inc bx
-        cmp al,dl
-        jne @@wordc
-@@wordz:  mov byte ptr [di+1],32
-        mov ax,[@_dp]
-        xchg ax,di
-        sub ax,di
-        mov [di],al
-        sub bx,[@_tib]
-        mov [@_ltib],bx
-        jmps @drp
-@emit:
-        xchg ax,bx
-        call outchar
-        jmps @drp
-
-getchar:mov ah,7
-        int 021h
-        mov ah,0
-        ret
-
-outchar:xchg ax,dx
-        mov ah,2
-        int 021h
-        ret
-@dofind:
-        mov di,@_last
-		push si
-		jmps @@findl
-@@findm:
-		mov	di,dx
-		mov	cx,[di]
-@@findl:  
-		mov di,cx
-		jcxz @@findi
-		mov dx,di
-		scasw
-        mov ch,0
-		mov cl,[di]
-		inc cx
-		mov	si,bx
-		rep cmpsb
-        jne @@findm
-		dec cx
-		cmp [di],cx
-		jne @@no_als
-		mov di,[di+2]
-@@no_als:	cmp ax,-1
-		org $-2
-@@findi:  mov	di,bx 
-		pop si
-		inc cx
-		ret
-@find:
-		call @dofind
+	push bx
+	sub di,bx
+	push di
+	mov bx,cx
+	jmps next2
+	
+@to_number: ; di num   ax adrs  cx leng  bx - base
+	pop cx ax di
+	push si
+	xor si,si
+	xchg ax,si
+@@to_numl:
+	jcxz @@to_numz
+	lodsb
+	cmp al,'9'+1
+	jc @@to_numg
+	cmp al,'A'
+	jc @@to_numh
+	sub al,7
+@@to_numg:
+	sub al,48
+    cmp ax,bx
+    jnc @@to_numh
+	xchg ax,di
+	push dx
+	mul bx
+	pop dx
+	xchg ax,di
+	add di,ax
+	dec	cx
+	jmp @@to_numl
+@@to_numh:
+	dec si
+@@to_numz:
+	xchg ax,si
+	pop si
 @@found:		
-		push di
-		mov  bx,cx
-        jmp next
+	push ax
+	mov  bx,cx
+next2:	
+	jmp next
 
-@findc:
-		inc  byte ptr [bx]
-		call @dofind
-		inc  byte ptr [bx]
-		jz   @@found
-		call @dofind
-		inc cx
-		inc cx
-		jmps   @@found
+  XT	MAKESTR,@@cnip_
+	mov [BX],CL                ; SET strlen
+	XOR CH,CH					; CUT LEN TO 255
+	LEA DI,[BX+1]
+	ADD DI,CX                  ; AFTER END ADDRESS
+	mov byte ptr [DI],'`'            ;after str flag
+@@CPUSHU:
+	ADD  AX,CX
+@@CMOVEU:
+	STD
+	DEc	AX
+	DEC DI
+@@CMOVE:
+	XCHG AX,SI
+	REP  MOVSB
+	XCHG AX,SI
+	CLD
+@@troff: 
+	RET
 
-@to_number:
-        pop di
-        pop cx
-        pop ax
-@@to_numl:test bx,bx
-        je @@to_numz
-        push ax
-        mov al,[di]
-		cmp al,'9'+1
-        jc @@to_numg
-        cmp al,'A'
-        jc @@to_numh
-        sub al,7
-@@to_numg:sub al,48
-        mov ah,0
-        cmp al,byte ptr [@_base]
-        jnc @@to_numh
-        xchg ax,dx
-        pop ax
-        push dx
-        xchg ax,cx
-        mul [@_base]
-        xchg ax,cx
-        mul [@_base]
-        add cx,dx
-        pop dx
-        add ax,dx
-        dec bx
-        inc di
-        jmp @@to_numl
-@@to_numz:push ax
-@@to_numh:push cx
-        push di
-        jmp next
+  XT    CPUSHU,@@cnip_
+	MOV DI,BX
+	sub	BX,CX
+	JMPS @@CPUSHU
+
+  xt	CMOVEU,@@DROP3_
+	JMPS @@CMOVEU
+
+  XT	CMOVE,@@DROP3_
+	JMPS @@CMOVE
+		
+  xt zswap,@@nup_
+	skipr ax
+	
+  lbl bye		
+	dw 0	;addres of bye
+	ret
+
+  xt dk,@@nup_
+getchar:
+	mov ah,7
+	int 021h
+	mov ah,0
+	ret
+
+  xt de,@@drop_
+outchar:
+	mov ah,2
+@dos:
+	push dx
+	mov dx,di
+	int 021h
+	pop dx
+	ret
 
 ; -------------------
 ; Variables
 ; -------------------
 
-        variable 'state',state,0
-        variable "ltib",ltib,0
-        variable 'etib',etib,0
-        variable 'dp',dp,freemem
-        variable 'base',base,10
-        variable 'last',last,final
-        constant 'tib',tib,128
-        constant '1l',inl,64		; max char in line
-        constant '0',zero,0
-		constant 'bl',spc,32
+        point found,0
+		point init,_initadr
+        vector errv,0
+        vector key,_dk
+        vector emit,_de
+		vector accept,_accpt
+        value ltib,0
+        value etib,0
+        value erra,0
+        value dp,freemem
+        value base,10
+        value dict,0f000h-270
+        cnst  tib,080h
+        cnst  inl,64			; max char in line
+        cnst  tbuf,0f000h-260	; str evaluation
 		
 ; -------------------
 ; Compilation
 ; -------------------
 
-        xt ',',comma,@comma
-        xt 'lit',lit,@lit
+        xt comma,@comma
+        xt @comma,@comma@
+        xt lit,@lit
 		
 @commaer:
 		call @does
-@COMM   dw _strw,_comma,_fetch,_execute,_exit
-		
-		xt 'litc',litc,@commaer
-		dw _lit,_comma
-		
-		xt ':`',colc,@defcomm
-		dw @docolon,_rpar
+@COMM   dw _str,_comma,_@exec,_exit
 				
+		twice3 xcomma
+		xt litc,@commaer
+		dw _lit,_comma,_exit
+		
 @defcomm:
 		call @does
 		dw _head,_bran,@comm
@@ -448,172 +567,294 @@ outchar:xchg ax,dx
 ; Stack
 ; -------------------
 
-        xt 'rot',rote,@rote
-        xt 'drop',drop,@drp
-        xt 'dup',dupe,@dupe
-        xt 'swap',swap,@swap
-        xt 'pop',popw,@popw
-        xt 'push',pushw,@pushw
+        xt drop,@drop
+        xt dup,@dup
+        xt swap,@swap
+        xt pop,@pop
+        xt push,@push
+		xt RDROP,@RDROP
+		xt j,@j
+		xt xr,@xr
+		xt xa,@xa
 
 ; -------------------
 ; Maths / Logic
 ; -------------------
 
-        xt '+',plus,@plus
-        xt '=',equals,@equals
-		xt '0=',zeq,@zeq
+  xt minus,@minus
+  xt plus,@plus
+  xt equals,@equals
+  xt zeq,@zeq
+		
+  xt and,@@nip_
+    AND   BX,AX
+    RET
+
+  xt XORW,@@nip_
+    XOR   BX,AX
+    RET
+
+  xt pl2div,@@NINU_
+	ADD     ax,bx
+	mov     bx,AX
+	rcr     bx,1
+	RET
+
+  xt plmul,@@NINU_
+	TEST	al,1
+	jz	@@pl1
+	ADD	bx,dx
+@@pl1:
+	rcr	bx,1
+	rcr	ax,1
+	RET
+
+  xt midiv,@@NINU_                        ; -/
+	SHL	ax,1
+	rcl	bx,1
+	CMP	bx,dx
+	jNC	@@mi1
+	sub	bx,dx
+	INC	AX
+@@mi1:
+	RET
 
 ; -------------------
 ; Peek and Poke
 ; -------------------
 
-        xt '@',fetch,@fetch
-        xt '!',store ,@store
-        xt 'c@',C@ ,@C@
-		xt 'str',strw,@strw
+  xt fetch,@fetch
+  xt store ,@store
+  xt C@ ,@C@
+  xt str,@str
+
+  xt stm,@@nip_
+	mov	[bx-2],ax
+	dec bx
+	dec bx
+	ret
+	
+  xt STRSKP,@@RSLD					; string skip
+	MOV     BX,si
+	XOR		ah,ah
+	lodsb
+	add		si,AX
+	ret
+
+  XT	RLDP,@@RSLD                 ;@R+
+	LODSW
+	xchg    AX,bx
+	RET
+
+  XT    RSTP,@@RSST                 ;!R+
+	mov		[SI],AX
+	LODSW
+	RET
+
+  XT    CRSTP,@@RSST                 ;C!R+
+	mov		[SI],AL
+	INC		SI
+	RET
 
 ; -----------------------
 ; Colon Definition
 ; -----------------------
 
-        xt ';',semicolon,@commaer
-        dw _exit,_lpar
-
-        xt ':',colon,-1		; 
-		dw _colc
-		
-		colon '[`',lpar
-		dw _par,_find,_exit
-		
-		colon ']',rpar
-		dw _par,_findc,_exit
-		
-		colon 'par!',par
-		dw _popw,_state,_store,_exit
-		
-		colon 'found',found
-		dw _state,_fetch,_pushw,_exit
+  xt colc,@defcomm
+  dw @docolon,_rpar
+  		
+  xt semicolon,@commaer
+	dw _exit,_lpar
+  
+  twice3 xfind
+  col lpar
+	dw to_found,_dict,_find,_exit
+  
+  col rpar
+	dw to_found,_dict,_skpdtok,_findc,_exit
 		
 ; -------------------
 ; Flow Control
 ; -------------------
 
-        xt '0br',zbran,@zero_branch
-        xt 'br',bran,@br
-        xt 'execute',execute,@execute
-        xt 'exit',exit,@rts
-		xt 'nop',noop,@docolon
+  xt zbran,@zero_branch
+  xt bran,@br
+  xt exec,@exec
+  xt execute,@execute
+  xt exit,@rts
+  xt ex,@@ex
+  xt @exec,@exec@
+  xt for,@for
+  xt skip,@skip
+  xt mif,@mif
+  xt ifm,@ifm
+  xt dropx,@dropx
+  xt 0x,@0ex
 
+  col TIMES
+	dw _push,_xr
+  col xTIMES
+	dw _bran,@@tim2
+@@tim1 dw _push,_j,_execute,_pop
+@@tim2 dw _ifm,@@tim1,_rdrop,_dropx	
+  
 ; -------------------
 ; String
 ; -------------------
 
-        xt 'count',count,@count
-        xt '>num',to_number,@to_number
+  xt count,@count
+  xt to_number,@to_number
+
+  XT STRP,@@niNU_
+    INC   ax
+    DEC   BX
+@TROFF:
+    ret
+
 	
-  colon 'TO_NUM',to_num
-	dw _zero,_zero,_rote,_count,_to_number,_err?
-_2drop:
-	dw _noop,_drop,_drop,_exit
+  col to_num
+	dw _xdrop,_zswap,_count,_base,_to_number
 	
-	colon 'NUMC',NUMC
+  col error?
+	dw _strskp,to_erra,_0x,_errv,_abort,_err?,_exit
+	
+  col NUMC
 	dw _to_num,_litc,_exit
 		
 ; -----------------------
 ; errors prompt
 ; -----------------------
-
-  colon '!0',nerr?
+  twice xnz?
 	dw _zeq
-_err? dw _noop
-	dw _zbran,@@err
-	dw _space
-	dw _lit,'?',_emit,_abort
-	
-	colon 'space',space
-	dw _spc,_emit
-@@err	dw _exit
+  col err?
+    dw _error?
+	aname '?'
+	dw _exit
 
 ; -----------------------
 ; Terminal Input / Output
 ; -----------------------
 
-        xt 'emit',emit,@emit
-        xt 'accept',accept,@accept
-		
-        xt 'word',word,@word
-		
-		colon 'expect',expect
-		dw _tib,_inl,_accept,_exit
-		
-		colon 'parse',parse
-		dw _spc,_word
-_dc@	dw _noop,_dupe,_c@,_exit
-		
+  xt accpt,@accept
+  xt pars,@pars
+
+  col token?
+    dw _xnz?
+  col token
+	dw _xdc@,_xtostr,_lit,32
+  col parse
+	dw _etib,_ltib,_pars,to_ltib,_exit
+	
+  twice xtostr
+	dw _tbuf,_makestr,_exit
+	
+  twice xdc@
+	dw _dup,_c@,_exit
 
 ; -----------------------
 ; Dictionary Search
 ; -----------------------
 
-        xt 'find',find,@find
-        xt 'findc',findc,@findc
+  xt find,@@ninu_
+	mov di,ax
+@dofind:
+    push si di dx
+	mov  di,bx	;ax := di  di := bx
+	xor  cx,cx
+@@findm:
+	add di,cx
+	mov dx,di
+	scasw
+	mov cl,[di]
+	jcxz @@findi
+	inc cx
+	mov	si,ax
+	rep cmpsb
+    jne @@findm
+	dec cx
+	xchg ax,dx
+@@findi:
+	pop dx di si
+	inc cx
+	mov bx,cx
+	ret
+		
+  xt findc,@@ninu_
+	mov di,ax
+	inc  byte ptr [di]
+	call @dofind
+	inc  byte ptr [di]
+	jz   @@fend
+	call @dofind
+	inc bx
+	inc bx
+@@fend:
+	ret
 
 ; -----------------------
 ; Headers
 ; -----------------------
 
-        colon '=:',head
-        dw _dp,_fetch,_last,_fetch,_comma
-        dw _last,_store,_parse
-		dw _count
-        dw _plus,_dp,_store,_exit
+  col head		; =h
+	dw _dp
+  col header	; =:
+	dw _nop,_token?,_count,_strp,_xdict,_cpushu,_stm,_exit
 		
-        xt 'create',create,@defcomm
-		dw @dovar,_noop
-
-        xt '(;code)',do_semi_code,@do_semi_code
+  xt create,@defcomm
+	dw @dovar,_nop
 
 ; -----------------------
 ; Constants
 ; -----------------------
 
-        xt 'constant',constant,@defcomm
-        dw @doconst,_comma
+  xt constant,@defcomm
+	dw @doconst,_comma
 
 ; -----------------------
 ; Outer Interpreter
 ; -----------------------
 
-        xt 'abort',abort,@abort
+  xt abort,@abort
 		
-final:
-		colon 'eval',eval
-		dw _dupe,_ltib,_store,_plus,_etib,_store
-@eval	dw _parse,_zbran,@xeval
-		dw _found,_oper,_fetch,_execute,_BRAN,@eval
-@xeval	dw _drop,_exit		
+  xt eval,@col_eval
+		dw to_ltib,to_etib
+@eval	dw _token,_zbran,@xeval
+		dw _found,_oper,_@exec,_BRAN,@eval
 
-        colon 'interpret',interpret
-interpt dw _etib,_fetch,_ltib,_fetch
-        dw _equals,_ZBRAN,intpar,_tib
-        dw _lit,50,_accept,_etib,_store
-        dw _lit,0,_ltib,_store
-intpar  dw _lit,32,_word,_find,_dupe
-        dw _ZBRAN,intnf,_state,_fetch
-        dw _equals,_ZBRAN,intexc,_comma
-        dw _BRAN,intdone
-intexc  dw _execute,_BRAN,intdone
-intnf   dw _dupe,_rote,_count,_to_number
-        dw _ZBRAN,intskip,_state,_fetch
-        dw _ZBRAN,intnc,_last,_fetch,_dupe
-        dw _fetch,_last,_store,_dp,_store
-intnc   dw _abort
-intskip dw _drop, _drop, _state, _fetch
-        dw _ZBRAN,intdone,_lit,_lit,_comma
-        dw _comma
-intdone dw _BRAN,interpt
+  twice xdrop
+@xeval	dw _dropx
 
+  col skpdtok
+	dw _str,_drop,_count,_plus,_exit
+	
+  col forget1
+  dw _xdict,_dup,_fetch,to_dp,_skpdtok,_exit
+  
+  col phstr
+	dw _count,_strp
+  col phmem
+	dw _xdict,_cpushu,_exit
+
+  col xdict
+	dw _dict,_ex,to_dict,_exit
+
+  lbl initadr
+	dw  _xpect,_lit,128,_phstr,_dp,_str,_phmem
+	dw to_init
+  col _expect
+	dw _xpect,_exit
+	
+  twice xpect
+	dw _tib,_inl,_accept,_exit
+		
 freemem:
+  dw final-freemem-2
+  dw _header
+  aname '=:'
+  dw 0
+  db 0
+final = $
 
+  
 MyCseg  ends
         end  Start
