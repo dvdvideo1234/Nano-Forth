@@ -15,7 +15,7 @@ USES STRLIB, FILIB;
     while not eof(IFILE) do begin
       readln(IFILE,orgstr);
       IF (LENGTH(orgstr) >2)
-         AND (orgstr[1] IN ['@'..'Z','a'..'z'])
+         AND (orgstr[1] IN ['_','@'..'Z','a'..'z'])
          AND (NOT (orgstr[2] IN ['@','_']))
       THEN BEGIN
         inc(ln);
@@ -27,12 +27,14 @@ USES STRLIB, FILIB;
         RES := CUTSTR(CUT3,':');
         cut3[1] := '$';
         IF ((CUT2 = 'WORD') OR (CUT2 = 'NEAR')) AND (RES='MYCSEG') THEN
-        BEGIN
+        BEGIN cut2 := copy(cut1,1,3);
+         if NOT ((cut2 = 'AT_') OR (CUT2 = 'TO_')) THEN BEGIN
           IF TF THEN BEGIN
             RES := FINDTUPLE(CUT1,TPLS);
             IF RES <> '' THEN CUT1 := RES;
           END ELSE WRITELN(TUPLEF,CUT1+','+CUT1);
           writeln(OFILE,cut3 + ' =: ' + CUT1);
+         END;
         END;
       END;
     end;
