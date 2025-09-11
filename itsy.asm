@@ -133,7 +133,6 @@ WATCH macro anam,data
 vector macro anam,data
   xto 	anam,@setvar
   defer anam,@defer
-  dat 	anam,data
   endm
   
 point  macro anam,data
@@ -290,6 +289,10 @@ Start   Label byte
 	mov ax,@_dp
 	add ax,@_ofst
 	jmps @ph
+@FRELS:				; FOR THEN  - RELEASE FORWARD BRANCHES
+	PUSH BX
+    MOV BX,@_dp
+	JMPS @SWAPSTOR
 	
 	scasw
 	scasw
@@ -323,6 +326,18 @@ Start   Label byte
 ; Inner Interpreter
 ; -------------------
 
+@TODBG: JMP @TROFF
+
+@setwatch:
+	mov di,[di+2]
+	skipb
+@setvar:
+	scasw
+	skipb
+@swapstor:
+	pop DI
+	mov [di],bx
+	jmps @drop
 @SETPOINT:
 	scasw
 	mov [di],si
@@ -416,16 +431,6 @@ Start   Label byte
 	xchg ax,bx
 	stosw
 	mov [@_dp],di
-	jmps @drop
-@setwatch:
-	mov di,[di+2]
-	skipb
-@setvar:
-	scasw
-	skipb
-@swapstor:
-	pop DI
-	mov [di],bx
 	jmps @drop
 
 @@BINU_:  PUSH BX
@@ -565,6 +570,7 @@ Start   Label byte
         defer key,_dk
         defer emit,_de
 		defer accept,_accpt
+		defer source,_etib
         value ltib,0
         value etib,0
         value erra,0
@@ -572,6 +578,7 @@ Start   Label byte
 		value ofst,0
         value base,10
         value dict,0f000h-270
+		vector cdict,_dict
         cnst  tib,080h
         cnst  inl,64			; max char in line
         cnst  tbuf,0f000h-260	; str evaluation
@@ -583,6 +590,7 @@ Start   Label byte
         xt comma,@comma
         xt @comma,@comma@
         xt lit,@lit
+        xt HERE,@HERE
 		
 @commaer:
 		call @does
@@ -603,13 +611,13 @@ Start   Label byte
   xt drop,@drop
   xt dup,@dup
   lbl cswap
-  xt swap,@swap
-  xt pop,@pop
-  xt push,@push
-  xt RDROP,@RDROP
-  xt j,@j
-  xt xr,@xr
-  xt xa,@xa
+;  xt swap,@swap
+;  xt pop,@pop
+;  xt push,@push
+;  xt RDROP,@RDROP
+;  xt j,@j
+;  xt xr,@xr
+;  xt xa,@xa
 		
   xt zswap,@@nup_
 	skipr ax	
@@ -622,9 +630,9 @@ Start   Label byte
 ; Maths / Logic
 ; -------------------
 
-  xt minus,@minus
-  xt plus,@plus
-  xt equals,@equals
+;  xt minus,@minus
+;  xt plus,@plus
+;  xt equals,@equals
   xt zeq,@zeq
 		
   xt and,@@nip_
@@ -668,7 +676,7 @@ Start   Label byte
   xt store ,@store
   xt C@ ,@C@
   xt str,@str
-  xt swapstor,@swapstor
+;  xt swapstor,@swapstor
 
   xt stm,@@nip_
 	mov	[bx-2],ax
@@ -713,7 +721,7 @@ Start   Label byte
 	dw to_found,_dict,_find,_exit
   
   col rpar
-	dw to_found,_dict,_findc,_exit
+	dw to_found,_cdict,_findc,_exit
 		
 ; -------------------
 ; Flow Control
@@ -721,15 +729,15 @@ Start   Label byte
 
   xt zbran,@zero_branch
   xt bran,@br
-  xt exec,@exec
-  xt execute,@execute
+;  xt exec,@exec
+;  xt execute,@execute
   xt exit,@rts
   xt ex,@@ex
   xt @exec,@exec@
-  xt for,@for
-  xt skip,@skip
-  xt mif,@mif
-  xt ifm,@ifm
+;  xt for,@for
+;  xt skip,@skip
+;  xt mif,@mif
+;  xt ifm,@ifm
   xt dropx,@dropx
   xt 0x,@0ex
 
@@ -779,7 +787,6 @@ Start   Label byte
 	RET
 
   xt count,@count
-;  xt to_number,@to_number
 
   XT STRP,@@niNU_
     INC   ax
@@ -819,7 +826,7 @@ Start   Label byte
   col token
 	dw _xdc@,_xtostr,_lit,32
   col parse
-	dw _etib,_ltib,_pars,to_ltib,_exit
+	dw _source,_ltib,_pars,to_ltib,_exit
 	
   trap xtostr
 	dw _tbuf,_makestr,_exit
@@ -884,12 +891,12 @@ Start   Label byte
 ; -----------------------
 
   col head		; =h
-	dw _dp
+	dw _HERE
   col header	; =:
 	dw _nop,_token?,_count,_strp,_xdict,_cpushu,_stm,_exit
 		
-  xt create,@defcomm
-	dw @dovar,_nop
+;  xt create,@defcomm
+;	dw @dovar,_nop
 
 ; -----------------------
 ; Constants
