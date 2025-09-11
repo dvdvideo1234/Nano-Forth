@@ -201,7 +201,9 @@ Start   Label byte
 	pop di
 	mov [di],bx
 	mov ah,10
-	call @dos
+	mov dx,di
+	int 21h
+	;call @dos
 	lea bx,[di+1]
 @count:
 	inc bx
@@ -284,6 +286,10 @@ Start   Label byte
 	inc bp
 	inc bp
 	jmps @ph
+@here:
+	mov ax,@_dp
+	add ax,@_ofst
+	jmps @ph
 	
 	scasw
 	scasw
@@ -349,6 +355,7 @@ Start   Label byte
 @cont:
 	dec di
 	dec di
+@twice:	
 	mov ax,di
 	jmps @rpush
 @execute:
@@ -562,6 +569,7 @@ Start   Label byte
         value etib,0
         value erra,0
         value dp,@freemem
+		value ofst,0
         value base,10
         value dict,0f000h-270
         cnst  tib,080h
@@ -594,6 +602,7 @@ Start   Label byte
 
   xt drop,@drop
   xt dup,@dup
+  lbl cswap
   xt swap,@swap
   xt pop,@pop
   xt push,@push
@@ -693,7 +702,8 @@ Start   Label byte
 ; Colon Definition
 ; -----------------------
 
-  xt colc,@defcomm
+  lbl colc
+  xt col,@defcomm
   dw @docolon,_rpar
   		
   xt semicolon,@commaer
@@ -831,24 +841,24 @@ Start   Label byte
 @dofind:
 	xor  cx,cx
 @dofind2:
-    push ax 
+    push ax si
 	mov  di,bx	;ax := di  di := bx
 @@findm:
 	add di,cx
 	mov ax,di
 	scasw
 	mov cl,[di]
-	push si
 	jcxz @@findi
 	inc cx
+	push si
 	rep cmpsb
 	pop  si
     jne @@findm
 	inc cx
-	push ax
+	xchg ax,si
 @@findi:
-	pop di
-	pop si
+	xchg ax,si
+	pop di si
 	mov bx,cx
 	ret
 		
