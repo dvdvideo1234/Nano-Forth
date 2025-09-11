@@ -326,7 +326,7 @@ Start   Label byte
 ; Inner Interpreter
 ; -------------------
 
-@TODBG: JMP @TROFF
+@TODBG: JMP @TROFF		; POINTS TO DEBUGGER IF ANY
 
 @setwatch:
 	mov di,[di+2]
@@ -587,18 +587,20 @@ Start   Label byte
 ; Compilation
 ; -------------------
 
-        xt comma,@comma
-        xt @comma,@comma@
-        xt lit,@lit
-        xt HERE,@HERE
+  LBL BECKREL
+  xt comma,@comma
+  xt @comma,@comma@
+  xt lit,@lit
+  LBL BACKMARK		; BEGIN
+  xt HERE,@HERE
 		
 @commaer:
 		call @does
 @COMM   dw _str,_comma,_@exec,_exit
 				
-		trap2 xcomma
-		xt litc,@commaer
-		dw _lit,_comma,_exit
+  trap2 xcomma		; ;,
+  xt litc,@commaer
+	dw _lit,_comma,_exit
 		
 @defcomm:
 		call @does
@@ -610,7 +612,7 @@ Start   Label byte
 
   xt drop,@drop
   xt dup,@dup
-  lbl cswap
+;  lbl cswap
 ;  xt swap,@swap
 ;  xt pop,@pop
 ;  xt push,@push
@@ -794,11 +796,13 @@ Start   Label byte
 @TROFF:
     ret
 	
-  col to_num
-	dw _xdrop,_zswap,_count,_base,_to_number,_err?,_exit
+  col to_num			; NOPS RESERVED PLACE FOR STRING FUNCTIONS
+	dw _NOP
+  COL TO_NUM2
+	DW _count,_to_number,_err?,_exit
 	
-  col NUMC
-	dw _to_num,_litc,_exit
+  col NUMC				; NOPS RESERVED PLACE FOR STRING FUNCTIONS
+	dw _NOP,_to_num2,_litc,_exit
 		
 ; -----------------------
 ; errors prompt
@@ -892,7 +896,7 @@ Start   Label byte
 
   col head		; =h
 	dw _HERE
-  col header	; =:
+  col header	; =:			NOP IS PLACE FOR THE (SAME) FUNCTION 
 	dw _nop,_token?,_count,_strp,_xdict,_cpushu,_stm,_exit
 		
 ;  xt create,@defcomm
