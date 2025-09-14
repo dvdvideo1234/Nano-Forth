@@ -374,24 +374,24 @@ doconst push bx
 ; -----------------------
 
 final:
-        colon 'interpret',interpret
-interpt dw xt_number_t_i_b,xt_fetch,xt_to_in,xt_fetch
-        dw xt_equals,xt_zero_branch,intpar,xt_t_i_b
-        dw xt_lit,50,xt_accept,xt_number_t_i_b,xt_store
-        dw xt_lit,0,xt_to_in,xt_store
-intpar  dw xt_lit,32,xt_word,xt_find,xt_dupe
-        dw xt_zero_branch,intnf,xt_state,xt_fetch
-        dw xt_equals,xt_zero_branch,intexc,xt_comma
+        colon 'interpret',interpret							; begin 
+interpt dw xt_number_t_i_b,xt_fetch,xt_to_in,xt_fetch		;  #tib @ >in @ =
+        dw xt_equals,xt_zero_branch,intpar,xt_t_i_b			;  if tib		 \ if empty
+        dw xt_lit,50,xt_accept,xt_number_t_i_b,xt_store		;   50 accept #tib !
+        dw xt_lit,0,xt_to_in,xt_store						;   0 >in !    \ full buf
+intpar  dw xt_lit,32,xt_word,xt_find,xt_dupe				;  then  bl word find dup
+        dw xt_zero_branch,intnf,xt_state,xt_fetch			;  if state @  = \ found
+        dw xt_equals,xt_zero_branch,intexc,xt_comma			;	 if , 	again
         dw xt_branch,intdone
-intexc  dw xt_execute,xt_branch,intdone
-intnf   dw xt_dupe,xt_rote,xt_count,xt_to_number
-        dw xt_zero_branch,intskip,xt_state,xt_fetch
-        dw xt_zero_branch,intnc,xt_last,xt_fetch,xt_dupe
-        dw xt_fetch,xt_last,xt_store,xt_dp,xt_store
-intnc   dw xt_abort
-intskip dw xt_drop, xt_drop, xt_state, xt_fetch
-        dw xt_zero_branch,intdone,xt_lit,xt_lit,xt_comma
+intexc  dw xt_execute,xt_branch,intdone						;    then execute again
+intnf   dw xt_dupe,xt_rote,xt_count,xt_to_number			;  then dup rot count >num
+        dw xt_zero_branch,intskip,xt_state,xt_fetch			;  if state @  
+        dw xt_zero_branch,intnc,xt_last,xt_fetch,xt_dupe	;  if last @ dup
+        dw xt_fetch,xt_last,xt_store,xt_dp,xt_store			;  @ last ! dp !
+intnc   dw xt_abort											;  abort 
+intskip dw xt_drop, xt_drop, xt_state, xt_fetch				;  then drop drop state @
+        dw xt_zero_branch,intdone,xt_lit,xt_lit,xt_comma	;  if lit lit , , then
         dw xt_comma
-intdone dw xt_branch,interpt
+intdone dw xt_branch,interpt								; again
 
 freemem:

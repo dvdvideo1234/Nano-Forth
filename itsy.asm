@@ -1,165 +1,4 @@
-;ABC		EQU <def>                           ;ABC = "def" (redefined)
-;ABC3		CATSTR ABC2,<,>,ABC,<,>,ABC2	    ;ABC3 = "abc, def, abc" .
-;ABCLEN		SIZESTR ABC						    ;ABCLEN = 3
-;COMMA1 	INSTR ABC3,<,>					    ;COMMA1 = 4
-;ABC4 		SUBSTR ABC3,5					    ;ABC4 = "def,abc"
-;ABC7 		EQU %3+2+1						    ;ABC7 = "6" (textname macro)
-;ABC8 		EQU %COMMA 1					    ;ABC8 = "4"
-
-ppp = 0
-qqq = 0
-
-SKIPA   MACRO		; change the carry
-  DB    03DH
-  ENDM
-
-SKIPB   MACRO		; change the carry
-  DB    03CH
-  ENDM
-
-SKIPR   MACRO reg	; does not change the carry
-  local diff
-diff = $
-  mov   reg,0
-diff = $-diff-2
-  if diff
-    org $-1
-  endif
-  org   $-1
-  ENDM
-
-aname macro cnam
-  local len,end
-  db end-len
-len:
-  db cnam
-end:
-  endm
-  
-header macro cnam,anam
-qqq = $
-  dw ppp
-ppp = qqq
-  aname cnam
-_&anam:
-  endm
-
-variable macro cnam,anam,data
-  header cnam,anam,0
-  dw @dovar
-@_&anam dw  data
-  endm
-  
-constant macro cnam,anam,data
-  header cnam,anam,0
-  dw @_doconst
-@_&anam dw data
-  endm
-  
-xtname macro cnam,anam,adr
-  header cnam,anam,0
-  dw adr
-  endm
-		
-primitive macro cnam,anam
-  xtname cnam,anam,$+2
-  endm
-		
-colon macro cnam,anam
-  header cnam,anam,0
-  dw @_DOCOLON
-  endm
-
-jmps macro adr
-  jmp short adr
-  endm
-
-lbl macro anam
-_&anam:
-ENDM
-
-dat macro anam,adr	;define data field
-@_&anam dw adr
-ENDM
-
-xto macro anam,adr	;define second code field
-to_&anam: dw adr
-ENDM
-
-xat macro anam,adr	;define third code field
-at_&anam: dw adr
-ENDM
-
-xt macro anam,adr	;define code field
-  lbl anam
-  dw adr
-  endm
-
-cnst macro anam,data
-  xt 	anam,@_doconst
-  dat 	anam,data
-  endm
-  
-defer macro anam,data
-  xt 	anam,@_defer
-  dat 	anam,data
-  endm
-  
-var macro anam,data
-  xt 	anam,@dovar
-  dat 	anam,data
-  endm
-  
-value macro anam,data
-  xto  	anam,@_setvar
-  cnst 	anam,data
-  endm
-  
-WATCH macro anam,data
-  xat 	anam,@dovar-2
-  xto 	anam,@setwatch
-  xt  	anam,@getwatch
-  dat 	anam,data
-  endm
-  
-vector macro anam,data
-  xto 	anam,@_setvar
-  defer anam,@_defer
-  endm
-  
-point  macro anam,data
-  xto 	anam,@_setpoint
-  xt 	anam,@_dopoint
-  dat 	anam,data
-  endm
-
-trap3 macro anam
-  xt anam,@trap-3
-endm
-
-trap2 macro anam
-  xt anam,@trap-2
-endm
-
-trap1 macro anam
-  xt anam,@trap-1
-endm
-
-trap macro anam
-  xt anam,@trap
-endm
-
-twice macro anam
-  dw @trap
-endm
-
-prim macro anam
-  xt anam,$+2
-  endm
-		
-col macro anam
-  xt anam,@_DOCOLON
-  endm
+include itsy.mac
 
 MyCseg  segment para  use16
 
@@ -204,22 +43,25 @@ Start   Label byte
 	jmps @_DONEXT
 @_fetch:
 	mov bx,[bx]
-	jmps @_DONEXT
+	jmps @_DONEXT	
 @_dc@:
 	push bx
 	jmps @c@
+	
 @dup:
 	push bx
 	jmps @_DONEXT
+	
 @_STM:	
 	POP	[bx-2]
 	dec bx
 @_M:
 	dec bx
 	jmps @_DONEXT
-@_LDP:
-	PUSH [BX]
-	SKIPA
+	
+;@_LDP:
+;	PUSH [BX]
+;	SKIPA
 @_STP:	
 	POP	[bx]
 	INc bx
@@ -232,9 +74,11 @@ Start   Label byte
 @_doconst:
 	mov ax,[di]
 	jmp @ph
+	
 @XA:
     xchg    DX,[BP]                 ;XA
     jmps  @_DONEXT
+	
 @RSLD_:
 	push    BX
 	XOR		ah,ah
@@ -248,6 +92,8 @@ Start   Label byte
     xchg    SI,[BP]
     jmps  @_DONEXT
 
+@lary:
+	shl bx,1
 @wary:
 	shl bx,1
 @bary:
@@ -258,20 +104,26 @@ Start   Label byte
 	pop  ax
 	add  ax,bx
 	push ax
-	
-  lbl nop
-  
+	skipa
+@_DOCOLON2:
+	scasw
+@_DOCOLON1:
+	scasw		
+  lbl nop  
 @_DOCOLON:
 	SKIPB
 	db 1
 	xchg ax,di
 	jmps @_pcpush
+	
 @xr:
 	xchg bx,[bp]
     jmps @_DONEXT
+	
 @j:
 	mov	ax,[bp+2]
 	jmps @ph
+	
 @pop:
 	mov	ax,[bp]
 	inc bp
@@ -291,6 +143,9 @@ Start   Label byte
 	dec bp
 	mov [bp],ax
 	jmps @_DONEXT
+	
+@_bnip_:  
+	push   bX
 @_cnip_:  
 	POP   cX
 @_nip_:   
@@ -326,13 +181,6 @@ Start   Label byte
 
 @TODBG: JMP @TROFF		; POINTS TO DEBUGGER IF ANY
 
-@Uless:
-    pop ax
-    SUB Ax,Bx
-    jmps @_cf_bx
-@_zeq:		
-	sub bx,1
-	skipr cx
 @zless:
 	SHL	bx,1
 @_cf_bx:
@@ -356,9 +204,11 @@ Start   Label byte
 	scasw
 	mov [di],bx
 	jmps @drop
+	
 @_setpoint:
 	mov [di+2],si
 	jmps @_rts
+	
 @_0ex:	
 	or bx,bx
 	je @_dropx
@@ -394,7 +244,6 @@ Start   Label byte
 @phax:	
 	PUSH AX
 	jmps @_DONEXT
-
 		
 	scasw
 	scasw
@@ -407,6 +256,7 @@ Start   Label byte
 @twice:	
 	mov ax,di
 	jmps @_rpush
+	
 @execute:
 	pop	ax
 	xchg ax,bx
@@ -414,6 +264,7 @@ Start   Label byte
 @_dopoint:
 	mov ax,[di]
 	jmps @_pcpush
+	
 @for:
 	mov	si,[si]
 @push:
@@ -426,6 +277,7 @@ Start   Label byte
 @dovar:  
 	xchg ax,di
 	jmps @ph
+	
 @_defer: 
 	push bx
 	mov	bx,di
@@ -443,8 +295,8 @@ Start   Label byte
 	je @_br
 @skip:		
 	lodsw
-@_DONEXT2:
 	jmps @_DONEXT
+	
 @NEXT:
 	POP DI
 	DEC DI
@@ -457,31 +309,50 @@ Start   Label byte
 	js @skip
 @_br:
 	mov si,[si]
-	jmps @_DONEXT2
-	
-@_pars:
-	mov	cx,bx
-	pop di ax
-	SUB   DI,CX
-	cmp   AL,' '
-	JNE   @_SKIPX
-	JCXZ  @_SKIPX
-	REPE  SCASB
-	JE    @_SKIPX
-	DEC   DI
-	INC   CX
-@_SKIPX:
-	MOV  bX,di      ;  START OF THE SOURCE
-	JCXZ  @_WEX	
-	REPNE SCASB
-	JNE   @_WEX
-	DEC   DI
-@_WEX:
-	push bx
-	sub di,bx
-	push di
-	mov bx,cx
-	jmps @_DONEXT2
+@_DONEXT2:
+	jmps @_DONEXT
+
+@Uless:
+    pop ax
+    SUB Ax,Bx
+	skipr cx
+@_zeq:		
+	sub bx,1
+    jmps @_cf_bx
+		
+		
+  XT PARS,@_bnip_
+	XCHG  DI,ax
+	SUB     DI,CX
+	mov	AL,' '
+	inc CX
+@@P1:
+	DEC	CX
+	JZ @@PSKIPX
+	SCASB
+	JAE @@P1       ;{ SPACE IS ABOVE OR EQUAL TO }
+	DEC     DI
+@@PSKIPX:
+	push di  ;{;  START OF THE WORD}
+	JCXZ @@PWEX
+	inc CX
+@@P3:
+	DEC	CX
+	JZ @@PWEX        ; END OF THE WORD  IN DI
+	SCASB           ;{ SPACE IS BELOW THEN}
+	JB @@P3
+	DEC     DI
+@@PWEX:          ;{; END OF THE WORD  IN DI}
+	mov		@_ltib,cx
+	pop ax
+	mov		cx,di
+	sub		cx,ax		; LENGTH OF THE WORD
+	XOR CH,CH			; CUT LEN TO 255
+	mov		bx,@_dict
+	DEc		bx
+	DEc		bx
+	sub		bx,cx
+	SKIPA
 	
   XT	MAKESTR,@_cnip_
 	mov [BX],CL                ; SET strlen
@@ -568,6 +439,7 @@ Start   Label byte
 ; -------------------
 ; Compilation
 ; -------------------
+
   TRAP3 XCOMMA
   COL @comma
 	DW _FETCH
@@ -577,7 +449,9 @@ Start   Label byte
   
   LBL BACKMARK		; BEGIN
   col HERE
-	dw _dp,_ofst,_pl2div,_dropx
+	dw _dp,_ofst
+  col _plus
+	dw _pl2div,_dropx
   
   LBL COMMENT
   COL COMMENTI
@@ -607,30 +481,19 @@ Start   Label byte
 ; Stack
 ; -------------------
 
-;  xt drop,@drop
-;  xt dup,@dup
-;@swap:
-;	pop ax
-;	jmps @ph
-;  lbl cswap
-;  xt swap,@swap
+  xt drop,@drop
+  xt dup,@dup
+
+  lbl cswap
+  xt swap,@swap_
+	ret
   xt pop,@pop
   xt push,@push
-;  xt RDROP,@RDROP
-;  xt j,@j
-;  xt xr,@xr
-;  xt xa,@xa
+  xt RDROP,@RDROP
+  xt j,@j
+  xt xr,@xr
+  xt xa,@xa
 		
-;  xt zswap,@_NUP_
-;	skipr ax	
-;  lbl bye		
-;	dw 0	;addres of bye
-;	ret
-
-;  xt cx_to_d,@dup_
-;	xchg ax,cx
-;	ret
-
 ; -------------------
 ; Maths / Logic
 ; -------------------
@@ -639,7 +502,9 @@ Start   Label byte
 ;  xt plus,@plus
 ;  xt equals,@equals
   XT 1M,@_M
+  XT 2M,@_M-1
   XT 1P,@_P
+  XT 2P,@_P-1
   xt zeq,@_zeq
 		
   xt and,@_nip_
@@ -687,10 +552,13 @@ Start   Label byte
 	
   XT STM,@_stm
   XT STP,@_stP
-  XT LDP,@_LDP
-  
-  COL str
-	DW _LDP,_SWAPX
+
+  XT  STR,@dup_                   ;STR
+    MOV   AX,[BX]
+	INC   BX
+	INC   BX
+	RET
+
   
   xt STRSKP,@RSLD_					; string skip
 	MOV     BX,si
@@ -885,30 +753,20 @@ Start   Label byte
 ; -----------------------
 
   xt accpt,@__accept
-  xt pars,@_pars
 
   col token?
     dw _xtok?
   col token
-	dw _lit,32
-  col word
-	dw _xtostr
-  col parse
-	dw _source,_ltib,_pars,to_ltib,_exit
+	dw _source,_ltib,_pars,_exit
 	
-  trap xtostr
-	dw _tbuf,_makestr,_exit
-	
-;  trap xdc@
-;	dw _dup,_c@,_exit
-
 ; -----------------------
 ; Dictionary Search
 ; -----------------------
 
 @_dofindc:
 	mov  cx,3
-	add  cl,[bx+2]
+;	add  cl,[bx+2]
+	add  cl,[bx]		; now
 	jmps @_dofind2
 
   xt find,@_NINU_
@@ -918,10 +776,11 @@ Start   Label byte
 @_dofind2:
     push ax si	; di := bx
 	mov  di,bx	; ax := di 
+	skipb
 @_findm:
+	scasw
 	add di,cx
 	mov ax,di
-	scasw
 	mov cl,[di]
 	jcxz @_findi
 	inc cx
@@ -930,7 +789,8 @@ Start   Label byte
 	pop  si
     jne @_findm
 	inc cx
-	xchg ax,si
+	xchg ax,di
+	skipb
 @_findi:
 	xchg ax,si
 	pop di si
@@ -961,11 +821,11 @@ Start   Label byte
   col head		; =h
 	dw _HERE
   col header	; =:			NOP IS PLACE FOR THE (SAME) FUNCTION 
-	dw _nop,_token?,_count,_strp,_dictx,_cpushu,_stm,_exit
+	dw _nop,_token?,_dup,to_dict,_n_to_c,_store,_exit
 		
-;  xt create,@_defcomm
-;	dw @dovar,_nop
-
+  col n_to_c
+	dw _push,_strskp,_pop,_exit
+	
 ; -----------------------
 ; Constants maker
 ; -----------------------
@@ -1002,9 +862,9 @@ Start   Label byte
 		
 @_freemem:
   dw @_final-@_freemem-2
-  dw _header
+  
   aname '=:'
-  dw 0
+  dw _header
   db 0
   
 @_final = $

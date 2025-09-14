@@ -1,0 +1,162 @@
+;ABC		EQU <def>                           ;ABC = "def" (redefined)
+;ABC3		CATSTR ABC2,<,>,ABC,<,>,ABC2	    ;ABC3 = "abc, def, abc" .
+;ABCLEN		SIZESTR ABC						    ;ABCLEN = 3
+;COMMA1 	INSTR ABC3,<,>					    ;COMMA1 = 4
+;ABC4 		SUBSTR ABC3,5					    ;ABC4 = "def,abc"
+;ABC7 		EQU %3+2+1						    ;ABC7 = "6" (textname macro)
+;ABC8 		EQU %COMMA 1					    ;ABC8 = "4"
+
+ppp = 0
+qqq = 0
+
+SKIPA   MACRO		; change the carry
+  DB    03DH
+  ENDM
+
+SKIPB   MACRO		; change the carry
+  DB    03CH
+  ENDM
+
+SKIPR   MACRO reg	; does not change the carry
+  local diff
+diff = $
+  mov   reg,0
+diff = $-diff-2
+  if diff
+    org $-1
+  endif
+  org   $-1
+  ENDM
+
+aname macro cnam
+  local len,end
+  db end-len
+len:
+  db cnam
+end:
+  endm
+  
+header macro cnam,anam
+qqq = $
+  dw ppp
+ppp = qqq
+  aname cnam
+_&anam:
+  endm
+
+variable macro cnam,anam,data
+  header cnam,anam,0
+  dw @dovar
+@_&anam dw  data
+  endm
+  
+constant macro cnam,anam,data
+  header cnam,anam,0
+  dw @_doconst
+@_&anam dw data
+  endm
+  
+xtname macro cnam,anam,adr
+  header cnam,anam,0
+  dw adr
+  endm
+		
+primitive macro cnam,anam
+  xtname cnam,anam,$+2
+  endm
+		
+colon macro cnam,anam
+  header cnam,anam,0
+  dw @_DOCOLON
+  endm
+
+jmps macro adr
+  jmp short adr
+  endm
+
+lbl macro anam
+_&anam:
+ENDM
+
+dat macro anam,adr	;define data field
+@_&anam dw adr
+ENDM
+
+xto macro anam,adr	;define second code field
+to_&anam: dw adr
+ENDM
+
+xat macro anam,adr	;define third code field
+at_&anam: dw adr
+ENDM
+
+xt macro anam,adr	;define code field
+  lbl anam
+  dw adr
+  endm
+
+cnst macro anam,data
+  xt 	anam,@_doconst
+  dat 	anam,data
+  endm
+  
+defer macro anam,data
+  xt 	anam,@_defer
+  dat 	anam,data
+  endm
+  
+var macro anam,data
+  xt 	anam,@dovar
+  dat 	anam,data
+  endm
+  
+value macro anam,data
+  xto  	anam,@_setvar
+  cnst 	anam,data
+  endm
+  
+WATCH macro anam,data
+  xat 	anam,@dovar-2
+  xto 	anam,@setwatch
+  xt  	anam,@getwatch
+  dat 	anam,data
+  endm
+  
+vector macro anam,data
+  xto 	anam,@_setvar
+  defer anam,@_defer
+  endm
+  
+point  macro anam,data
+  xto 	anam,@_setpoint
+  xt 	anam,@_dopoint
+  dat 	anam,data
+  endm
+
+trap3 macro anam
+  xt anam,@trap-3
+endm
+
+trap2 macro anam
+  xt anam,@trap-2
+endm
+
+trap1 macro anam
+  xt anam,@trap-1
+endm
+
+trap macro anam
+  xt anam,@trap
+endm
+
+twice macro anam
+  dw @trap
+endm
+
+prim macro anam
+  xt anam,$+2
+  endm
+		
+col macro anam
+  xt anam,@_DOCOLON
+  endm
