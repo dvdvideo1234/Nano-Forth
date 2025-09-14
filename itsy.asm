@@ -180,7 +180,6 @@ Start   Label byte
 @_ABORT:
         mov bp,0
         mov sp,-256
-        call @troff
         call @does
 		dw _lpar 						;init interpretter
 @_CICLE	dw _init,_eval,_nop,_BRAN,@_CICLE
@@ -192,9 +191,7 @@ Start   Label byte
 	pop di
 	mov [di],bx
 	mov ah,10
-	mov dx,di
-	int 21h
-	;call @dos
+	CALL @DOS
 	lea bx,[di+1]
 @_count:
 	inc bx
@@ -205,19 +202,31 @@ Start   Label byte
 @lobyte:
 	mov bh,0
 	jmps @_DONEXT
+@_fetch:
+	mov bx,[bx]
+	jmps @_DONEXT
 @_dc@:
 	push bx
 	jmps @c@
-@_COMMENT:
-	skipr ax	
-  lbl bye		
-	DW 0
-	mov	@_LTIB,AX
-	SKIPB
 @dup:
 	push bx
 	jmps @_DONEXT
-	
+@_STM:	
+	POP	[bx-2]
+	dec bx
+@_M:
+	dec bx
+	jmps @_DONEXT
+@_LDP:
+	PUSH [BX]
+	SKIPA
+@_STP:	
+	POP	[bx]
+	INc bx
+@_P:
+	INc bx
+	jmps @_DONEXT
+
 @getwatch:
 	mov	di,[di]
 @_doconst:
@@ -244,19 +253,7 @@ Start   Label byte
 @bary:
 	add bx,di
 	jmps @_DONEXT
-@str:  
-	lea ax,[bx+2]
-	push ax
-@fetch:
-	mov bx,[bx]
-	jmps @_DONEXT
 
-;@minus:
-;		neg bx
-;@plus:
-;        pop ax
-;        add bx,ax
-;        jmps @_DONEXT
 @_COL_EVAL:
 	pop  ax
 	add  ax,bx
@@ -280,15 +277,7 @@ Start   Label byte
 	inc bp
 	inc bp
 	jmps @ph
-@_here:
-	mov ax,@_dp
-	add ax,@_ofst
-	jmps @ph
-@_FRELS:				; FOR THEN  - RELEASE FORWARD BRANCHES
-	PUSH BX
-    MOV BX,@_dp
-	JMPS @SWAPSTOR
-	
+
 	scasw
 	scasw
 @does:
@@ -365,14 +354,10 @@ Start   Label byte
 	skipb
 @_setvar:
 	scasw
-	skipb
-@swapstor:
-	pop DI
 	mov [di],bx
 	jmps @drop
 @_setpoint:
-	scasw
-	mov [di],si
+	mov [di+2],si
 	jmps @_rts
 @_0ex:	
 	or bx,bx
@@ -381,6 +366,11 @@ Start   Label byte
     pop bx
     jmps @_DONEXT
 	
+@_SWAPX:
+	pop ax
+	XCHG BX,AX
+	PUSH AX
+	skipr cl
 @nipx:
 	pop ax
 	skipr cl
@@ -455,6 +445,11 @@ Start   Label byte
 	lodsw
 @_DONEXT2:
 	jmps @_DONEXT
+@NEXT:
+	POP DI
+	DEC DI
+	PUSH DI
+	SKIPR CX
 @mif:
 		inc bx
 @ifm:	
@@ -463,19 +458,7 @@ Start   Label byte
 @_br:
 	mov si,[si]
 	jmps @_DONEXT2
-@_ZCOMMA:
-	PUSH bx
-	XOR BX,bx
-	SKIPA
-@_comma@:
-	mov bx,[bx]
-@_comma:		
-	mov di,[@_dp]
-	xchg ax,bx
-	stosw
-	mov [@_dp],di
-	jmps @drop
-
+	
 @_pars:
 	mov	cx,bx
 	pop di ax
@@ -541,10 +524,17 @@ Start   Label byte
   xt de,@_DROP_
 @_outchar:
 	mov ah,2
-	mov dx,di
+@DOS:
+	XCHG dx,di
 	int 021h
+	XCHG dx,di
 	ret
 
+  xt FILL,@_DROP_3
+	XCHG AX,DI
+	REP STOSB
+	RET
+	
 ; -------------------
 ; Variables
 ; -------------------
@@ -561,27 +551,42 @@ Start   Label byte
         value erra,0
         value dp,@_freemem
 		value ofst,0
-;        value base,10
         value dict,0f000h-270
 		vector cdict,_dict
+        cnst  zero,0
         cnst  tib,080h
         cnst  inl,64			; max char in line
         cnst  tbuf,0f000h-260	; str evaluation
+
+  col dictx
+	dw _dict,_ex,to_dict,_exit
+
+  col DPx
+	dw _DP,_ex,to_DP,_exit
+
 		
 ; -------------------
 ; Compilation
 ; -------------------
-
+  TRAP3 XCOMMA
+  COL @comma
+	DW _FETCH
   LBL BECKREL
-  xt comma,@_comma
-  xt @comma,@_comma@
+  COL comma
+	DW _DPX,_STP,_EXIT
+  
   LBL BACKMARK		; BEGIN
-  xt HERE,@_HERE
+  col HERE
+	dw _dp,_ofst,_pl2div,_dropx
   
   LBL COMMENT
-  XT COMMENTI,@_COMMENT
-  XT THEN,@_FRELS
+  COL COMMENTI
+	dw _zero,To_ltib,_exit
   
+;  trap1 xthen
+;  col THEN
+;	dw _here,_swapstor,_exit
+	
   xt lit,@dup_
 	lodsw
     RET
@@ -590,7 +595,7 @@ Start   Label byte
 		call @does
 @_COMM   dw _str,_comma,_@exec,_exit
 				
-  trap2 xcomma		; ;,
+  ;trap2 xcomma		; ;,
   xt litc,@_commaer
 	dw _lit,_comma,_exit
 		
@@ -609,8 +614,8 @@ Start   Label byte
 ;	jmps @ph
 ;  lbl cswap
 ;  xt swap,@swap
-;  xt pop,@pop
-;  xt push,@push
+  xt pop,@pop
+  xt push,@push
 ;  xt RDROP,@RDROP
 ;  xt j,@j
 ;  xt xr,@xr
@@ -633,6 +638,8 @@ Start   Label byte
 ;  xt minus,@minus
 ;  xt plus,@plus
 ;  xt equals,@equals
+  XT 1M,@_M
+  XT 1P,@_P
   xt zeq,@_zeq
 		
   xt and,@_nip_
@@ -672,21 +679,19 @@ Start   Label byte
 ; Peek and Poke
 ; -------------------
 
-;  xt fetch,@fetch
+  xt fetch,@_fetch
   xt dC@ ,@_dC@
-  xt str,@str
-;  xt swapstor,@swapstor
-
   xt store ,@_DROP_2
 	stosw
 	RET
 	
-  xt stm,@_nip_
-	mov	[bx-2],ax
-	dec bx
-	dec bx
-	ret
-	
+  XT STM,@_stm
+  XT STP,@_stP
+  XT LDP,@_LDP
+  
+  COL str
+	DW _LDP,_SWAPX
+  
   xt STRSKP,@RSLD_					; string skip
 	MOV     BX,si
 	lodsb
@@ -724,10 +729,10 @@ Start   Label byte
   xt semicolon,@_commaer
 	dw _exit,_lpar
   
-  col lpar
+  col lpar							; interpretter is on
 	dw to_found,_dict,_find,_exit
   
-  col rpar
+  col rpar							; compiler is on
 	dw to_found,_cdict,_findc,_exit
 		
 ; -------------------
@@ -746,6 +751,7 @@ Start   Label byte
 ;  xt mif,@mif
 ;  xt ifm,@ifm
   xt dropx,@_dropx
+  XT SWAPX,@_SWAPX
   xt 0x,@_0ex
 
 ;  col TIMES
@@ -764,40 +770,89 @@ Start   Label byte
 	xchg 	ax,SI  	; START ADR
 	mov		BL,10	; NUM BASE
 	XOR		ax,ax
+	
+	PUSHF	; =0
+	JCXZ @_ZEROACC
+	CMP BYTE PTR  [SI],'-'
+	JNZ @_ZEROACC
+	DEC CX
+	INC SI	; <>0
+	POP DI
+	PUSHF
+	
+@_ZEROACC:	
 	XOR		DI,DI	; ZERO ACCUM
 	jmps @_NUM
 	
-@_Nm:xchg 	ax,DI
+@_Nm0:
+	DEC  CX
+@_Nm:
+	xchg 	ax,DI
     mul  	BX
 	xchg 	ax,DI
     ADD		DI,AX
+@_NUM:   
+	JCXZ @_EXNUM
 	DEC      cx
-@_NUM:   JZ @_EXNUM
 	lodsb
-	CMP		AL,'$'
+	JE @_NM5		; <>0 ENABLES NEXT 5 OPTIONS
+	CMP		AL,'^'
+	JNE	@_NM1
+	lodsb
+	AND  AL,31
+	JMPS	@_Nm0
+@_NM1:
+	CMP		AL,''''
 	JNE	@_NM2
+	lodsb
+	JMPS	@_Nm0	
+@_NM2:
+	CMP		AL,'#'
+	JNE	@_NM3
+	mov		BX,DI
+	DEC BX
+	DEC BX
+	MOV BH,0
+	INC BX
+	INC BX	
+	JMPS	@_ZEROACC
+@_NM3:	
+	CMP		AL,'$'
+	JNE	@_NM4
 	mov		BL,16
 	JMPS	@_NUM
-@_NM2:
+@_NM4:	
+	CMP		AL,'%'
+	JNE	@_NM5
+	mov		BL,2
+	JMPS	@_NUM
+@_NM5:
 	cmp  	al,'9'+1
 	jc   @_n
 	cmp  al,'A'
-	jc   @_EXNUM
+	jc   @_EXNUM_
 	sub  al,7
 @_n: sub  al,'0'
 	cmp  ax,BX
 	jc   @_NM
+@_EXNUM_:	
+	INC CX			; CX <> ON ERR
 @_EXNUM: 
+	POPF
+	XCHG AX,DI
+	JE @_NM_NOSGN
+	NEG AX
+@_NM_NOSGN:	
+	; RESULT NUMBER IN AX
 	POP 	SI
-	XCHG	DI,AX	; RESULT NUMBER IN AX
-	mov		BX,CX
+	mov		BX,CX		; FLAG SUCSESS
 	RET
 
   xt count,@_count
 
   XT STRP,@_NINU_
-    INC   ax
-    DEC   BX
+    DEC   ax		; ADDRES
+    INC   BX		; COUNT
 @TROFF:
     ret
 	
@@ -816,9 +871,9 @@ Start   Label byte
   col error?
 	dw _strskp,to_erra,_0x,_errv,__ABORT
 	
-  trap2 xtok?
-  trap2 xnz?
+  trap xtok?
 	dw _dc@
+  col nz?
 	dw _zeq
   col err?
     dw _error?
@@ -835,7 +890,9 @@ Start   Label byte
   col token?
     dw _xtok?
   col token
-	dw _xtostr,_lit,32
+	dw _lit,32
+  col word
+	dw _xtostr
   col parse
 	dw _source,_ltib,_pars,to_ltib,_exit
 	
@@ -859,8 +916,8 @@ Start   Label byte
 @_dofind:
 	xor  cx,cx
 @_dofind2:
-    push ax si
-	mov  di,bx	;ax := di  di := bx
+    push ax si	; di := bx
+	mov  di,bx	; ax := di 
 @_findm:
 	add di,cx
 	mov ax,di
@@ -910,11 +967,11 @@ Start   Label byte
 ;	dw @dovar,_nop
 
 ; -----------------------
-; Constants
+; Constants maker
 ; -----------------------
 
-  xt constant,@_defcomm
-	dw @_doconst,_comma
+;  xt constant,@_defcomm
+;	dw @_doconst,_comma
 
 ; -----------------------
 ; Outer Interpreter
@@ -925,7 +982,7 @@ Start   Label byte
   trap3 xeval
   xt eval,@_COL_EVAL
 		dw to_ltib,to_etib
-@_eval	dw _token,_zbran,@xeval
+@_eval	dw _token,_dc@,_zbran,@xeval
 		dw _found,_oper,_@exec,_BRAN,@_eval
 
   trap xdrop
@@ -938,9 +995,6 @@ Start   Label byte
 	dw _count,_strp
   col phmem
 	dw _dictx,_cpushu,_exit
-
-  col dictx
-	dw _dict,_ex,to_dict,_exit
 
   lbl initadr
 	dw  _tib,_phstr,_dp,_str,_phmem,_xeval,to_init
