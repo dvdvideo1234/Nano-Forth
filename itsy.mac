@@ -160,3 +160,6 @@ prim macro anam
 col macro anam
   xt anam,@_DOCOLON
   endm
+
+DSP = SP
+RSP = BP

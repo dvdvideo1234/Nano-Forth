@@ -19,6 +19,8 @@ Start   Label byte
 @_ABORT:
         mov bp,0
         mov sp,-256
+
+        call @_TROFF
         call @does
 		dw _lpar 						;init interpretter
 @_CICLE	dw _init,_eval,_nop,_BRAN,@_CICLE
@@ -179,7 +181,7 @@ Start   Label byte
 ; Inner Interpreter
 ; -------------------
 
-@TODBG: JMP @TROFF		; POINTS TO DEBUGGER IF ANY
+@TODBG: JMP @_TROFF		; POINTS TO DEBUGGER IF ANY
 
 @zless:
 	SHL	bx,1
@@ -347,19 +349,18 @@ Start   Label byte
 	pop ax
 	mov		cx,di
 	sub		cx,ax		; LENGTH OF THE WORD
-	XOR CH,CH			; CUT LEN TO 255
-	mov		bx,@_dict
-	DEc		bx
-	DEc		bx
-	sub		bx,cx
 	SKIPA
 	
-  XT	MAKESTR,@_cnip_
+  XT	MAKESTR,@_Bnip_
+	XOR CH,CH			; CUT LEN TO 255
+	mov		bx,@_dict
+	lea		BX,[BX-4]	;
+	mov		DI,BX
+	mov byte ptr [DI],'`' 	;after str flag
+	mov	WORD PTR [DI+2],0	
+	DEc		BX
+	sub		bx,cx
 	mov [BX],CL                ; SET strlen
-	XOR CH,CH					; CUT LEN TO 255
-	LEA DI,[BX+1]
-	ADD DI,CX                  ; AFTER END ADDRESS
-	mov byte ptr [DI],'`'            ;after str flag
 @_CPUSHU:
 	ADD  AX,CX
 @_CMOVEU:
@@ -406,6 +407,19 @@ Start   Label byte
 	REP STOSB
 	RET
 	
+  xt FILLW,@_DROP_3
+	XCHG AX,DI
+	REP STOSW
+	RET
+	
+  XT  RP,@DUP_
+  MOV   BX,RSP
+  RET
+
+  XT  SP,@DUP_
+  MOV   BX,DSP
+  RET
+
 ; -------------------
 ; Variables
 ; -------------------
@@ -469,7 +483,6 @@ Start   Label byte
 		call @does
 @_COMM   dw _str,_comma,_@exec,_exit
 				
-  ;trap2 xcomma		; ;,
   xt litc,@_commaer
 	dw _lit,_comma,_exit
 		
@@ -547,6 +560,13 @@ Start   Label byte
   xt fetch,@_fetch
   xt dC@ ,@_dC@
   xt store ,@_DROP_2
+	stosw
+	RET
+	
+  xt Dstore ,@_DROP_3
+	XCHG AX,CX
+	stosw
+	XCHG AX,CX
 	stosw
 	RET
 	
@@ -718,12 +738,6 @@ Start   Label byte
 
   xt count,@_count
 
-  XT STRP,@_NINU_
-    DEC   ax		; ADDRES
-    INC   BX		; COUNT
-@TROFF:
-    ret
-	
   col to_num			; NOPS RESERVED PLACE FOR STRING FUNCTIONS
 	dw _NOP
   COL TO_NUM2
@@ -764,8 +778,7 @@ Start   Label byte
 ; -----------------------
 
 @_dofindc:
-	mov  cx,3
-;	add  cl,[bx+2]
+	mov  cx,5
 	add  cl,[bx]		; now
 	jmps @_dofind2
 
@@ -774,25 +787,22 @@ Start   Label byte
 @_dofind:
 	xor  cx,cx
 @_dofind2:
-    push ax si	; di := bx
-	mov  di,bx	; ax := di 
-	skipb
+    push ax SI		
+	xchg ax,si
+	LEA  di,[bx-4]	; di := bx
 @_findm:
-	scasw
+	lea  DI,[DI+4]
 	add di,cx
-	mov ax,di
 	mov cl,[di]
 	jcxz @_findi
 	inc cx
-	push si
+	MOV si,AX
 	rep cmpsb
-	pop  si
     jne @_findm
-	inc cx
+	MOV cL,2
+	ADD [DI+2],CX	; COUNTER OF USING & FLAG
 	xchg ax,di
-	skipb
 @_findi:
-	xchg ax,si
 	pop di si
 	mov bx,cx
 	ret
@@ -809,7 +819,6 @@ Start   Label byte
 	mov  bx,cx
 	xchg di,ax
 	call @_dofindc
-	inc bx
 	inc bx
 @_fend:
 	ret
@@ -849,22 +858,21 @@ Start   Label byte
 @xeval	dw _dropx
 
 ;  col forget1
-;  dw _dictx,_dup,_fetch,to_dp,_skpdtok,_exit
-;  
-  col phstr
-	dw _count,_strp
+;  dw _dictx,_dup,_fetch,to_dp,_skpdtok,_exit  
+
   col phmem
 	dw _dictx,_cpushu,_exit
 
   lbl initadr
-	dw  _tib,_phstr,_dp,_str,_phmem,_xeval,to_init
+	dw  _tib,_count,_MAKESTR,to_dict	; GET CMD LINE
+	DW _dp,_str,_phmem,_xeval,to_init	; GET VOCABULAY AND EVAL
 	dw _tib,_inl,_accept,_exit
 		
 @_freemem:
   dw @_final-@_freemem-2
   
   aname '=:'
-  dw _header
+  dw _header,0
   db 0
   
 @_final = $
