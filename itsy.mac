@@ -1,3 +1,4 @@
+;(.*?)\n(\1\n)+
 ;ABC		EQU <def>                           ;ABC = "def" (redefined)
 ;ABC3		CATSTR ABC2,<,>,ABC,<,>,ABC2	    ;ABC3 = "abc, def, abc" .
 ;ABCLEN		SIZESTR ABC						    ;ABCLEN = 3
@@ -5,6 +6,12 @@
 ;ABC4 		SUBSTR ABC3,5					    ;ABC4 = "def,abc"
 ;ABC7 		EQU %3+2+1						    ;ABC7 = "6" (textname macro)
 ;ABC8 		EQU %COMMA 1					    ;ABC8 = "4"
+
+locals  @@
+
+pd  equ dword ptr
+pw  equ word  ptr
+pb  equ byte  ptr
 
 ppp = 0
 qqq = 0
@@ -21,11 +28,11 @@ SKIPR   MACRO reg	; does not change the carry
   local diff
 diff = $
   mov   reg,0
-diff = $-diff-2
-  if diff
-    org $-1
-  endif
-  org   $-1
+  if $-diff-2 
+    org $-2
+  ELSE 
+    org  $-1
+  endIf
   ENDM
 
 aname macro cnam
@@ -134,23 +141,23 @@ point  macro anam,data
   endm
 
 trap3 macro anam
-  xt anam,@trap-3
+  xt anam,@_trap-3
 endm
 
 trap2 macro anam
-  xt anam,@trap-2
+  xt anam,@_trap-2
 endm
 
 trap1 macro anam
-  xt anam,@trap-1
+  xt anam,@_trap-1
 endm
 
 trap macro anam
-  xt anam,@trap
+  xt anam,@_trap
 endm
 
 twice macro anam
-  dw @trap
+  dw @_trap
 endm
 
 prim macro anam

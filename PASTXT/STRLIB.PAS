@@ -27,8 +27,45 @@ INTERFACE
 
   function cutStr(var s: string; del: char): string;
   function GETOKEN(var s: string) : string;
+  function GEThash(var s: string) : char;
+
 
 IMPLEMENTATION
+
+  function GEThash(var s: string) : char; assembler;
+  asm
+    les di,s
+    les bx,dword ptr es:[di]
+    mov dx,es
+    cmp bl,3
+    jge @@3
+    cmp bl,2
+    je  @@2
+    mov dl,$1e
+@@2:
+    mov dh,$1d
+@@3:
+    mov dh,al
+    mov cx,4
+    mov ax,cx
+    add al,bl
+    rcl ax,cl
+    sbb al,bl
+    adc al,bh
+    rcl ax,cl
+    sbb al,bh
+    adc al,dl
+    rcl ax,cl
+    sbb al,dl
+    adc al,dh
+    rcl ax,cl
+    sbb al,dh
+    mov dx,0
+    mov bx,127-33  { #127 - byte('!') }
+    div bx
+    mov al,dl
+    add al,33
+end;
 
 
   function boolTxt(cond: boolean): str5;
