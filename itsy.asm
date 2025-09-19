@@ -720,84 +720,85 @@ Start   Label byte
        DW _XDROP,_xTIMES,_COUNT,_EMIT,_EXIT
 
   XT  to_number,@_BINU_
-	push 	SI
-	xchg 	ax,SI  	; START ADR
-	mov		BL,10	; NUM BASE
-	XOR		ax,ax
-	
-	PUSHF	; =0
-	JCXZ @_ZEROACC
-	CMP pb [SI],'-'
-	JNZ @_ZEROACC
-	DEC CX
-	INC SI	; <>0
-	POP DI
-	PUSHF
+    push 	SI
+    xchg 	ax,SI  	; START ADR
+    mov		BL,10	; NUM BASE
+    XOR		ax,ax
+    
+    PUSHF	; =0
+    JCXZ @_ZEROACC
+    CMP pb [SI],'-'
+    JNZ @_ZEROACC
+    DEC CX
+    INC SI	; <>0
+    POP DI
+    PUSHF
 	
 @_ZEROACC:	
-	XOR		DI,DI	; ZERO ACCUM
-	jmps @_NUM
+    XOR		DI,DI	; ZERO ACCUM
+    jmps @_NUM
 	
 @_Nm0:
-	DEC  CX
+    DEC  CX
 @_Nm:
-	xchg 	ax,DI
-	push dx
+    xchg 	ax,DI
+    push dx
     mul  	BX
-	pop dx
-	xchg 	ax,DI
+    pop dx
+    xchg 	ax,DI
     ADD		DI,AX
 @_NUM:   
-	JCXZ @_EXNUM
-	DEC      cx
-	lodsb
-	JE @_NM5		; <>0 ENABLES NEXT 5 OPTIONS
-	CMP		AL,'^'
-	JNE	@_NM2
-	lodsb
-	AND  AL,31
-	JMPS	@_Nm0
+    JCXZ @_EXNUM
+    DEC      cx
+    lodsb
+    JE @_NM5		; <>0 ENABLES NEXT 5 OPTIONS
+    CMP		AL,'^'
+    JNE	@_NM2
+    lodsb
+    AND  AL,31
+    JMPS	@_Nm0
 @_NM2:
-	CMP		AL,'#'
-	JNE	@_NM3
-	mov		BX,DI
-	DEC BX
-	DEC BX
-	MOV BH,0
-	INC BX
-	INC BX	
-	JMPS	@_ZEROACC
+    CMP		AL,'#'
+    JNE	@_NM3
+    mov		BX,DI
+    DEC BX
+    DEC BX
+    MOV BH,0
+    INC BX
+    INC BX	
+    JMPS	@_ZEROACC
 @_NM3:	
-	CMP		AL,'$'
-	JNE	@_NM4
-	mov		BL,16
-	JMPS	@_NUM
+    CMP		AL,'$'
+    JNE	@_NM4
+    mov		BL,16
+    JMPS	@_NUM
 @_NM4:	
-	CMP		AL,'%'
-	JNE	@_NM5
-	mov		BL,2
-	JMPS	@_NUM
+    CMP		AL,'%'
+    JNE	@_NM5
+    mov		BL,2
+    JMPS	@_NUM
 @_NM5:
-	cmp  	al,'9'+1
-	jc   @_n
-	cmp  al,'A'
-	jc   @_EXNUM_
-	sub  al,7
-@_n: sub  al,'0'
-	cmp  ax,BX
-	jc   @_NM
+    cmp  	al,'9'+1
+    jc   @_n
+    cmp  al,'A'
+    jc   @_EXNUM_
+    sub  al,7
+@_n: 
+    sub  al,'0'
+    cmp  ax,BX
+    jc   @_NM
 @_EXNUM_:	
-	INC CX			; CX <> ON ERR
+    INC CX			; CX <> ON ERR
 @_EXNUM: 
-	POPF
-	XCHG AX,DI
-	JE @_NM_NOSGN
-	NEG AX
+    POPF
+    XCHG AX,DI
+    JE @_NM_NOSGN
+    NEG AX
 @_NM_NOSGN:	
 	; RESULT NUMBER IN AX
-	POP 	SI
-	mov		BX,CX		; FLAG SUCSESS
-	RET
+    POP 	SI
+    mov		BX,CX		; FLAG SUCSESS
+    RET
 
   xt count,@_count
 

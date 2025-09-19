@@ -2,71 +2,47 @@ UNIT STRLIB;
 
 INTERFACE
 
-  type 
-	cptr	= ^char;
-        WPTR    = ^WORD;
-	PSTR	= ^STRING;
-    wordREC	= record lo, hi:  BYTE; end;
-    LONGREC	= record lo, hi:  word; end;
-    str5    = string[5];
-    str15   = string[15];
-    str33   = string[33];
-    str85   = string[85];
-    str8C   = string[140];
-    LONGSTR = RECORD CP: CPTR; REM: WORD; END;
+  type
+      cptr    = ^char;
+      BPTR    = ^BYTE;
+      WPTR    = ^WORD;
+      PSTR    = ^STRING;
+      DWORD   = LONGINT;
+      wordREC = record lo, hi:  BYTE; end;
+      LONGREC = record lo, hi:  word; end;
+      str5    = string[5];
+      str15   = string[15];
+      str33   = string[33];
+      str85   = string[85];
+      str8C   = string[140];
+      LONGSTR = RECORD CP: CPTR; REM: WORD; END;
 
   function boolTxt(cond: boolean): str5;
   procedure ShowStr(s:string);
   function fixblanks(s: string): STRING;
   function upcase(s: string): STRING;
-  
+  PROCEDURE REVERT(Data: PCHAR; LEN: Word);
+  PROCEDURE ONPLACE(Data: PCHAR; LEN1, LEN2: Word);
+
   function PARS(VAR LS: LONGSTR): word;
+  function PARScnt(VAR LS: LONGSTR): word;
   FUNCTION ADDptr(ptr: POINTER; sz: integer): POINTER;
   function MKSTR(var s; B: BYTE) : string;
   function MKSTROF(C: CHAR; B: BYTE) : string;
 
   function cutStr(var s: string; del: char): string;
   function GETOKEN(var s: string) : string;
-  function GEThash(var s: string) : char;
+  function nibtohex(b: byte) : char;
+  function bytetohex(b: byte) : str5;
+  function wordToHex(W: WORD) : str5;
+  function DwordToHex(L: DWORD) : str15;
 
+  function CRC32T(Data: PCHAR; LEN: Word; CRC, POLY: DWord): DWord;
+  function CRC16(var s; len, CRC, POLY: word) : WORD;
+  function CRC8(var s; len: WORD; CRC, POLY: BYTE) : BYTE;
+  function GEThash(s: string) : byte;
 
 IMPLEMENTATION
-
-  function GEThash(var s: string) : char; assembler;
-  asm
-    les di,s
-    les bx,dword ptr es:[di]
-    mov dx,es
-    cmp bl,3
-    jge @@3
-    cmp bl,2
-    je  @@2
-    mov dl,$1e
-@@2:
-    mov dh,$1d
-@@3:
-    mov dh,al
-    mov cx,4
-    mov ax,cx
-    add al,bl
-    rcl ax,cl
-    sbb al,bl
-    adc al,bh
-    rcl ax,cl
-    sbb al,bh
-    adc al,dl
-    rcl ax,cl
-    sbb al,dl
-    adc al,dh
-    rcl ax,cl
-    sbb al,dh
-    mov dx,0
-    mov bx,127-33  { #127 - byte('!') }
-    div bx
-    mov al,dl
-    add al,33
-end;
-
 
   function boolTxt(cond: boolean): str5;
     const strbul: array[boolean] of str5
@@ -75,38 +51,96 @@ end;
     booltxt := strBul[cond];
   end;
 
+  function nibtohex(b: byte) : char;
+    const asc: array[0..15] of char = (
+      '0','1','2','3','4','5','6','7',
+      '8','9','A','B','C','D','E','F'
+    );
+  begin
+    NIBTOHEX := ASC[B AND 15];
+  end;
+
+  function bytetohex(b: byte) : str5;
+  BEGIN
+    BYTETOHEX := NIBTOHEX(B SHR 4) + NIBTOHEX(B);
+  END;
+
+  function wordToHex(W: WORD) : str5;
+  BEGIN  WITH WORDREC(W) DO
+    wordToHex := BYTETOHEX(HI) + BYTETOHEX(LO);
+  END;
+
+  function DwordToHex(L: DWORD) : str15;
+  BEGIN  WITH LONGREC(L) DO
+    DwordToHex := wordToHex(HI) + wordToHex(LO);
+  END;
+
+  PROCEDURE REVERT(Data: PCHAR; LEN: Word); ASSEMBLER;
+  ASM
+    PUSH DS
+    CLD
+    LDS SI,DATA
+    MOV  BX,LEN
+    ADD BX,SI
+    JC  @@OVER
+@@LOOP:
+    DEC  BX
+    CMP  SI,BX
+    JNC  @@OVER
+    LODSB
+    XCHG AL,BYTE PTR [BX]
+    MOV  [SI-1],AL
+    JMP  @@LOOP
+@@OVER:         {FLOW}
+    POP  DS
+  END;
+
+  PROCEDURE ONPLACE(Data: PCHAR; LEN1, LEN2: Word);
+  VAR AFTEREND: LONGINT;
+  BEGIN
+    IF (LEN1 = 0) OR (LEN2 = 0)
+      THEN EXIT;
+    WITH LONGREC(DATA) DO AFTEREND := LO;
+    AFTEREND := AFTEREND + LEN1 + LEN2;
+    WITH LONGREC(AFTEREND) DO
+      IF HI <> 0 THEN EXIT;
+    REVERT(DATA,LEN1);
+    REVERT(DATA+LEN1,LEN2);
+    REVERT(DATA,AFTEREND);
+  END;
+
   function PARS(VAR LS: LONGSTR): word;
-	VAR RES: LONGSTR; len: word;
+  VAR RES: LONGSTR; len: word;
   begin
     RES := LS;
     asm
-	LES     DI,[RES.CP]
-	mov	CX,RES.REM
-	mov	AL,' '
-	inc CX
+  LES     DI,[RES.CP]
+  mov CX,RES.REM
+  mov AL,' '
+  inc CX
 @@1:
-	DEC	CX
-	JZ @@SKIPX
-	SCASB
-	JAE @@1       { SPACE IS ABOVE OR EQUAL TO }
-	DEC     DI
+  DEC CX
+  JZ @@SKIPX
+  SCASB
+  JAE @@1       { SPACE IS ABOVE OR EQUAL TO }
+  DEC     DI
 @@SKIPX:
-	push    di    {;  START OF THE WORD}
-	JCXZ @@WEX
-	inc CX
+  push    di    {;  START OF THE WORD}
+  JCXZ @@WEX
+  inc CX
 @@3:
-	DEC	CX
-	JZ @@WEX
-	SCASB           { SPACE IS BELOW THEN}
-	JB @@3
-	DEC     DI
+  DEC CX
+  JZ @@WEX
+  SCASB           { SPACE IS BELOW THEN}
+  JB @@3
+  DEC     DI
 @@WEX:          {; END OF THE WORD  IN DI}
-	POP	AX      {; START OF THE WORD}
-	mov	WORD PTR [RES.CP],DI
-	SUB     DI,ax   {; LENGTH OF THE WORD}
-	mov	WORD PTR [LEN],DI
-	mov	WORD PTR [RES.REM],CX
-	END;
+  POP AX      {; START OF THE WORD}
+  mov WORD PTR [RES.CP],DI
+  SUB     DI,ax   {; LENGTH OF THE WORD}
+  mov WORD PTR [LEN],DI
+  mov WORD PTR [RES.REM],CX
+  END;
     LS := RES;
     pars := LEN;
   END;
@@ -116,6 +150,124 @@ end;
   BEGIN  WITH CP DO  LO := LO + SZ;
     ADDPTR := PTR;
   END;
+
+  { count tokens in memory block on parsing}
+  function PARScnt(VAR LS: LONGSTR): word;
+  var newls: longstr;  cnt, size: word;
+  begin newls := ls;  cnt := 0;
+    repeat
+      size := pars(newls);
+      if size <> 0 then inc(cnt);
+    until size = 0;
+    parscnt := cnt;
+  end;
+
+  function CRC8(var s; len: WORD; CRC, POLY: BYTE) : BYTE; ASSEMBLER;
+  asm
+    push ds
+    lds si,s
+    mov cx,len
+    mov dL,CRC
+    mov bL,POLY
+    jcxz @@skip
+    mov di,cx
+@@loop:
+    lodsb
+    mov  cx,8
+    xor  dl,al
+@@loop2:
+    rol dL,1
+    JNC @@LOOP3
+    xor dL,bL
+@@LOOP3:
+    loop @@loop2
+    dec  di
+    jne  @@loop
+@@skip:
+    xchg ax,dx
+    pop ds
+  END;
+
+  function CRC32T(Data: PCHAR; LEN: Word; CRC, POLY: DWord): DWord;
+    {const poly=$EDB88320;}
+    var i,j:WORD;
+  BEGIN
+    while LEN>0 do begin
+      crc:=BYTE(Data^) xor crc;
+      for j:=0 to 31 do BEGIN
+        asm
+          MOV AX,WORD PTR CRC+2
+          SHL AX,1
+          RCL WORD PTR crc,1
+          RCL WORD PTR CRC+2,1
+        END;
+        IF ODD(CRC) THEN CRC := CRC XOR POLY;
+      END;
+      DATA := DATA + 1;
+      LEN := LEN - 1;
+    end;
+    CRC32T:=crc;
+  END;
+
+  function CRC16(var s; len, CRC, POLY: word) : WORD;    assembler;
+  asm
+    push ds
+    lds si,s
+    mov cx,len
+    mov dx,CRC
+    mov bx,POLY
+    jcxz @@skip
+    mov di,cx
+@@loop:
+    lodsb
+    mov  cx,16
+    xor  dl,al
+@@loop2:
+    rol dx,1
+    JNC @@LOOP3
+    xor dx,bx
+@@LOOP3:
+    loop @@loop2
+    dec  di
+    jne  @@loop
+@@skip:
+    xchg ax,dx
+    pop ds
+  end;
+
+  function GEThash(s: string) : BYTE; assembler;
+  var res: word;
+  asm
+    push ds
+    lds si,s
+    mov di,127
+    xor ax,ax
+    lodsb
+    mov cx,ax
+    dec si
+    inc cx
+    mov bx,97
+
+@@loop:
+    lodsb
+    xchg ax,di
+    mul  bx
+    xchg ax,di
+    add  di,ax
+    loop @@loop
+
+    mov dx,0
+    xchg ax,di
+    mov bx,126-'!'
+    div bx
+    mov al,dl
+    add al,'!'
+    cmp al,','
+    jb  @@skip
+    inc ax
+@@skip:
+    pop ds
+end;
 
   function MKSTR(var s; B: BYTE) : string;
   VAR TS: STRING;
@@ -139,11 +291,11 @@ end;
   BEGIN
     WITH LS DO
       BEGIN   CP := @S[1];  REM:= LENGTH(S);   END;
-    LEN := PARS(LS);
-    WITH LS DO BEGIN
-      RES := MKSTR(ADDPTR(CP,-LEN)^ ,LEN);
-      S := MKSTR(CP^,REM);
-    END;
+        LEN := PARS(LS);
+        WITH LS DO BEGIN
+          RES := MKSTR(ADDPTR(CP,-LEN)^ ,LEN);
+          S := MKSTR(CP^,REM);
+        END;
     GETOKEN := RES;
   END;
 
@@ -216,20 +368,20 @@ end;
   function fixblanks(s: string): STRING;
   var p: integer;
   begin
-	for p := length(s) downto 1 do begin
-	  if s[p] < ' ' then s[p] := ' ';
-	end;
+    for p := length(s) downto 1 do begin
+      if s[p] < ' ' then s[p] := ' ';
+    end;
     FIXBLANKS := S;
   end;
 
   FUNCTION upcase(s: string): STRING;
   var p: integer; bcod: byte;
   begin
-	for p := length(s) downto 1 do begin
-	  bcod := byte(s[p]);
-	  if (bcod <= byte('z')) and (bcod >= byte('a')) then
-	    s[p] := char(bcod-32);
-	end;
+    for p := length(s) downto 1 do begin
+      bcod := byte(s[p]);
+      if (bcod <= byte('z')) and (bcod >= byte('a')) then
+      s[p] := char(bcod-32);
+    end;
     UPCASE := S;
   end;
 

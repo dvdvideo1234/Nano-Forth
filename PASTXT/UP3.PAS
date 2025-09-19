@@ -10,13 +10,15 @@ USES STRLIB, FILIB;
   procedure perform;
   var
     orgstr, RES, CUT1, CUT2, CUT3 : string;
-    ln: word;
+    ln: word; f1, f2: byte;
   begin ln := 0;
     while not eof(IFILE) do begin
       readln(IFILE,orgstr);
+      f1 :=  ord(orgstr[1] IN ['_','@','?']);
+      f2 :=  ord(orgstr[2] IN ['_','@','?']);
       IF (LENGTH(orgstr) >2)
-         AND (orgstr[1] IN ['_','@'..'Z','a'..'z'])
-         AND (NOT (orgstr[2] IN ['@','_']))
+         AND (orgstr[1] IN ['_','?','@'..'Z','a'..'z'])
+         AND ((f1 + f2) < 2 )
       THEN BEGIN
         inc(ln);
         res := UPCASE(fixblanks(orgstr));
@@ -25,7 +27,7 @@ USES STRLIB, FILIB;
         CUT2 := GETOKEN(RES);
         CUT3 := GETOKEN(RES);
         RES := CUTSTR(CUT3,':');
-        cut3[1] := '$';
+        cut3 := '$' + cut3;
         IF ((CUT2 = 'WORD') OR (CUT2 = 'NEAR')) AND (RES='MYCSEG') THEN
         BEGIN cut2 := copy(cut1,1,3);
          if NOT ((cut2 = 'AT_') OR (CUT2 = 'TO_')) THEN BEGIN
