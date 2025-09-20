@@ -23,6 +23,7 @@ INTERFACE
   function upcase(s: string): STRING;
   PROCEDURE REVERT(Data: PCHAR; LEN: Word);
   PROCEDURE ONPLACE(Data: PCHAR; LEN1, LEN2: Word);
+  function strToMem(str: string): pstr;
 
   function PARS(VAR LS: LONGSTR): word;
   function PARScnt(VAR LS: LONGSTR): word;
@@ -37,12 +38,15 @@ INTERFACE
   function wordToHex(W: WORD) : str5;
   function DwordToHex(L: DWORD) : str15;
 
-  function CRC32T(Data: PCHAR; LEN: Word; CRC, POLY: DWord): DWord;
-  function CRC16(var s; len, CRC, POLY: word) : WORD;
-  function CRC8(var s; len: WORD; CRC, POLY: BYTE) : BYTE;
-  function GEThash(s: string) : byte;
-
 IMPLEMENTATION
+
+  function strToMem(str: string): pstr;
+  var mem: pstr;  sz: word;
+  begin sz := succ(length(str));
+    GETMEM (MEM,SZ);
+    mem^ := str;
+    strToMem := mem;
+  end;
 
   function boolTxt(cond: boolean): str5;
     const strbul: array[boolean] of str5
@@ -161,113 +165,6 @@ IMPLEMENTATION
     until size = 0;
     parscnt := cnt;
   end;
-
-  function CRC8(var s; len: WORD; CRC, POLY: BYTE) : BYTE; ASSEMBLER;
-  asm
-    push ds
-    lds si,s
-    mov cx,len
-    mov dL,CRC
-    mov bL,POLY
-    jcxz @@skip
-    mov di,cx
-@@loop:
-    lodsb
-    mov  cx,8
-    xor  dl,al
-@@loop2:
-    rol dL,1
-    JNC @@LOOP3
-    xor dL,bL
-@@LOOP3:
-    loop @@loop2
-    dec  di
-    jne  @@loop
-@@skip:
-    xchg ax,dx
-    pop ds
-  END;
-
-  function CRC32T(Data: PCHAR; LEN: Word; CRC, POLY: DWord): DWord;
-    {const poly=$EDB88320;}
-    var i,j:WORD;
-  BEGIN
-    while LEN>0 do begin
-      crc:=BYTE(Data^) xor crc;
-      for j:=0 to 31 do BEGIN
-        asm
-          MOV AX,WORD PTR CRC+2
-          SHL AX,1
-          RCL WORD PTR crc,1
-          RCL WORD PTR CRC+2,1
-        END;
-        IF ODD(CRC) THEN CRC := CRC XOR POLY;
-      END;
-      DATA := DATA + 1;
-      LEN := LEN - 1;
-    end;
-    CRC32T:=crc;
-  END;
-
-  function CRC16(var s; len, CRC, POLY: word) : WORD;    assembler;
-  asm
-    push ds
-    lds si,s
-    mov cx,len
-    mov dx,CRC
-    mov bx,POLY
-    jcxz @@skip
-    mov di,cx
-@@loop:
-    lodsb
-    mov  cx,16
-    xor  dl,al
-@@loop2:
-    rol dx,1
-    JNC @@LOOP3
-    xor dx,bx
-@@LOOP3:
-    loop @@loop2
-    dec  di
-    jne  @@loop
-@@skip:
-    xchg ax,dx
-    pop ds
-  end;
-
-  function GEThash(s: string) : BYTE; assembler;
-  var res: word;
-  asm
-    push ds
-    lds si,s
-    mov di,127
-    xor ax,ax
-    lodsb
-    mov cx,ax
-    dec si
-    inc cx
-    mov bx,97
-
-@@loop:
-    lodsb
-    xchg ax,di
-    mul  bx
-    xchg ax,di
-    add  di,ax
-    loop @@loop
-
-    mov dx,0
-    xchg ax,di
-    mov bx,126-'!'
-    div bx
-    mov al,dl
-    add al,'!'
-    cmp al,','
-    jb  @@skip
-    inc ax
-@@skip:
-    pop ds
-end;
 
   function MKSTR(var s; B: BYTE) : string;
   VAR TS: STRING;
