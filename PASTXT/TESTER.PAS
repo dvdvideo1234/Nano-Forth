@@ -1,6 +1,8 @@
-PROGRAM TESTER;  {TESTING UNITS}
+PROGRAM TESTER(input,output);  {TESTING UNITS}
 
-USES DOWNGR;
+USES DOWNGR, hashlib;
 
 BEGIN
+  writeln('gaga');
+  perform;
 END.

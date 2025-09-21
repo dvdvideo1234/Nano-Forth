@@ -18,7 +18,7 @@ TYPE
      tbl32 = array[byte] of dword;
      tbl16 = array[byte] of word;
      tbl8  = array[byte] of byte;
-
+{
     const
       tcrc32 : tbl32 = (
         );
@@ -26,7 +26,7 @@ TYPE
         );
       tcrc8  : tbl8 = (
         );
-
+}
 
 var hashstat: array[0..TOP-1] of PtrNODE;
 
@@ -37,6 +37,7 @@ var hashstat: array[0..TOP-1] of PtrNODE;
 
   procedure pushTuple(tkey, tvalue: string);
   function  chkTuple(tkey: string; index: wptr): ptrnode;
+  procedure perform;
 
 
 IMPLEMENTATION
@@ -122,7 +123,7 @@ IMPLEMENTATION
       DATA := DATA + 1;
       LEN := LEN - 1;
     end;
-    CRC32T:=crc;
+    CRC32:=crc;
   END;
 
   function CRC16(var s; len, CRC, POLY: word) : WORD;    assembler;
@@ -186,27 +187,40 @@ IMPLEMENTATION
 end;
 
 {C := CRC32T(PCHAR(@CUT1), byte(cut1[0])+1, $FFFFFFFF, $EDB88320) MOD TOP;}
-{C := crc8(cut1,byte(cut1[0])+1,$FF,$67) MOD TOP;}
 
   procedure perform;
-  var orgstr, RES, cut1: string;
-     c, TOT,  cnt, i: integer;
-  begin TOT := 0;
-    while not eof(input) do begin
-      readln(INPUT,orgstr);
-      res := orgstr;
-      cut1 := cutstr(res,',');
-      IF RES <> '' THEN BEGIN
-         TOT := TOT + 1;
-         cut1 := UPCASE(cut1);
-         C := crc16(cut1,byte(cut1[0])+1,$FFFF,$C867) MOD TOP;
-         inc(hashstat[c]);
-         writeln(OUTPUT,BYTETOHEX(C),cut1,',',RES);
-      END;
+    procedure gen8;
+    var b: byte;
+    begin
+      for b := 0 to 255 do begin
+        if (b and 7) = 0 then writeln;
+        write('$'+bytetohex(crc8(b,1,0,$67))+',');
+      end;
     end;
+
+    procedure gen16;
+    var b: byte;
+    begin
+      for b := 0 to 255 do begin
+        if (b and 7) = 0 then writeln;
+        write('$'+wordtohex(crc16(b,1,0,$C867))+',');
+      end;
+    end;
+
+    procedure gen32;
+    var b: byte;
+    begin
+      for b := 0 to 255 do begin
+        if (b and 7) = 0 then writeln;
+        write('$'+dwordtohex(crc32(@b,1,0,$EDB88320))+',');
+      end;
+    end;
+
+  begin
+    gen8;  writeln;
+    gen16; writeln;
+    gen32; writeln;
   end;
 
 begin
-    {TEST;}
-    perform;
 end.

@@ -18,14 +18,9 @@ USES STRLIB;
   function  strToNum(s: shortstring): longint;
   procedure stradd(var sd: shortstring; ss: shortstring; del: char);
   function  NToHex(n: dword; chars: byte): str15;
-  function  LongToHex(n: dword): str15;
   function  NumberToStr(n: longint; chars, BASE: byte): str33;
-  function  byteTohex(n: byte): str5;
   function  NToStr(n: longint): str15;
   function  byteTobin(n: byte): str15;
-  function  WordTohex(n: word): str15;
-
-  FUNCTION  STKPTR: WORD;
 
   function  RelADR(inw, Mask: WORD): WORD;
   function  divmod(var w: dword; d: word): word;
@@ -37,6 +32,10 @@ USES STRLIB;
 
 
 implementation
+{  function  LongToHex(n: dword): str15;}
+{  function  byteTohex(n: byte): str5;}
+{  function  WordTohex(n: word): str15;}
+{  FUNCTION  STKPTR: WORD;}
 
 
   function  RelADR(inw, Mask: WORD): WORD;       EXTERNAL;
@@ -50,7 +49,7 @@ implementation
   FUNCTION  CALRETADR: POINTER;                  EXTERNAL;
 
 {$L ASMLIB.OBJ}
-
+{
   FUNCTION  STKPTR: WORD;
   VAR P: WORD;
   BEGIN
@@ -60,7 +59,7 @@ implementation
     END;
     STKPTR := P;
   END;
-
+}
   function ascPack(s, d: pchar; l: WORD): WORD;
   var oldd: pchar; ch : char; c: byte absolute ch;
     procedure getc1; begin ch := getc(s); dec(l); end;
@@ -149,6 +148,7 @@ implementation
     NumberToStr := pstr(@RES[i])^;
   end;
 
+{
   function  byteToHex(n: byte): str5;
   begin
     byteToHex := digchar(n shr 4) + digchar(n and 15);
@@ -164,11 +164,12 @@ implementation
     LongToHex := WordToHex(LongRec(n).Hi) + WordToHex(LongRec(n).Lo);
   end;
 
+}
   function  NToHex(n: dword; chars: byte): str15;
     begin
       if (chars in [1..7])
         then  NToHex := NumberToStr(n or $80000000, chars, 16)
-        else  NToHex := LongToHex(n);
+        else  NToHex := dwordToHex(n);
     end;
 
   PROCEDURE DUMP(VAR SRS; LEN: WORD);
@@ -177,7 +178,7 @@ implementation
   BEGIN  LEN := (LEN AND 255) OR 15;  WRITELN;
     FOR I := 0 TO LEN DO BEGIN
       IF (I AND 15) = 0 THEN BEGIN
-        RES := LONGTOHEX(DWORD(@AR[I]))+' ';
+        RES := dwordTOHEX(DWORD(@AR[I]))+' ';
         TXT := '   [';
         T := I;
       END;
@@ -190,35 +191,7 @@ implementation
     END;
   END;
 
-  {$F+}
-  PROCEDURE TESTPARAM(VAR A; C: WORD);
-  VAR P, Q: POINTER; FR: WORD;
-    BEGIN FR := 0;
-      P := @FR; Q := CALRETADR;
-      WRITELN( 'FRAME Q P BP RET C A');
-      DUMP(P^,22);
-      WRITELN('STR8');
-      DUMP(A,18);
-      WRITELN('WPICK');
-      DUMP(POINTER(@DUMP)^,18);
-
-      WRITELN( 'PARAMS ',
-        LONGTOHEX(DWORD(@A)),' ' ,
-        LONGTOHEX(DWORD(@C)),' ',
-        LONGTOHEX(DWORD(P)),' ',
-        LONGTOHEX(DWORD(Q))
-        );
-      WRITELN(WORDTOHEX(WPTR(DWORD(@C))^),' ',
-             WORDTOHEX(WPTR(DWORD(@C)+2)^),' ',
-             WORDTOHEX(WPTR(DWORD(@C)+4)^),' ',
-             WORDTOHEX(WPTR(DWORD(@C)-2)^), ' ',
-             WORDTOHEX(WPTR(DWORD(@C)-4)^), ' ',
-             WORDTOHEX(WPTR(DWORD(@C)-6)^), ' ',
-             WORDTOHEX(FR)
-             );
-    END;
-{$F-}
-
+{
   PROCEDURE TEST;
   VAR SRS, DST: STRING;
   DD: DWORD; DELTA: INTEGER; DVD: WORD;
@@ -232,8 +205,8 @@ implementation
     WRITELN('DST := STRUNPACK(SRS)');
     DST := STRUNPACK(SRS);
     WRITELN(DST,BOOLTXT(STRPACK(DST)=SRS));
-{    TESTPARAM(SRS,3);
-    WRITELN(VA,' ',VB,' ',VC);}
+\    TESTPARAM(SRS,3);
+\    WRITELN(VA,' ',VB,' ',VC);
 
   WRITELN('function  getc(var where: pchar): char');
   PC := @CH;
@@ -249,7 +222,7 @@ implementation
   DD := 70;
   DVD := divmod(DD, 17);
   WRITELN('DIVMOD = ',BOOLTXT(DVD=(70 MOD 17)),' ',BOOLTXT(DD=(70 DIV 17)));
-{
+
   function  strToNum(s: shortstring): longint;
   procedure stradd(var sd: shortstring; ss: shortstring; del: char);
   function  NToHex(n: dword; chars: byte): str15;
@@ -261,10 +234,10 @@ implementation
   function  WordTohex(n: word): str15;
 
   function  RelADR(inw, Mask: WORD): WORD;
-}
+
     READLN;
   END;
+}
 
 begin
-  TEST;
 END.
