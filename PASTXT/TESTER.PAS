@@ -1,6 +1,6 @@
 PROGRAM TESTER(input,output);  {TESTING UNITS}
 
-USES DOWNGR, hashlib;
+USES hashlib;
 
 BEGIN
   writeln('gaga');
