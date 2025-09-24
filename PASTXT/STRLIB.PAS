@@ -4,87 +4,37 @@ INTERFACE
 
 uses baselib;
 
-  function  boolTxt(cond: boolean): str5;
   procedure ShowStr(s:string);
   function  fixblanks(s: string): STRING;
   function  upcase(s: string): STRING;
   PROCEDURE REVERT(Data: PCHAR; LEN: Word);
   PROCEDURE ONPLACE(Data: PCHAR; LEN1, LEN2: Word);
-  function  strToMem(str: string): pstr;
 
   function  ascUnPack(s, d: pchar; l: WORD): WORD;
   function  ascPack(s, d: pchar; l: WORD): WORD;
   function  strPack(s: string): string;
   function  strUnPack(s: str85): string;
 
-  function  strToNum(s: string): longint;
-  procedure stradd(var sd: string; ss: string; del: char);
-  function  NToHex(n: dword; chars: byte): str15;
-  function  NumberToStr(n: longint; chars, BASE: byte): str33;
-  function  NToStr(n: longint): str15;
-  function  byteTobin(n: byte): str15;
-
+  procedure setLstr(var ls: longstr; ptr: pointer; len: word);
   function PARS(VAR LS: LONGSTR): word;
   function PARScnt(newLS: LONGSTR): word;
   FUNCTION ADDptr(ptr: POINTER; sz: integer): POINTER;
   function MKSTR(var s; B: BYTE) : string;
   function MKSTROF(C: CHAR; B: BYTE) : string;
+  FUNCTION trimleft(s: string): string;
+  function lextract(var ls: longstr): string;
 
   function cutStr(var s: string; del: char): string;
   function GETOKEN(var s: string) : string;
-  function bytetohex(b: byte) : str5;
-  function wordToHex(W: WORD) : str5;
-  function DwordToHex(L: DWORD) : str15;
 
 IMPLEMENTATION
 
-  procedure stradd(var sd: string; ss: string; del: char);
-  begin
-    if sd = ''
-      then sd := ss
-      else sd := sd + del + ss;
+  function lextract(var ls: longstr): string;
+  var sz: word;
+  begin lextract := '';   SZ := PARS(LS);
+    IF SZ = 0  THEN EXIT;
+    WITH LS DO lextract := MKSTR(ADDPTR(CP,-SZ)^ ,SZ);
   end;
-
-  function strToNum(s: string): longint;
-  var err: word;   RES: LONGINT;
-  begin
-    val(s,res,err);
-  end;
-
-  function  byteTobin(n: byte): str15;
-  VAR RES : STR15;
-  begin
-    res := NumberToStr(n or 256, 8, 2);
-    byteTobin := RES;
-  end;
-
-  function  NToStr(n: longint): str15;
-  VAR RES: STR15;
-  begin res := '';
-    if n < 0 then begin n := -n; res := '-'; end;
-    res := res + NumberToStr(n,14,10);
-    NTOSTR := RES;
-  end;
-
-  function  NumberToStr(n: longint; chars, base: byte): str33;
-  var dw: dword absolute n;   i: INTEGER;  RES: STR33;
-  begin  i := 33;
-    if base > 63 then base := 64 else if base < 2 then base := 2;
-    repeat
-      RES[i] := digChar(divmod(dw, base));
-      dec(i);
-      dec(chars);
-    until (n=0) or (chars=0);
-    RES[i] := char(33-i);
-    NumberToStr := pstr(@RES[i])^;
-  end;
-
-  function  NToHex(n: dword; chars: byte): str15;
-    begin
-      if (chars in [1..7])
-        then  NToHex := NumberToStr(n or $80000000, chars, 16)
-        else  NToHex := dwordToHex(n);
-    end;
 
   PROCEDURE DUMP(VAR SRS; LEN: WORD);
   VAR AR: ARRAY[0..255] OF BYTE ABSOLUTE SRS;
@@ -92,7 +42,7 @@ IMPLEMENTATION
   BEGIN  LEN := (LEN AND 255) OR 15;  WRITELN;
     FOR I := 0 TO LEN DO BEGIN
       IF (I AND 15) = 0 THEN BEGIN
-        RES := dwordTOHEX(DWORD(@AR[I]))+' ';
+        RES := LongTOHEX(DWORD(@AR[I]))+' ';
         TXT := '   [';
         T := I;
       END;
@@ -151,36 +101,6 @@ IMPLEMENTATION
     end;
     ascUnPack := d - oldd;
   end;
-
-  function strToMem(str: string): pstr;
-  var mem: pstr;  sz: word;
-  begin sz := succ(length(str));
-    GETMEM (MEM,SZ);
-    mem^ := str;
-    strToMem := mem;
-  end;
-
-  function boolTxt(cond: boolean): str5;
-    const strbul: array[boolean] of str5
-          = ('False','True');
-  begin
-    booltxt := strBul[cond];
-  end;
-
-  function bytetohex(b: byte) : str5;
-  BEGIN
-    BYTETOHEX := digchar(B SHR 4) + digchar(B);
-  END;
-
-  function wordToHex(W: WORD) : str5;
-  BEGIN  WITH WORDREC(W) DO
-    wordToHex := BYTETOHEX(HI) + BYTETOHEX(LO);
-  END;
-
-  function DwordToHex(L: DWORD) : str15;
-  BEGIN  WITH LONGREC(L) DO
-    DwordToHex := wordToHex(HI) + wordToHex(LO);
-  END;
 
   PROCEDURE REVERT(Data: PCHAR; LEN: Word); ASSEMBLER;
   ASM
@@ -298,17 +218,17 @@ IMPLEMENTATION
     MKSTROF := TS;
   END;
 
-  procedure str_long(s: string; var ls: longstr);
+  procedure setLstr(var ls: longstr; ptr: pointer; len: word);
   begin
     with ls do begin
-      cp := @s[1];
-      rem:= byte(s[0]);
+      cp := ptr;
+      rem:= len;
     end;
   end;
 
   function GETOKEN(var s: string) : string;
   var LS: LONGSTR;   LEN: WORD;  RES: STRING;
-  BEGIN  str_long(s,ls);  LEN := PARS(LS);
+  BEGIN  setLstr(ls,@s[1],byte(s[0]));  LEN := PARS(LS);
     res := long_str(ls,len);
     WITH LS DO   S := MKSTR(CP^,REM);
     GETOKEN := RES;
@@ -331,30 +251,17 @@ IMPLEMENTATION
 
   function TokenCnt(s: string) : word;
   var ls: longstr;
-  begin str_long(s,ls);
+  begin setLstr(ls,@s[1],byte(s[0]));
     tokenCnt := ParsCnt(ls);
   end;
 
-{
   FUNCTION trimleft(s: string): string;
-  var len, next: integer;
-  begin len := length(s);
-    next := firstNonBlank(@s[1],len);
-    trimleft := copy(s,len-next+1,next);
+  var ls: longstr;  start, len: word;
+  begin setLstr(ls,@s[1],byte(s[0]));
+    len := pars(ls);
+    WITH LS DO
+      trimleft := MKSTR(ADDPTR(CP,-LEN)^ ,LEN+rem);
   end;
-
-  FUNCTION SKIPleft(s: string; C: CHAR): INTEGER;
-  var len, next: integer;
-  begin len := length(s);
-    FOR NEXT := 1 TO LEN DO BEGIN
-      IF S[NEXT] <> C THEN BEGIN
-        SKIPLEFT := NEXT-1;
-        EXIT;
-      END;
-    END;
-    SKIPLEFT := LEN;
-  end;
-  }
 
   function fixblanks(s: string): STRING;
   var p: integer;
