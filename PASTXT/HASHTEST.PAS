@@ -1,9 +1,8 @@
-PROGRAM TESTER(input,output);  {TESTING UNITS}
+PROGRAM hashTEST;  {TESTING UNIT hashlib}
 
 USES baselib, filib, strlib, hashlib;
 
-  type {pfunc= ^func;}
-       TMyFunc = function(s: string): word;
+  type TMyFunc = function(s: string): word;
 
   var tps: longstr;
       buckets: array[0..top-1] of  ptrnode;
@@ -37,13 +36,22 @@ USES baselib, filib, strlib, hashlib;
       freeMem(cp,rem);
   end;
 
+
 {$f+}
-  function h32t(s: string): word;
-  var res: dword;
+
+  function h32H(s: string): integer;
   begin
-    res := CRC32t(@s[1],byte(s[0]), -1);
-    {with longrec(res) do lo := lo xor hi;}
-    h32t := res mod top ;
+    h32H := GETh32(s[1], 0, byte(s[0]), 94) MOD TOP;
+  end;
+
+  function h32t(s: string): word;
+  begin
+    h32t := CRC32t(@s[1],byte(s[0]), -1) mod top ;
+  end;
+
+  function h32(s: string): word;
+  begin    {const poly=$EDB88320;}
+    h32 := CRC32(@s[1],byte(s[0]), -1, $EDB88320) mod top ;
   end;
 
   function h16t(s: string): word;
@@ -53,19 +61,18 @@ USES baselib, filib, strlib, hashlib;
     h16t := res mod top ;
   end;
 
-  function h8t(s: string): word;
+  function h8t(s: string): BYTE;
   var res : word;
   begin
     res := CRC8t(@s[1],byte(s[0]), $ff);
     h8t := res mod top ;
   end;
 
-  function h32(s: string): word;
-  var res : dword;
-  begin    {const poly=$EDB88320;}
-    res := CRC32(@s[1],byte(s[0]), -1, $EDB88320);
-    {with longrec(res) do lo := lo xor hi;}
-    h32 := res mod top ;
+  function h8t2(s: string): BYTE;
+  var res : word;
+  begin
+    res := CRC8t2(@s[1],@tcrc8,byte(s[0]), $ff);
+    h8t2 := res mod top ;
   end;
 
   function h16(s: string): word;
@@ -102,14 +109,17 @@ USES baselib, filib, strlib, hashlib;
     res := GEThw2(@s[1],byte(s[0]), $ffff, $c867);
     hgh2 := res mod top ;
   end;
+
 {$f-}
 
   procedure rehash(MyHash: pointer; msg: string);
   var i: integer; bucket, tuple: ptrNode;
       w, tot, maxind, maxdeep, total: word;
-      start: dword;
-  begin
-    start := now;
+      start, _END_: dword;
+
+  PROCEDURE DO_REHASH;
+    VAR I: INTEGER;
+    BEGIN
     {free buckets}
     for i := top-1 downto 0 do begin
       bucket := buckets[i];
@@ -127,8 +137,15 @@ USES baselib, filib, strlib, hashlib;
       pushTuple(tuple,buckets[w]);
       inc(total);
     end;
+    END;
 
-    tot := total;
+  begin
+    start := now;
+
+    FOR TOT := 1 TO 10000 DO DO_REHASH;
+
+
+    tot := total; _END_ := NOW;
     {count new buckets & and chk deep}
     used_buckets := 0;  maxdeep := 0;
     for i := top-1 downto 0 do
@@ -148,13 +165,13 @@ USES baselib, filib, strlib, hashlib;
       end;
 
     {view stats}
-    writeln(msg,'ms: ',now - start,
-      '  maxd-i: ',  maxdeep,' ',maxind,
-      '  used: ',  used_buckets,
-      '  dups: ',tot-used_buckets,
-      '  perc: ',(used_buckets*100) div tot,
+    writeln(msg,'ms:',_END_ - start,
+      '  maxd-i:',  maxdeep,'.',maxind,
+      '  used:',  used_buckets,
+      '  dups:',tot-used_buckets,'.',total,
+      '  perc:',(used_buckets*100) div tot,
       ' ',(used_buckets*100) div top,
-      '  total: ', total);
+      '  avg_dp:', (tot*100) div used_buckets);
 
         tuple := buckets[maxind];
         while tuple <> nil do begin
@@ -178,10 +195,12 @@ writeln('  tuples : ',tuples_count);
   rehash(@hghw ,'hghw   ');
   rehash(@h8   ,'h8     ');
   rehash(@h16  ,'h16    ');
-  {rehash(@h32  ,'h32    ');}
+  {rehash(@h32 ,'h32    ');}
   rehash(@h8t  ,'h8t    ');
+  rehash(@h8t2 ,'h8t2   ');
   rehash(@h16t ,'h16t   ');
-  {rehash(@h32t ,'h32t   ');}
+  {rehash(@h32t ,'h32t   ')
+  REHASH(@h32H ,'h32H   ');}
   rehash(@hgh2 ,'hgh2   ');
 
   readln;

@@ -6,18 +6,20 @@ USES baselib, STRLIB;
 
 
   function CRC32t(Data: PCHAR; LEN: Word; CRC: DWord): DWord;
-  function CRC16t(Data: PCHAR; LEN, crc: Word): Word;
-  function CRC8t(Data: PCHAR; LEN, crc: Word): Word;
+  function GETh32(var s; CRC: DWORD; len, POLY: word) : Dword;
   function CRC32(Data: PCHAR; LEN: Word; CRC, POLY: DWord): DWord;
-  function CRC16(var s; len, CRC, POLY: word) : WORD;
+  function CRC8t(Data: PCHAR; LEN: WORD; crc: BYTE): BYTE;
+  function CRC8t2(Data, TABLE: PCHAR; LEN: WORD; crc: BYTE): BYTE;
   function CRC8(var s; len: WORD; CRC, POLY: BYTE) : BYTE;
+  function CRC16t(Data: PCHAR; LEN, crc: Word): Word;
+  function CRC16(var s; len, CRC, POLY: word) : WORD;
   function GEThash(var s; len, CRC, POLY: word) : word;
   function GEThw(Data: PCHAR; len, CRC, POLY: word) : word;
   function GEThw2(Data: PCHAR; len, CRC, POLY: word) : word;
 
-IMPLEMENTATION
-
 {$i hashinc}
+
+IMPLEMENTATION
 
   function CRC8(var s; len: WORD; CRC, POLY: BYTE) : BYTE; ASSEMBLER;
   asm
@@ -84,7 +86,7 @@ IMPLEMENTATION
     CRC16t:=crc;
   END;
 
-  function CRC8t(Data: PCHAR; LEN, crc: Word): Word;
+  function CRC8t(Data: PCHAR; LEN: WORD; crc: BYTE): BYTE;
   BEGIN
     while LEN>0 do begin
       crc:=tcrc8[BYTE(Data^)] xor crc;
@@ -119,6 +121,25 @@ IMPLEMENTATION
     pop ds
   end;
 
+  function CRC8t2(Data, TABLE: PCHAR; LEN: WORD; crc: BYTE): BYTE; assembler;
+  asm
+    push ds
+    lds si,DATA
+    LES BX,TABLE
+    mov AH,crc
+    mov cx,len
+    jcxz @@skip
+@@loop:
+    lodsb
+    XLAT
+    XOR  AH,aL
+    loop @@loop
+@@skip:
+    xchg  aL,AH
+    pop ds
+  end;
+
+
   function GEThash(var s; len, CRC, POLY: word) : word; assembler;
   asm
     push ds
@@ -140,6 +161,42 @@ IMPLEMENTATION
     pop ds
   end;
 
+  function GETh32(var s; CRC: DWORD; len, POLY: word) : Dword; ASSEMBLER;
+  asm
+    SUB SP,64
+    push ds
+    push Es
+    lds si,s
+    LES DI,CRC
+    MOV CX,ES
+    MOV BX,POLY
+    xor ax,ax
+    mov Dx,len
+    OR  DX,DX
+    jz @@skip
+@@loop:
+    PUSH DX
+    lodsb
+    SUB  AL,'!'
+    XCHG AX,CX
+    MUL  BX
+    XCHG AX,CX
+    XCHG AX,DI
+    MUL  BX
+    XCHG AX,DI
+    ADD  DI,AX
+    ADC  CX,DX
+    POP  DX
+    DEC  DX
+    JNE  @@loop
+@@skip:
+    pOP Es
+    pop ds
+    xchg  ax,DI
+    MOV   DX,CX
+    ADD SP,64
+  END;
+
   function GEThw(Data: PCHAR; len, CRC, POLY: word) : word; assembler;
   asm
     push ds
@@ -147,35 +204,22 @@ IMPLEMENTATION
     mov dx,crc
     mov bx,poly
     mov cx,len
-    xor di,di
-    shr  cx,1
-    jnc  @@skip0
+    mov di,dx
     xor ax,ax
-    lodsb
-    inc  cx
-    jmp  @@skip1
 @@skip0:
     jcxz @@skip
 
 @@loop:
-    lodsw
-@@skip1:
-    xchg al,ah
-    add  dx,ax  {crc}
-    jnc  @@skip2
-    inc  di
-    xor  dx,bx
-@@skip2:
-    shl  dx,1
-    rcl  di,1
-    adc  dl,0
-    shl  dx,1
-    rcl  di,1
-    adc  dl,0
+    lodsb
+    xchg ax,di
+    mul  bx
+    xchg ax,di
+    add  di,ax
+    xor  di,bx
+    add  di,dx
     loop @@loop
 @@skip:
-    xor  dx,di
-    xchg ax,dx
+    xchg ax,di
     pop ds
 end;
 
@@ -193,14 +237,12 @@ end;
 
 @@loop:
     lodsb
-    xor  di,bx
+    xor  di,bx  {POLY}
     rol  di,1
     adc  di,ax  {crc}
     loop @@loop
 @@skip:
-    {xor  dx,di
-    xchg ax,dx
-    add  ax,bx}
+    xor  di,dx
     xchg ax,di
     pop ds
 end;

@@ -49,6 +49,7 @@ interface
   procedure freeTuple(tuple: ptrNode);
 
   function  now: dword;
+  function  MemHash(Data: PCHAR; len, CRC, POLY: word) : word;
 
   function  boolTxt(cond: boolean): str5;
   function  strToNum(s: string): longint;
@@ -71,11 +72,35 @@ interface
 
 implementation
 
+  function MemHash(Data: PCHAR; len, CRC, POLY: word) : word; assembler;
+  asm
+    push ds
+    lds si,data
+    mov dx,crc
+    mov bx,poly
+    mov cx,len
+    xor di,di
+    xor ax,ax
+@@skip0:
+    jcxz @@skip
+
+@@loop:
+    lodsb
+    xor  di,bx  {POLY}
+    rol  di,1
+    adc  di,ax  {crc}
+    loop @@loop
+@@skip:
+    xor  di,dx
+    xchg ax,di
+    pop ds
+end;
+
   function  now: dword;
   var h,m,s,hs: word;
   begin
     gettime(h,m,s,hs);
-    now := (((h * 60 + m) * 60 + s) * 100 + hs) * 10 ;
+    now := ((h * 60 + m) * 60 + s) * 100 + hs;
   end;
 
 
