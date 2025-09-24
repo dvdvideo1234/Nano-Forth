@@ -40,18 +40,21 @@ USES baselib, filib, strlib, hashlib;
 {$f+}
 
   function h32H(s: string): integer;
-  begin
-    h32H := GETh32(s[1], 0, byte(s[0]), 94) MOD TOP;
+  var res: dword;
+  begin     res := GETh32(s[1], 0, byte(s[0]), 94);
+    H32H := divmod(res,top);
   end;
 
   function h32t(s: string): word;
-  begin
-    h32t := CRC32t(@s[1],byte(s[0]), -1) mod top ;
+  VAR RES: DWORD;
+  begin RES := CRC32t(@s[1],byte(s[0]), -1);
+    h32t :=  DIVMOD(RES, top) ;
   end;
 
   function h32(s: string): word;
-  begin    {const poly=$EDB88320;}
-    h32 := CRC32(@s[1],byte(s[0]), -1, $EDB88320) mod top ;
+  VAR RES: DWORD; { $EDB88320}
+  begin RES :=  CRC32(@s[1],byte(s[0]), -1, $EDB88320);
+    h32 :=  DIVMOD(RES, top) ;
   end;
 
   function h16t(s: string): word;
@@ -142,8 +145,7 @@ USES baselib, filib, strlib, hashlib;
   begin
     start := now;
 
-    FOR TOT := 1 TO 10000 DO DO_REHASH;
-
+    FOR TOT := 1 TO 1000 DO DO_REHASH;
 
     tot := total; _END_ := NOW;
     {count new buckets & and chk deep}
@@ -195,12 +197,12 @@ writeln('  tuples : ',tuples_count);
   rehash(@hghw ,'hghw   ');
   rehash(@h8   ,'h8     ');
   rehash(@h16  ,'h16    ');
-  {rehash(@h32 ,'h32    ');}
+  rehash(@h32  ,'h32    ');
   rehash(@h8t  ,'h8t    ');
   rehash(@h8t2 ,'h8t2   ');
   rehash(@h16t ,'h16t   ');
-  {rehash(@h32t ,'h32t   ')
-  REHASH(@h32H ,'h32H   ');}
+  rehash(@h32t ,'h32t   ');
+  REHASH(@h32H ,'h32H   ');
   rehash(@hgh2 ,'hgh2   ');
 
   readln;
