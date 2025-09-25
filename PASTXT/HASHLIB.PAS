@@ -163,7 +163,6 @@ IMPLEMENTATION
 
   function GETh32(var s; CRC: DWORD; len, POLY: word) : Dword; ASSEMBLER;
   asm
-    SUB SP,64
     push ds
     push Es
     lds si,s
@@ -194,7 +193,6 @@ IMPLEMENTATION
     pop ds
     xchg  ax,DI
     MOV   DX,CX
-    ADD SP,64
   END;
 
   function GEThw(Data: PCHAR; len, CRC, POLY: word) : word; assembler;

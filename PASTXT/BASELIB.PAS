@@ -8,37 +8,37 @@ interface
 
   TYPE
     DWORD = LONGINT;
-      Pbyte   = ^BYTE;
-      Pword   = ^WORD;
-      PSTR    = ^STRING;
-      wordREC = record lo, hi:  BYTE; end;
-      LONGREC = record lo, hi:  word; end;
-      str5    = string[5];
-      str15   = string[15];
-      str33   = string[33];
-      str85   = string[85];
-      str8C   = string[140];
-      LONGSTR = RECORD CP: pChaR; REM: WORD; END;
+    Pbyte   = ^BYTE;
+    Pword   = ^WORD;
+    PSTR    = ^STRING;
+    wordREC = record lo, hi:  BYTE; end;
+    LONGREC = record lo, hi:  word; end;
+    str5    = string[5];
+    str15   = string[15];
+    str33   = string[33];
+    str85   = string[85];
+    str8C   = string[140];
+    LONGSTR = RECORD CP: pChaR; REM: WORD; END;
 
-     tbl32 = array[byte] of dword;
-     tbl16 = array[byte] of word;
-     tbl8  = array[byte] of byte;
+    tbl32 = array[byte] of dword;
+    tbl16 = array[byte] of word;
+    tbl8  = array[byte] of byte;
 
-     PtrNODE = ^TUPNODE;
-     TUPNODE =
-       RECORD
-         NEXT: PtrNODE;
-         VALUE: pSTR;
-         KEY: byte;
-       END;
+    PtrNODE = ^TUPNODE;
+    TUPNODE =
+      RECORD
+        NEXT: PtrNODE;
+        VALUE: pSTR;
+        KEY: byte;
+      END;
 
-     Ptuple = ^aTUPle;
-     atuple =
-       RECORD
-         NEXT: Ptuple;
-         VALUE: pSTR;
-         KEY: string;
-       END;
+    Ptuple = ^aTUPle;
+    atuple =
+      RECORD
+        NEXT: Ptuple;
+        VALUE: pSTR;
+        KEY: string;
+      END;
 
   function  strToMem(str: string): pstr;
   procedure FreeString(ps: pstr);
@@ -58,9 +58,9 @@ interface
   function  NumberToStr(n: longint; chars, BASE: byte): str33;
   function  NToStr(n: longint): str15;
   function  byteTobin(n: byte): str15;
-  function bytetohex(b: byte) : str5;
-  function wordToHex(W: WORD) : str5;
-  function LongToHex(L: DWORD) : str15;
+  function  bytetohex(b: byte) : str5;
+  function  wordToHex(W: WORD) : str5;
+  function  LongToHex(L: DWORD) : str15;
 
   function  RelADR(inw, Mask: WORD): WORD;
   function  divmod(var w: dword; d: word): word;
