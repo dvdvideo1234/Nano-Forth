@@ -123,14 +123,14 @@ USES baselib, filib, strlib, hashlib;
   PROCEDURE DO_REHASH;
     VAR I: INTEGER;
     BEGIN
-    {free buckets}
-    for i := top-1 downto 0 do begin
-      bucket := buckets[i];
-      buckets[i] := nil ;
-      while bucket <> nil do begin
-        pushTuple(poptuple(bucket), unused);
+      {free buckets}
+      for i := top-1 downto 0 do begin
+        bucket := buckets[i];
+        buckets[i] := nil ;
+        while bucket <> nil do begin
+          pushTuple(poptuple(bucket), unused);
+        end;
       end;
-    end;
 
     total := 0;
     {real rehash}

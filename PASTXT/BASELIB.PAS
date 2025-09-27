@@ -70,6 +70,8 @@ interface
   procedure putc(what: char; var where: pchar);
   function  DigChar(n: byte): char;
 
+  var zstr: byte; {do not assign anithing to it}
+
 implementation
 
   function MemHash(Data: PCHAR; len, CRC, POLY: word) : word; assembler;
@@ -177,18 +179,20 @@ end;
 
   function strToMem(str: string): pstr;
   var mem: pstr;  sz: word;
-  begin sz := succ(length(str));
-    GETMEM (MEM,SZ);
+  begin sz := length(str);
+    strToMem := @zstr;
+    if sz = 0
+      then exit;
+    GETMEM (MEM,succ(SZ));
     mem^ := str;
     strToMem := mem;
   end;
 
   procedure FreeString(ps: pstr);
-  var mem: pstr;  sz: word;
   begin
-    if ps = nil then exit;
-    sz := succ(length(ps^));
-    freeMEM (ps,SZ);
+    if (ps = nil) or (ps=(@zstr))
+      then exit;
+    freeMEM (ps,succ(length(ps^)));
   end;
 
   function  findTuple(tkey: string; fnd: ptrnode): ptrnode;
