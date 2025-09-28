@@ -1,25 +1,20 @@
 program UP3;
 
-USES BASELIB, STRLIB, FILIB;
+USES BASELIB, STRLIB, FILIB, HASHLIB;
 
   VAR TF, OK: BOOLEAN;
       TPLS: LONGSTR;
       IFILE, OFILE, TUPLEF: TEXT;
       FNAME: STRING;
-      buckets: array[0..top-1] of  ptrnode;
-
-  function HASH(s: string): integer;
-  begin
-    HASH := MEMHASH(@s[1],byte(s[0]), $ffff, $c867) mod top ;
-  end;
+      PH: PHASH;
 
   FUNCTION FIND(KEY: STRING): STRING;
-    VAR P: PTUPLE;
+    VAR P: PEL;
   BEGIN
     FIND := '';
-    P   := PTUPLE(FINDTUPLE(KEY,buckets[HASH(KEY)]));
+    P   := PH^.SEARCH(KEY);
     IF  P <> NIL
-      THEN FIND := P^.VALUE^;
+      THEN FIND := PH^.GETVALUE(P)^;
   END;
 
 {
@@ -47,26 +42,23 @@ USES BASELIB, STRLIB, FILIB;
 
   procedure setTuples;
   var token, tkey: string;
-      ls: longstr; tuple: ptrNode;
+      ls: longstr; p: peL;
       IDX: WORD;
   begin ls := tpLs;
-    token := lextract(ls);
-    while token <> '' do begin
+    REPEAT  token := lextract(ls);
+      IF TOKEN = ''
+        THEN BREAK;
       tkey := cutstr(token,',');
       if tkey = ''
          then continue;
-      IDX := HASH(TKEY);
-      if findTuple(tkey, buckets[IDX]) <> nil then begin
-         writeln('Duplicate key : ',tkey);
+      if find(tkey) <> '' then begin
+         writeln('Duplicate key : "',tkey,'"');
          continue;
       end;
-      tuple := makeTuple(tkey,token);
-      pushTuple(tuple, buckets[IDX]);
-      token := lextract(ls);
-    end;
+      PH^.ADD(TKEY,TOKEN);
+    UNTIL FALSE;
     with tpLs do
       freeMem(cp,rem);
-    {DUMPHASH;}
   end;
 
   FUNCTION filter(line: string; var adrs, name: string) : boolean;
@@ -125,6 +117,8 @@ USES BASELIB, STRLIB, FILIB;
   end;
 
 begin
+    ph := new(phash,create(251,@H32H));
+
     IF PARAMCOUNT = 0 THEN BEGIN
       WRITELN('NO PARAMS');
       EXIT;
@@ -149,4 +143,6 @@ begin
 
     IF NOT TF
       THEN CLOSE(TUPLEF);
+
+    PH^.DONE;
 end.
