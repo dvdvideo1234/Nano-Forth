@@ -16,16 +16,15 @@ uses baselib;
   function  strUnPack(s: str85): string;
 
   procedure setLstr(var ls: longstr; ptr: pointer; len: word);
-  function PARS(VAR LS: LONGSTR): word;
-  function PARScnt(newLS: LONGSTR): word;
-  FUNCTION ADDptr(ptr: POINTER; sz: integer): POINTER;
-  function MKSTR(var s; B: BYTE) : string;
-  function MKSTROF(C: CHAR; B: BYTE) : string;
-  FUNCTION trimleft(s: string): string;
-  function lextract(var ls: longstr): string;
+  function  PARS(VAR LS: LONGSTR): word;
+  function  PARScnt(newLS: LONGSTR): word;
+  function  MKSTR(var s; B: BYTE) : string;
+  function  MKSTROF(C: CHAR; B: BYTE) : string;
+  FUNCTION  trimleft(s: string): string;
+  function  lextract(var ls: longstr): string;
 
-  function cutStr(var s: string; del: char): string;
-  function GETOKEN(var s: string) : string;
+  function  cutStr(var s: string; del: char): string;
+  function  GETOKEN(var s: string) : string;
 
 IMPLEMENTATION
 
@@ -167,12 +166,6 @@ IMPLEMENTATION
   END;
     LS := RES;
     pars := LEN;
-  END;
-
-  FUNCTION ADDptr(ptr: POINTER; sz: integer): POINTER;
-  VAR  CP: LONGREC ABSOLUTE PTR;
-  BEGIN  WITH CP DO  LO := LO + SZ;
-    ADDPTR := PTR;
   END;
 
   { count tokens in memory block on parsing}

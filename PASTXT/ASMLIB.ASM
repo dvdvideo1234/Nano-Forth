@@ -10,7 +10,6 @@ INCPTR:
   LES   DI,ES:[BX]
   RET
 
-
        public  DigChar
 
 DigChar  PROC FAR
@@ -160,6 +159,35 @@ CALRETADR PROC FAR
     RET
 
 CALRETADR  ENDP
+
+; function  addptr(p: pointer; w: INTEGER): pointer;
+
+        public  ADDPTR
+
+ADDPTR PROC FAR
+  pop  cx DI
+    POP  AX BX DX
+  PUSH DI CX
+    add AX,BX
+    RET
+
+ADDPTR   endP
+
+
+        public  AFTERSTR
+
+AFTERSTR PROC FAR
+  pop  cx DI
+    POP  BX ES
+  PUSH DI CX
+    MOV DX,ES
+    XOR AX,AX
+    MOV AL,ES:[BX]
+    INC BX
+    add AX,BX
+    RET
+
+AFTERSTR   endP
 
 
 code ends

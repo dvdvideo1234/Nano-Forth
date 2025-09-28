@@ -4,8 +4,6 @@ interface
 
   uses dos;
 
-  CONST TOP = 251;
-
   TYPE
     DWORD = LONGINT;
     Pbyte   = ^BYTE;
@@ -24,7 +22,11 @@ interface
     tbl16 = array[byte] of word;
     tbl8  = array[byte] of byte;
 
-    PtrNODE = ^TUPNODE;
+    Thfunc = function(key: string): Dword;
+    ppary= ^pary;
+    pary = array[0..2047] of pointer;
+
+{    PtrNODE = ^TUPNODE;
     TUPNODE =
       RECORD
         NEXT: PtrNODE;
@@ -39,29 +41,35 @@ interface
         VALUE: pSTR;
         KEY: string;
       END;
+}
 
+  PROCEDURE mygetmem(var p: POINTER; sz:word);
   function  strToMem(str: string): pstr;
   procedure FreeString(ps: pstr);
+{
   procedure pushTuple(tuple: ptrNode; var whereTo: ptrNode);
   function  popTuple(var From: ptrNode) : ptrNode;
   function  makeTuple(tkey, tvalue: string): ptrnode;
   function  findTuple(tkey: string; fnd: ptrnode): ptrnode;
   procedure freeTuple(tuple: ptrNode);
-
+}
   function  now: dword;
-  function  MemHash(Data: PCHAR; len, CRC, POLY: word) : word;
+{  function  MemHash(Data: PCHAR; len, CRC, POLY: word) : word;
+  FUNCTION  DOHASH(S: STRING): DWORD;}
 
   function  boolTxt(cond: boolean): str5;
   function  strToNum(s: string): longint;
   procedure stradd(var sd: string; ss: string; del: char);
   function  NToHex(n: dword; chars: byte): str15;
-  function  NumberToStr(n: longint; chars, BASE: byte): str33;
+  function  NumberToStr(n: longint; chars, BASE: WORD): str33;
   function  NToStr(n: longint): str15;
   function  byteTobin(n: byte): str15;
   function  bytetohex(b: byte) : str5;
   function  wordToHex(W: WORD) : str5;
   function  LongToHex(L: DWORD) : str15;
 
+  FUNCTION  AFTERSTR(P: POINTER): POINTER;
+  FUNCTION  ADDPTR(P:POINTER; I:INTEGER): POINTER;
   function  RelADR(inw, Mask: WORD): WORD;
   function  divmod(var w: dword; d: word): word;
   FUNCTION  FREG: POINTER;
@@ -70,9 +78,65 @@ interface
   procedure putc(what: char; var where: pchar);
   function  DigChar(n: byte): char;
 
-  var zstr: byte; {do not assign anithing to it}
+CONST CDIGTBL: STRING[64] =
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';
+
+  function  ITOA(d: longint; cvt: pstr; base: word): str33;
+  PROCEDURE ATOI(s:string;VAR RES:DWORD;cvt:pstr;VAR ERR:word;BASE:WORD);
 
 implementation
+
+  var zstr: byte; {do not assign anithing to it}
+
+  PROCEDURE FIXBASE(VAR BASE: WORD; VAR CVT: PSTR);
+  VAR LCVT: WORD;  CONST NEWCVT: STRING [2] = '01';
+  BEGIN
+    IF BASE < 2 THEN BASE := 2 ELSE IF BASE > 94 THEN BASE := 94;
+    if cvt <> nil THEN BEGIN LCVT := LENGTH(CVT^);
+      IF LCVT < 2 THEN BEGIN CVT := @NEWCVT; LCVT := 2; END;
+      IF LCVT < BASE THEN BASE := LCVT;
+    END;
+  END;
+
+  PROCEDURE ATOI(s:string;VAR RES:DWORD; cvt:pstr; VAR ERR:word; BASE: WORD);
+  var p, LCVT, len, ind: word; B: INTEGER;  DD: DWORD;
+  begin IND := 1; LEN := BYTE(S[0]); DD := 0; ERR := 0; FIXBASE(BASE,CVT);
+    WHILE LEN > 0 DO BEGIN  B := BYTE(S[IND]);
+      if cvt = nil THEN BEGIN  B := B - ORD('!');
+        IF NOT ( B IN [0..PRED(BASE)]) THEN BREAK;
+      END ELSE BEGIN
+        p := pos(CHAR(B),cvt^); if p = 0 then BREAK; B := PRED(P);
+      end;
+      res := DD * base + B;     dec(len); INC(IND);
+    end;
+    RES := DD; if LEN <> 0 then ERR := ind;
+  end;
+
+  function ITOA(d: longint; cvt: pstr; base: word): str33;
+  var i: INTEGER; MODUL: BYTE; C : CHAR ABSOLUTE MODUL; RES: STR33;
+  begin  i := 33; FIXBASE(BASE,CVT);
+    repeat  MODUL := divmod(d, base);
+      if cvt = nil
+        THEN MODUL := MODUL + byte('!')
+        ELSE C := cvt^[succ(MODUL)];
+      RES[i] := C;
+      dec(i);
+    until d=0;
+    RES[i] := char(33-i);
+    ITOA := pstr(@RES[i])^;
+  end;
+
+  PROCEDURE mygetmem(var p: POINTER; sz:word);
+  begin
+    getmem(p,sz);
+    fillchar(p^,sz,#0);
+  end;
+
+{
+  FUNCTION DOHASH(S: STRING): DWORD;
+  BEGIN
+    DOHASH := MEMHASH(@S[1],BYTE(S[0]),$FFFF,$CB67);
+  END;
 
   function MemHash(Data: PCHAR; len, CRC, POLY: word) : word; assembler;
   asm
@@ -88,15 +152,16 @@ implementation
 
 @@loop:
     lodsb
-    xor  di,bx  {POLY}
+    xor  di,bx  POLY
     rol  di,1
-    adc  di,ax  {crc}
+    adc  di,ax  crc
     loop @@loop
 @@skip:
     xor  di,dx
     xchg ax,di
     pop ds
 end;
+}
 
   function  now: dword;
   var h,m,s,hs: word;
@@ -104,7 +169,6 @@ end;
     gettime(h,m,s,hs);
     now := ((h * 60 + m) * 60 + s) * 100 + hs;
   end;
-
 
   procedure stradd(var sd: string; ss: string; del: char);
   begin
@@ -117,6 +181,7 @@ end;
   var err: word;   RES: LONGINT;
   begin
     val(s,res,err);
+    STRTONUM := RES;
   end;
 
   function  byteTobin(n: byte): str15;
@@ -134,7 +199,7 @@ end;
     NTOSTR := RES;
   end;
 
-  function  NumberToStr(n: longint; chars, base: byte): str33;
+  function  NumberToStr(n: longint; chars, base: WORD): str33;
   var dw: dword absolute n;   i: INTEGER;  RES: STR33;
   begin  i := 33;
     if base > 63 then base := 64 else if base < 2 then base := 2;
@@ -153,7 +218,6 @@ end;
         then  NToHex := NumberToStr(n or $80000000, chars, 16)
         else  NToHex := LongToHex(n);
     end;
-
 
   function boolTxt(cond: boolean): str5;
     const strbul: array[boolean] of str5
@@ -195,6 +259,7 @@ end;
     freeMEM (ps,succ(length(ps^)));
   end;
 
+{
   function  findTuple(tkey: string; fnd: ptrnode): ptrnode;
   var fndptr: ptuple absolute fnd;
   begin
@@ -246,7 +311,7 @@ end;
     fnd^.next := nil;
     popTuple := fnd;
   end;
-
+}
 
   function  RelADR(inw, Mask: WORD): WORD;       EXTERNAL;
   function  divmod(var w: dword; d: word): word; EXTERNAL;
@@ -255,6 +320,8 @@ end;
   function  getc(var where: pchar): char;        EXTERNAL;
   procedure putc(what: char; var where: pchar);  EXTERNAL;
   function  DigChar(n: byte): char;              EXTERNAL;
+  FUNCTION  ADDPTR(P:POINTER;I:INTEGER):POINTER; EXTERNAL;
+  FUNCTION  AFTERSTR(P: POINTER): POINTER;       EXTERNAL;
 
 {$L ASMLIB.OBJ}
 
