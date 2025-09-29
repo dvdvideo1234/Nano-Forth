@@ -17,11 +17,11 @@ type
   el   = record
     tnext  : pel;
     t1     : byte;
-    t2     : byte;
+   { t2     : byte;}
   end;
 
-  phash = ^hash;
-  hash  = object
+  pBhash = ^Bhash;  {BASE HASH}
+  Bhash  = object
     tcount  : word;
     tels    : ppary;
     tHash   : pointer;
@@ -40,12 +40,20 @@ type
     procedure   Remove(key: string);
 
     function    ValueToStr(p: pel): string;       virtual;
-    procedure   SetValue(key, newValue: string);  virtual;
-    procedure   Add(key, value: string);          virtual;
     function    GetKey(p: pel): pstr;             virtual;
-    function    GetValue(p: pel): pstr;           virtual;
     procedure   elFree(p: pel);                   virtual;
   end;
+
+  phash = ^hash;  {FROM BASE HASH}
+  hash  = object(BHASH)
+    function    GetValue(p: pel): pstr;
+    procedure   SetValue(key, newValue: string);
+    procedure   Add(key, value: string);
+    function    ValueToStr(p: pel): string;       virtual;
+    function    GetKey(p: pel): pstr;             virtual;
+    procedure   elFree(p: pel);                   virtual;
+  end;
+
 
 
   pnumel  = ^numel;
@@ -55,7 +63,8 @@ type
     t1     : byte;
   end;
 
-  nhash = object(hash)
+  pnhash= ^nhash;
+  nhash = object(Bhash)
     procedure   SetNum(key: string; num: dword);
     function    Getnum(key: string; var num: dword): boolean;
     function    ValueToStr(p: pel): string;       virtual;
@@ -103,24 +112,24 @@ type
 
 IMPLEMENTATION
 
-  procedure   hash.push(p: pel; var ToWhere: pel);
+  procedure   Bhash.push(p: pel; var ToWhere: pel);
   begin
     p^.tnext := Towhere;
     Towhere := p;
   end;
 
-  function    hash.pop(var From: pel) : pel;
-  var fnd: pel;
+  function    Bhash.pop(var From: pel) : pel;
+  var p: pel;
   begin
     pop := nil;
-    fnd := From;
-    if fnd = nil then exit;
-    from := fnd^.tnext;
-    fnd^.tnext := nil;
-    pop := fnd;
+    p := From;
+    if p = nil then exit;
+    from := p^.tnext;
+    p^.tnext := nil;
+    pop := p;
   end;
 
-  constructor hash.create(Count: word; Func: pointer);
+  constructor Bhash.create(Count: word; Func: pointer);
   begin
     tcount  := count;
     thash   := func;
@@ -129,7 +138,7 @@ IMPLEMENTATION
     myGetMem(POINTER(tels),tcount * sizeof(pointer));
   end;
 
-  function    HASH.whereTo(key: string): ppel;
+  function    BHASH.whereTo(key: string): ppel;
   VAR I: DWORD;
   begin
     I := Thfunc(THASH)(key);
@@ -137,7 +146,7 @@ IMPLEMENTATION
     whereTo := ppel(@tels^[I]);
   end;
 
-  procedure   hash.show;
+  procedure   Bhash.show;
     var i: integer; p: pel; cnt, line: word;
 
     procedure  lp(s: string; del:char);  {line plus & print}
@@ -167,14 +176,14 @@ IMPLEMENTATION
     end;
   end;
 
-  destructor  hash.done;
+  destructor  Bhash.done;
   begin
     preRehash;
     while tunused <> nil do
       elFree(pop(tunused));
   end;
 
-  procedure hash.preRehash;
+  procedure Bhash.preRehash;
   var i: integer; p, P1: pel;
   begin  {free buckets}
     for i := tcount-1 downto 0 do
@@ -188,9 +197,9 @@ IMPLEMENTATION
     freemem(tels,tcount * sizeof(pointer));
   end;
 
-  function  hash.search(key: string): pel;
+  function  Bhash.search(key: string): pel;
   var prev, p: pel;
-  begin search := nil;  p := whereTo(key)^;
+  begin search := nil;  p := pel(whereTo(key));
     repeat prev := p; p := prev^.tnext;
       if p = nil then exit;
     until getkey(p)^ = key;
@@ -198,7 +207,7 @@ IMPLEMENTATION
     search := p;
   end;
 
-  procedure hash.rehash(newCount: word; newFunc: pointer);
+  procedure Bhash.rehash(newCount: word; newFunc: pointer);
   var e1 : pel;
   begin preRehash;
     tcount := newCount;
@@ -210,44 +219,24 @@ IMPLEMENTATION
     end;
   end;
 
-  procedure   hash.Add(key, value: string);
-  var szk: byte absolute key; szv: byte absolute value;
-    P: pel;
-  begin
-    myGetMem(POINTER(P),sizeof(el)+szk+szv);
-    getkey(P)^ := key;  {describes where value is}
-    getValue(P)^ := value;
-    push(P,whereTo(key)^);
-  end;
-
-  function    hash.GetKey(p: pel): pstr;
+  function    Bhash.GetKey(p: pel): pstr;
   begin
     getKey := pstr(@p^.t1);
   end;
 
-  function    hash.GetValue(p: pel): pstr;
+  function    Bhash.ValueToStr(p: pel): string;
   begin
-    getValue := pstr(addptr(@p^.t2,p^.t1));
+    ValueToStr := ''; {getValue(p)^;}
   end;
 
-  function    hash.ValueToStr(p: pel): string;
-  begin
-    ValueToStr := getValue(p)^;
-  end;
-
-  procedure    hash.SetValue(key, newValue: string);
-  begin Remove(key);
-    add(key,newvalue);
-  end;
-
-  procedure   hash.elFree(p: pel);
+  procedure   Bhash.elFree(p: pel);
     var sz: word;
   begin
-    sz := length(GetValue(p)^)+sizeof(el)+p^.t1;
+    sz := {length(GetValue(p)^)+}sizeof(el)+p^.t1;
     freemem(p,sz);
   end;
 
-  procedure   hash.Remove(key: string);
+  procedure   Bhash.Remove(key: string);
   var p: pel;
   begin
     p := search(key);
@@ -256,7 +245,51 @@ IMPLEMENTATION
     elFree(p);
   end;
 
-{----------------------------------------------}
+{----------------- HASH -----------------------------}
+
+  function    hash.GetKey(p: pel): pstr;
+  begin
+    getKey := INHERITED GETKEY(P);
+  end;
+
+  function    hash.ValueToStr(p: pel): string;
+  begin
+    ValueToStr := getValue(p)^;
+  end;
+
+  procedure   hash.elFree(p: pel);
+    var sz: word;
+  begin  SZ := length(GetValue(p)^);
+    sz := SUCC(SZ)+sizeof(el)+p^.t1;  {SZKEY = p^.t1}
+    freemem(p,sz);
+  end;
+
+  procedure   hash.Add(key, value: string);
+  var szk: byte absolute key; szv: byte absolute value;
+    P: pel;
+  begin
+    myGetMem(POINTER(P),sizeof(el)+szk+SUCC(szv));
+    getkey(P)^ := key;  {describes where value is}
+    getValue(P)^ := value;
+    push(P,whereTo(key)^);
+  end;
+
+  function    hash.GetValue(p: pel): pstr;
+  begin
+    getValue := pstr(AFTERSTR(@p^.t1));
+  end;
+
+  procedure    hash.SetValue(key, newValue: string);
+  begin Remove(key);
+    add(key,newvalue);
+  end;
+
+{-------------------- NHASH --------------------------}
+
+  function    Nhash.GetKey(p: pel): pstr;
+  begin
+    getKey := PSTR(@PNUMEL(P)^.T1);
+  end;
 
   function    nhash.ValueToStr(p: pel): string;
   begin
@@ -287,11 +320,6 @@ IMPLEMENTATION
     num := pnumel(p)^.tnum;
   end;
 
-  function    nhash.GetKey(p: pel): pstr;
-  begin
-    getKey := pstr(@pnumel(p)^.t1);
-  end;
-
   procedure   nhash.elFree(p: pel);
     var sz: word;
   begin
@@ -304,7 +332,7 @@ IMPLEMENTATION
 
   function h32H(s: string): DWORD;
   begin
-    H32H := GETh32(s[1], 0, byte(s[0]), 94);
+    H32H := GETh32(s[1], byte(s[0]), 0, 94);
   end;
 
   function h32t(s: string): Dword;
@@ -659,4 +687,26 @@ end;
   end;
 
 begin
+{
+VAR PH: PHASH;
+    I: WORD;
+    P: PEL;
+begin
+  WRITELN('GAGA');
+  ph := new(phash,create(19,@H32H));
+  I  := H32H('A');
+  ph^.ADD('A','B');
+  PH^.SHOW;
+  ph^.ADD('B','C');
+  PH^.SHOW;
+  ph^.ADD('C','D');
+  PH^.SHOW;
+  ph^.ADD('D','E');
+  PH^.SHOW;
+  P := PH^.SEARCH('B');
+  WRITELN(PH^.GETVALUE(P)^);
+  readln;
+  PH^.DONE;
+}
+
 end.
