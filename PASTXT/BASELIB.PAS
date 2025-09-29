@@ -8,65 +8,39 @@ interface
     DWORD = LONGINT;
     Pbyte   = ^BYTE;
     Pword   = ^WORD;
+    Plong   = ^dWORD;
     PSTR    = ^STRING;
     wordREC = record lo, hi:  BYTE; end;
     LONGREC = record lo, hi:  word; end;
-    str5    = string[5];
-    str15   = string[15];
-    str33   = string[33];
-    str85   = string[85];
-    str8C   = string[140];
+    str7    = string[7];      {256/37}
+    str15   = string[15];     {256/17}
+    str33   = string[33];     {256/7.5}
+    str73   = string[73];     {256/3.5}
     LONGSTR = RECORD CP: pChaR; REM: WORD; END;
 
-    tbl32 = array[byte] of dword;
-    tbl16 = array[byte] of word;
-    tbl8  = array[byte] of byte;
+    tshow   = function (l: longint): string;
 
-    Thfunc = function(key: string): Dword;
-    ppary= ^pary;
-    pary = array[0..2047] of pointer;
+    ppary   = ^pary;
+    pary    = array[0..2047] of pointer;
 
-{    PtrNODE = ^TUPNODE;
-    TUPNODE =
-      RECORD
-        NEXT: PtrNODE;
-        VALUE: pSTR;
-        KEY: byte;
-      END;
-
-    Ptuple = ^aTUPle;
-    atuple =
-      RECORD
-        NEXT: Ptuple;
-        VALUE: pSTR;
-        KEY: string;
-      END;
-}
 
   PROCEDURE mygetmem(var p: POINTER; sz:word);
   function  strToMem(str: string): pstr;
   procedure FreeString(ps: pstr);
-{
-  procedure pushTuple(tuple: ptrNode; var whereTo: ptrNode);
-  function  popTuple(var From: ptrNode) : ptrNode;
-  function  makeTuple(tkey, tvalue: string): ptrnode;
-  function  findTuple(tkey: string; fnd: ptrnode): ptrnode;
-  procedure freeTuple(tuple: ptrNode);
-}
   function  now: dword;
-{  function  MemHash(Data: PCHAR; len, CRC, POLY: word) : word;
-  FUNCTION  DOHASH(S: STRING): DWORD;}
 
-  function  boolTxt(cond: boolean): str5;
+  function  boolTxt(cond: boolean): str7;
   function  strToNum(s: string): longint;
   procedure stradd(var sd: string; ss: string; del: char);
   function  NToHex(n: dword; chars: byte): str15;
   function  NumberToStr(n: longint; chars, BASE: WORD): str33;
   function  NToStr(n: longint): str15;
   function  byteTobin(n: byte): str15;
-  function  bytetohex(b: byte) : str5;
-  function  wordToHex(W: WORD) : str5;
+  function  bytetohex(b: byte) : str7;
+  function  wordToHex(W: WORD) : str7;
   function  LongToHex(L: DWORD) : str15;
+  function  ltos(l: longint): str7;
+  function  stol(s: str15): longint;
 
   FUNCTION  AFTERSTR(P: POINTER): POINTER;
   FUNCTION  ADDPTR(P:POINTER; I:INTEGER): POINTER;
@@ -87,6 +61,24 @@ CONST CDIGTBL: STRING[64] =
 implementation
 
   var zstr: byte; {do not assign anithing to it}
+
+  function ltos(l: longint): str7;
+  var res: str7; p: plong;
+  begin
+    res[0] := #4;
+    p := @res[1];
+    p^ := l;
+    ltos := res;
+  end;
+
+  function  stol(s: str15): longint;
+  var sz: byte absolute s;
+  begin
+    if sz < sizeof(longint)
+      then fillchar(s[sz+1],4,#0);
+    {sz := 4;}
+    stol := plong(@s[1])^;
+  end;
 
   PROCEDURE FIXBASE(VAR BASE: WORD; VAR CVT: PSTR);
   VAR LCVT: WORD;  CONST NEWCVT: STRING [2] = '01';
@@ -131,37 +123,6 @@ implementation
     getmem(p,sz);
     fillchar(p^,sz,#0);
   end;
-
-{
-  FUNCTION DOHASH(S: STRING): DWORD;
-  BEGIN
-    DOHASH := MEMHASH(@S[1],BYTE(S[0]),$FFFF,$CB67);
-  END;
-
-  function MemHash(Data: PCHAR; len, CRC, POLY: word) : word; assembler;
-  asm
-    push ds
-    lds si,data
-    mov dx,crc
-    mov bx,poly
-    mov cx,len
-    xor di,di
-    xor ax,ax
-@@skip0:
-    jcxz @@skip
-
-@@loop:
-    lodsb
-    xor  di,bx  POLY
-    rol  di,1
-    adc  di,ax  crc
-    loop @@loop
-@@skip:
-    xor  di,dx
-    xchg ax,di
-    pop ds
-end;
-}
 
   function  now: dword;
   var h,m,s,hs: word;
@@ -219,19 +180,19 @@ end;
         else  NToHex := LongToHex(n);
     end;
 
-  function boolTxt(cond: boolean): str5;
-    const strbul: array[boolean] of str5
+  function boolTxt(cond: boolean): str7;
+    const strbul: array[boolean] of str7
           = ('False','True');
   begin
     booltxt := strBul[cond];
   end;
 
-  function bytetohex(b: byte) : str5;
+  function bytetohex(b: byte) : str7;
   BEGIN
     BYTETOHEX := digchar(B SHR 4) + digchar(B and 15);
   END;
 
-  function wordToHex(W: WORD) : str5;
+  function wordToHex(W: WORD) : str7;
   BEGIN  WITH WORDREC(W) DO
     wordToHex := BYTETOHEX(HI) + BYTETOHEX(LO);
   END;
@@ -259,59 +220,6 @@ end;
     freeMEM (ps,succ(length(ps^)));
   end;
 
-{
-  function  findTuple(tkey: string; fnd: ptrnode): ptrnode;
-  var fndptr: ptuple absolute fnd;
-  begin
-    while fnd <> nil do begin
-      if fndptr^.key = tkey then begin
-        findTuple := fnd;
-        exit;
-      end;
-      fnd := fnd^.next;
-    end;
-    findTuple := nil;
-  end;
-
-  function makeTuple(tkey, tvalue: string): ptrnode;
-  var fnd:  ptuple;
-  begin
-    getmem(fnd,sizeof(tupnode)+length(tkey));
-    with fnd^ do begin
-      next := nil;
-      value := strToMem(tvalue);
-      key := tkey;
-    end;
-    makeTuple := ptrNode(fnd);
-  end;
-
-  procedure freeTuple(tuple: ptrNode);
-  begin
-    if tuple = nil then exit;
-    with tuple^ do begin
-      freeString(value);
-      freeMem(tuple,sizeof(tupnode)+key);
-    end;
-  end;
-
-
-  procedure pushTuple(tuple: ptrNode; var whereTo: ptrNode);
-  begin
-    tuple^.next := whereTo;
-    whereTo := tuple;
-  end;
-
-  function popTuple(var From: ptrNode) : ptrNode;
-  var fnd: ptrNode;
-  begin
-    popTuple := nil;
-    fnd := From;
-    if fnd = nil then exit;
-    from := fnd^.next;
-    fnd^.next := nil;
-    popTuple := fnd;
-  end;
-}
 
   function  RelADR(inw, Mask: WORD): WORD;       EXTERNAL;
   function  divmod(var w: dword; d: word): word; EXTERNAL;
