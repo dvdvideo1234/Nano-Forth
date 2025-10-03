@@ -87,16 +87,17 @@ IMPLEMENTATION
 
   function ascUnPack(s, d: pchar; l: WORD): WORD;
   var oldd: pchar; ch : char; c: byte absolute ch;  hibit: boolean;
+    procedure put(chr: char); begin d^ := chr; d := d + 1; end;
   begin  oldd := d;
-    for l := l downto 1 do begin  ch := s^; inc(s);
+    while l > 0 do begin  ch := s^; inc(s); dec(l);
       hibit := c > 127; c :=  c and 127;
       case ch of
-        #0..#31: begin putc('^',d);  c := c or ord('@'); end;
-        '~','"','^','_':  putc('"',d);
+        #0..#31: begin put('^');  c := c or ord('@'); end;
+        '~','"','^','_':  put('"');
         ' ': ch := '_';
       end;
-      putc(ch,d);
-      if hibit then putc('~',d);
+      put(ch);
+      if hibit then put('~');
     end;
     ascUnPack := d - oldd;
   end;

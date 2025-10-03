@@ -29,7 +29,7 @@ interface
   procedure FreeString(ps: pstr);
   function  now: dword;
 
-  function  boolTxt(cond: boolean): str7;
+  function  boolstr(cond: boolean): str7;
   function  strToNum(s: string): longint;
   procedure stradd(var sd: string; ss: string; del: char);
   function  NToHex(n: dword; chars: byte): str15;
@@ -50,6 +50,7 @@ interface
   function  getc(var where: pchar): char;
   procedure putc(what: char; var where: pchar);
   function  DigChar(n: byte): char;
+  function  avg(a, b: WORD): WORD;
 
 CONST CDIGTBL: STRING[64] =
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';
@@ -171,11 +172,11 @@ implementation
       NToHex := res;
     end;
 
-  function boolTxt(cond: boolean): str7;
+  function boolStr(cond: boolean): str7;
     const strbul: array[boolean] of str7
           = ('False','True');
   begin
-    booltxt := strBul[cond];
+    boolStr := strBul[cond];
   end;
 
   function bytetohex(b: byte) : str7;
@@ -213,6 +214,7 @@ implementation
 
 
   function  RelADR(inw, Mask: WORD): WORD;       EXTERNAL;
+  function  avg(a, b: WORD): WORD;               EXTERNAL;
   function  divmod(var w: dword; d: word): word; EXTERNAL;
   FUNCTION  FREG: POINTER;                       EXTERNAL;
   FUNCTION  CALRETADR: POINTER;                  EXTERNAL;

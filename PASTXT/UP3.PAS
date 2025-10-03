@@ -2,11 +2,15 @@ program UP3;
 
 USES BASELIB, STRLIB, FILIB, HASHLIB;
 
-  VAR TF, OK: BOOLEAN;
-      TPLS: LONGSTR;
+  type
+    tchkname  = procedure (var name: string);
+    tproc     = procedure;
+
+  VAR TPLS: LONGSTR;
       IFILE, OFILE, TUPLEF: TEXT;
       FNAME: STRING;
       PH: PHASH;
+      chkproc, finish: pointer;
 
   FUNCTION FIND(KEY: STRING): STRING;
     VAR P: PEL;
@@ -17,8 +21,80 @@ USES BASELIB, STRLIB, FILIB, HASHLIB;
       THEN FIND := PH^.GETVALUE(P)^;
   END;
 
-  procedure prepout(var str: string);
+  {$f+}
+  procedure TuplefOut(var name: string);
   begin
+    WRITELN(TUPLEF,NAME + ',' + NAME);
+  end;
+
+  procedure ChkName(var name: string);
+  var str: string;
+  begin
+    STR := FIND(NAME);
+    IF STR <> '' THEN NAME := STR;
+  end;
+
+  procedure Close2;
+  begin
+    CLOSE(IFILE);
+    CLOSE(OFILE);
+    PH^.DONE;
+  end;
+
+  procedure Close3;
+  begin
+    CLOSE2;
+    CLOSE(TUPLEF);
+  end;
+
+  {$f-}
+
+  function edgeUnpack(var ls: longstr; edge: word): string;
+  var s, bkp, d: pchar; i, l: word; b: byte; c: char absolute b;
+      res: string; hi: boolean;
+    procedure put(ch:char); begin d^ := ch; d := d +1; end;
+  begin i := 0; l := 0; s := ls.cp; d := @res[1]; edgeUnpack := '';
+    if edge < 6 then exit; dec(edge,3);
+    repeat  c := s^; s := s + 1;  inc(i); bkp := d;
+      hi := b > 127;   if hi then dec(b,$80);
+      case c of
+        ' ' :    c := '_';
+        #0..#31: begin put('^'); inc(b,ord('@')); end;
+        '"','_','^','~': put('"');
+      end;
+      put(c);
+      if hi then put('~');
+      l := d - @res[1];
+    until (l > edge) or (i = ls.rem);
+    with ls do begin
+      cp := cp + i;
+      rem:= rem- i;
+    end;
+    res[0] := char(l);
+    edgeUnpack := res;
+  end;
+
+  procedure writeBody;
+  var ls: longstr; fo_bdy: text;
+  begin
+    IF not readbin(FNAME+'.com',tpls) THEN BEGIN
+      WRITELN(FNAME+'.com NOT EXIST OR EMPTY');
+      EXIT;
+    END;
+    IF NOT OPENTEXT(FNAME+'.bdy',fo_bdy,TRUE) THEN BEGIN   { FOR WRITING}
+      WRITELN('CAN''T OPEN FILE '+FNAME+'.bdy');
+      with tpLs do
+        freeMem(cp,rem);
+      EXIT;
+    END;
+
+    ls := tpls;
+    while ls.rem > 0 do
+      writeln(fo_bdy,',"' + edgeUnpack(ls,60) + '"');
+
+    close(fo_bdy);
+    with tpLs do
+      freeMem(cp,rem);
   end;
 
   procedure setTuples;
@@ -74,8 +150,7 @@ USES BASELIB, STRLIB, FILIB, HASHLIB;
   var
     str, ADRS, NAME, RES : string;
   begin
-    OK := OPENTEXT(FNAME+'.UP',OFILE,TRUE);     { FOR WRITING}
-    IF NOT OK THEN BEGIN
+    IF NOT OPENTEXT(FNAME+'.UP',OFILE,TRUE) THEN BEGIN { FOR WRITING}
       WRITELN('CAN''T OPEN FILE '+FNAME+'.UP');
       EXIT;
     END;
@@ -86,20 +161,14 @@ USES BASELIB, STRLIB, FILIB, HASHLIB;
         ADRS := '$'+ADRS;
         IF NAME[1] = '@'
           THEN NAME[1] := '`';
-        IF TF THEN BEGIN
-          STR := FIND(NAME);
-          IF STR <> '' THEN NAME := STR;
-        END ELSE WRITELN(TUPLEF,NAME + ',' + NAME);
+        tchkname(chkproc)(name);
         writeln(OFILE,ADRS + ' =: ' + NAME);
       END;
     end;
-    CLOSE(IFILE);
-    CLOSE(OFILE);
+    tproc(finish);
   end;
 
 begin
-    ph := new(phash,create(251,@H32H));
-
     IF PARAMCOUNT = 0 THEN BEGIN
       WRITELN('NO PARAMS');
       EXIT;
@@ -110,28 +179,19 @@ begin
       EXIT;
     END;
 
-    {TEST;}
-    TF := GETUPLES(FNAME+'.TUP',TPLS);
-    IF NOT TF THEN BEGIN
-      OK := OPENTEXT(FNAME+'.UP1',TUPLEF,TRUE);
-      IF NOT OK THEN BEGIN
+    ph := new(phash,create(251,@H32H));
+    IF NOT readbin(FNAME+'.TUP',TPLS) THEN BEGIN
+      IF NOT OPENTEXT(FNAME+'.UP1',TUPLEF,TRUE) THEN BEGIN
         WRITELN('CAN''T OPEN FILE '+FNAME+'.UP1');
+        PH^.DONE;
         EXIT;
       END;
+      chkproc := @TuplefOut;    finish := @Close3;
     END ELSE begin
-      SETTUPLES;
-      IF not FILEXIST(FNAME+'.com') THEN BEGIN
-        WRITELN(FNAME+'.com NOT EXIST OR EMPTY');
-        EXIT;
-      END;
-
-      writeBody;
+      SETTUPLES;                writeBody;
+      chkproc := @ChkName;      finish := @Close2;
     end;
 
     perform;
 
-    IF NOT TF
-      THEN CLOSE(TUPLEF);
-
-    PH^.DONE;
 end.

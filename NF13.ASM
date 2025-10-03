@@ -410,7 +410,7 @@ P NAND
   AND   TOP,NXT
   D_TO  NXT     ; NIP
 P NOT
-  DEC   TOP
+  inc   TOP
 P NEG
   NEG   TOP
   JMPS @MAIN
