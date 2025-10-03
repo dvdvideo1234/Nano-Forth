@@ -14,8 +14,8 @@ interface
     LONGREC = record lo, hi:  word; end;
     str7    = string[7];      {256/37}
     str15   = string[15];     {256/17}
-    str33   = string[33];     {256/7.5}
-    str73   = string[73];     {256/3.5}
+    str35   = string[35];     {256/7}
+    str85   = string[85];     {256/3}
     LONGSTR = RECORD CP: pChaR; REM: WORD; END;
 
     tshow   = function (l: longint): string;
@@ -33,7 +33,6 @@ interface
   function  strToNum(s: string): longint;
   procedure stradd(var sd: string; ss: string; del: char);
   function  NToHex(n: dword; chars: byte): str15;
-  function  NumberToStr(n: longint; chars, BASE: WORD): str33;
   function  NToStr(n: longint): str15;
   function  byteTobin(n: byte): str15;
   function  bytetohex(b: byte) : str7;
@@ -55,7 +54,7 @@ interface
 CONST CDIGTBL: STRING[64] =
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';
 
-  function  ITOA(d: longint; cvt: pstr; base: word): str33;
+  function  ITOA(d: longint; cvt: pstr; base: word): str35;
   PROCEDURE ATOI(s:string;VAR RES:DWORD;cvt:pstr;VAR ERR:word;BASE:WORD);
 
 implementation
@@ -90,7 +89,7 @@ implementation
     END;
   END;
 
-  PROCEDURE ATOI(s:string;VAR RES:DWORD; cvt:pstr; VAR ERR:word; BASE: WORD);
+  PROCEDURE ATOI(s:string;VAR RES:DWORD;cvt:pstr;VAR ERR:word;BASE:WORD);
   var p, LCVT, len, ind: word; B: INTEGER;  DD: DWORD;
   begin IND := 1; LEN := BYTE(S[0]); DD := 0; ERR := 0; FIXBASE(BASE,CVT);
     WHILE LEN > 0 DO BEGIN  B := BYTE(S[IND]);
@@ -104,9 +103,9 @@ implementation
     RES := DD; if LEN <> 0 then ERR := ind;
   end;
 
-  function ITOA(d: longint; cvt: pstr; base: word): str33;
-  var i: INTEGER; MODUL: BYTE; C : CHAR ABSOLUTE MODUL; RES: STR33;
-  begin  i := 33; FIXBASE(BASE,CVT);
+  function ITOA(d: longint; cvt: pstr; base: word): str35;
+  var i: INTEGER; MODUL: BYTE; C : CHAR ABSOLUTE MODUL; RES: STR35;
+  begin  i := pred(sizeof(str35)); FIXBASE(BASE,CVT);
     repeat  MODUL := divmod(d, base);
       if cvt = nil
         THEN MODUL := MODUL + byte('!')
@@ -146,9 +145,13 @@ implementation
   end;
 
   function  byteTobin(n: byte): str15;
-  VAR RES : STR15;
-  begin
-    res := NumberToStr(n or 256, 8, 2);
+  VAR RES : STR15; i: integer;
+  const boolary: array[boolean] of char = ('0','1');
+  begin res[0] := #8;
+    for i :=  8 to 1 do begin
+      res[i] := boolary[odd(n)];
+      n := n shr 1;
+    end;
     byteTobin := RES;
   end;
 
@@ -156,28 +159,16 @@ implementation
   VAR RES: STR15;
   begin res := '';
     if n < 0 then begin n := -n; res := '-'; end;
-    res := res + NumberToStr(n,14,10);
+    res := res + itoa(n,@CDIGTBL,10);
     NTOSTR := RES;
   end;
 
-  function  NumberToStr(n: longint; chars, base: WORD): str33;
-  var dw: dword absolute n;   i: INTEGER;  RES: STR33;
-  begin  i := 33;
-    if base > 63 then base := 64 else if base < 2 then base := 2;
-    repeat
-      RES[i] := digChar(divmod(dw, base));
-      dec(i);
-      dec(chars);
-    until (n=0) or (chars=0);
-    RES[i] := char(33-i);
-    NumberToStr := pstr(@RES[i])^;
-  end;
-
   function  NToHex(n: dword; chars: byte): str15;
+    var res: str15;
     begin
-      if (chars in [1..7])
-        then  NToHex := NumberToStr(n or $80000000, chars, 16)
-        else  NToHex := LongToHex(n);
+      res := LongToHex(n);
+      if (chars in [1..7]) then res[0] := char(chars);
+      NToHex := res;
     end;
 
   function boolTxt(cond: boolean): str7;

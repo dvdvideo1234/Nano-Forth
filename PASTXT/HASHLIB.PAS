@@ -22,11 +22,12 @@ type
 
   pBhash = ^Bhash;  {BASE HASH}
   Bhash  = object
-    tcount  : word;
-    tels    : ppary;
-    tHash   : pointer;
-    tprev,
-    tunused : pel;
+    fPels    : ppary;
+    fHash   : pointer;
+    fPrev,
+    fUnused : pel;
+    fCount  : word;
+    fUnicate: boolean;
 
     constructor create(Count: word; Func: pointer);
     destructor  done;
@@ -38,20 +39,21 @@ type
     procedure   preRehash;
     procedure   Rehash(newCount: word; newFunc: pointer);
     procedure   Remove(key: string);
+    PROCEDURE   setUnicate(UNI: BOOLEAN);
+    function    getUnicate: BOOLEAN;
 
     function    ValueToStr(p: pel): string;       virtual;
     function    GetKey(p: pel): pstr;             virtual;
-    procedure   elFree(p: pel);                   virtual;
+    procedure   Free(p: pel);                     virtual;
   end;
 
   phash = ^hash;  {FROM BASE HASH}
   hash  = object(BHASH)
     function    GetValue(p: pel): pstr;
-    procedure   SetValue(key, newValue: string);
     procedure   Add(key, value: string);
     function    ValueToStr(p: pel): string;       virtual;
     function    GetKey(p: pel): pstr;             virtual;
-    procedure   elFree(p: pel);                   virtual;
+    procedure   Free(p: pel);                     virtual;
   end;
 
 
@@ -65,16 +67,20 @@ type
 
   pnhash= ^nhash;
   nhash = object(Bhash)
-    procedure   SetNum(key: string; num: dword);
-    function    Getnum(key: string; var num: dword): boolean;
+    procedure   add(key: string; num: dword);
+    function    Getnum(key: string; var ok: boolean): dword;
     function    ValueToStr(p: pel): string;       virtual;
     function    GetKey(p: pel): pstr;             virtual;
-    procedure   elFree(p: pel);                   virtual;
+    procedure   Free(p: pel);                     virtual;
   end;
 
   function CRC32t(var s; LEN: Word; CRC: DWord): DWord;
   function CRC16t(var s; LEN,       crc: Word):  Word;
   function CRC8t( var s; LEN: WORD; crc: BYTE):  BYTE;
+
+  function CRC32t2(var Data, TABLE; LEN:word;  crc:dWORD): dWORD;
+  function CRC16t2(var Data, TABLE; LEN,       crc: WORD): WORD;
+  function CRC8t2( var Data, TABLE; LEN: WORD; crc: BYTE): BYTE;
 
   function CRC32(var s; LEN: Word; CRC, POLY: DWord): DWord;
   function CRC16(var s; len, CRC, POLY: word) : WORD;
@@ -84,10 +90,6 @@ type
   function GEThash(var s; len,      CRC,       POLY: word) : word;
   function GEThw(  var s; len,      CRC,       POLY: word) : word;
   function GEThw2( var s; len,      CRC,       POLY: word) : word;
-
-  function CRC8t2( var Data, TABLE; LEN: WORD; crc: BYTE): BYTE;
-  function CRC16t2(var Data, TABLE; LEN,       crc: WORD): WORD;
-  function CRC32t2(var Data, TABLE; LEN:word;  crc:dWORD): dWORD;
 
   procedure genTable(bits: word; showp, hashp: pointer; mask: longint);
 
@@ -112,6 +114,16 @@ type
 
 IMPLEMENTATION
 
+  PROCEDURE   bhash.setUnicate(UNI: BOOLEAN);
+  begin
+    fUnicate := uni;
+  end;
+
+  function    bhash.getUnicate: BOOLEAN;
+  begin
+    getUnicate := fUnicate;
+  end;
+
   procedure   Bhash.push(p: pel; var ToWhere: pel);
   begin
     p^.tnext := Towhere;
@@ -131,19 +143,20 @@ IMPLEMENTATION
 
   constructor Bhash.create(Count: word; Func: pointer);
   begin
-    tcount  := count;
-    thash   := func;
-    tunused := nil;
-    tprev   := nil;
-    myGetMem(POINTER(tels),tcount * sizeof(pointer));
+    fcount  := count;
+    fhash   := func;
+    funused := nil;
+    fprev   := nil;
+    fUnicate:= true;
+    myGetMem(POINTER(fpels),fcount * sizeof(pointer));
   end;
 
   function    BHASH.whereTo(key: string): ppel;
   VAR I: DWORD;
   begin
-    I := Thfunc(THASH)(key);
-    I := DIVMOD(I,tcount);
-    whereTo := ppel(@tels^[I]);
+    I := Thfunc(fHASH)(key);
+    I := DIVMOD(I,fcount);
+    whereTo := ppel(@fPels^[I]);
   end;
 
   procedure   Bhash.show;
@@ -160,8 +173,8 @@ IMPLEMENTATION
     end;
 
   begin
-    for i := tcount-1 downto 0 do begin
-      p := pel(tels^[i]);
+    for i := fCount-1 downto 0 do begin
+      p := pel(fPels^[i]);
       if p = nil
         then continue;
       cnt := 0; line := 0;
@@ -179,22 +192,22 @@ IMPLEMENTATION
   destructor  Bhash.done;
   begin
     preRehash;
-    while tunused <> nil do
-      elFree(pop(tunused));
+    while fUnused <> nil do
+      Free(pop(fUnused));
   end;
 
   procedure Bhash.preRehash;
   var i: integer; p, P1: pel;
   begin  {free buckets}
-    for i := tcount-1 downto 0 do
-      if tels^[i] <> nil then begin
-        p := pel(tels^[i]);
+    for i := fCount-1 downto 0 do
+      if fPels^[i] <> nil then begin
+        p := pel(fPels^[i]);
         while p <> nil do begin
-          push(pOP(P),tunused);
+          push(pOP(P),fUnused);
         end;
-        tels^[i] := NIL;
+        fPels^[i] := NIL;
       end;
-    freemem(tels,tcount * sizeof(pointer));
+    freemem(fPels,fCount * sizeof(pointer));
   end;
 
   function  Bhash.search(key: string): pel;
@@ -203,18 +216,18 @@ IMPLEMENTATION
     repeat prev := p; p := prev^.tnext;
       if p = nil then exit;
     until getkey(p)^ = key;
-    tprev  := prev;
+    fPrev  := prev;
     search := p;
   end;
 
   procedure Bhash.rehash(newCount: word; newFunc: pointer);
   var e1 : pel;
   begin preRehash;
-    tcount := newCount;
-    thash  := newFunc;
-    getmem(tels,tcount * sizeof(pointer));
-    while tunused <> nil do begin
-      e1 := pop(tunused);
+    fCount := newCount;
+    fHash  := newFunc;
+    getmem(fPels,fCount * sizeof(pointer));
+    while fUnused <> nil do begin
+      e1 := pop(fUnused);
       push(e1,whereTo(getkey(e1)^)^);
     end;
   end;
@@ -229,7 +242,7 @@ IMPLEMENTATION
     ValueToStr := ''; {getValue(p)^;}
   end;
 
-  procedure   Bhash.elFree(p: pel);
+  procedure   Bhash.Free(p: pel);
     var sz: word;
   begin
     sz := {length(GetValue(p)^)+}sizeof(el)+p^.t1;
@@ -241,8 +254,8 @@ IMPLEMENTATION
   begin
     p := search(key);
     if p = nil then exit; {if exist then unlink and destroy}
-    tprev^.tnext := p^.tnext;
-    elFree(p);
+    fPrev^.tnext := p^.tnext;
+    Free(p);
   end;
 
 {----------------- HASH -----------------------------}
@@ -257,7 +270,7 @@ IMPLEMENTATION
     ValueToStr := getValue(p)^;
   end;
 
-  procedure   hash.elFree(p: pel);
+  procedure   hash.Free(p: pel);
     var sz: word;
   begin  SZ := length(GetValue(p)^);
     sz := SUCC(SZ)+sizeof(el)+p^.t1;  {SZKEY = p^.t1}
@@ -268,6 +281,8 @@ IMPLEMENTATION
   var szk: byte absolute key; szv: byte absolute value;
     P: pel;
   begin
+    if fUnicate
+      then Remove(key);
     myGetMem(POINTER(P),sizeof(el)+szk+SUCC(szv));
     getkey(P)^ := key;  {describes where value is}
     getValue(P)^ := value;
@@ -277,11 +292,6 @@ IMPLEMENTATION
   function    hash.GetValue(p: pel): pstr;
   begin
     getValue := pstr(AFTERSTR(@p^.t1));
-  end;
-
-  procedure    hash.SetValue(key, newValue: string);
-  begin Remove(key);
-    add(key,newvalue);
   end;
 
 {-------------------- NHASH --------------------------}
@@ -296,7 +306,7 @@ IMPLEMENTATION
     ValueToStr := '$'+longtohex(pnumel(p)^.tnum);
   end;
 
-  procedure   nhash.SetNum(key: string; num: dword);
+  procedure   nhash.add(key: string; num: dword);
   var p: pel; szk: byte absolute key;
   begin p := search(key);
     if p <> nil then begin
@@ -311,16 +321,16 @@ IMPLEMENTATION
     push(P,whereTo(key)^);
   end;
 
-  function    nhash.Getnum(key: string; var num: dword): boolean;
+  function    nhash.Getnum(key: string; var ok: boolean): dword;
   var p: pel;
-  begin
-    getNum := false; p := search(key);
-    if p = nil
-      then exit;
-    num := pnumel(p)^.tnum;
+  begin  getNum := 0;
+    p := search(key);
+    ok := p <> nil;
+    if p <> nil
+      then getNum := pnumel(p)^.tnum;
   end;
 
-  procedure   nhash.elFree(p: pel);
+  procedure   nhash.Free(p: pel);
     var sz: word;
   begin
     sz := sizeof(numel)+pnumel(p)^.t1;
@@ -332,7 +342,7 @@ IMPLEMENTATION
 
   function h32H(s: string): DWORD;
   begin
-    H32H := GETh32(s[1], byte(s[0]), 0, 94);
+    H32H := GETh32(s[1], byte(s[0]), -$1ffff, 3);
   end;
 
   function h32t(s: string): Dword;
@@ -679,7 +689,7 @@ end;
 
   procedure genTable(bits: word; showp, hashp: pointer; mask: longint);
   var b: byte; tabmod: word;
-  begin tabmod := 78 div ((bits div 4) + 2);
+  begin tabmod := 76 div ((bits div 4) + 2);
     for b := 0 to 255 do begin
       if (b mod tabmod) = 0 then writeln;
       write('$'+tshow(showp)(tblhash(hashp)(b,mask))+',');

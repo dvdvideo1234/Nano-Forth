@@ -17,28 +17,9 @@ USES BASELIB, STRLIB, FILIB, HASHLIB;
       THEN FIND := PH^.GETVALUE(P)^;
   END;
 
-{
-  PROCEDURE DUMPHASH;
-  VAR FO: TEXT; P: PTRNODE; IDX: WORD;
-
-    PROCEDURE DMPBK(PBK: PTRNODE);
-      var fndptr: ptuple absolute PBK;
-    BEGIN IF PBK = NIL THEN EXIT;
-      while PBK <> nil do begin
-        WITH FNDPTR^ DO
-          WRITE(FO,KEY+','+VALUE^+' ');
-        PBK := PBK^.next;
-      end;
-      WRITELN(FO);
-    END;
-
-  BEGIN
-    OPENTEXT(FNAME+'.DMP',FO,TRUE);
-    FOR IDX := 0 TO TOP-1 DO
-      DMPBK(BUCKETS[IDX]);
-    CLOSE(FO);
-  END;
-}
+  procedure prepout(var str: string);
+  begin
+  end;
 
   procedure setTuples;
   var token, tkey: string;
@@ -124,7 +105,7 @@ begin
       EXIT;
     END;
     FNAME := PARAMSTR(1);
-    IF FILEXIST(FNAME+'.LST') < 2 THEN BEGIN
+    IF not FILEXIST(FNAME+'.LST') THEN BEGIN
       WRITELN(FNAME+'.LST NOT EXIST OR EMPTY');
       EXIT;
     END;
@@ -137,7 +118,15 @@ begin
         WRITELN('CAN''T OPEN FILE '+FNAME+'.UP1');
         EXIT;
       END;
-    END ELSE SETTUPLES;
+    END ELSE begin
+      SETTUPLES;
+      IF not FILEXIST(FNAME+'.com') THEN BEGIN
+        WRITELN(FNAME+'.com NOT EXIST OR EMPTY');
+        EXIT;
+      END;
+
+      writeBody;
+    end;
 
     perform;
 
