@@ -19,9 +19,15 @@ interface
     LONGSTR = RECORD CP: pChaR; REM: WORD; END;
 
     tshow   = function (l: longint): string;
+    tproc   = procedure;
 
     ppary   = ^pary;
     pary    = array[0..2047] of pointer;
+    parbyte = ^arbyte;
+    arbyte  = array[0..65535-256] of byte;
+
+{  var aMethod: procedure of object;  in lazarus}
+  procedure perform( selfp, method: pointer);
 
 
   PROCEDURE mygetmem(var p: POINTER; sz:word);
@@ -52,15 +58,23 @@ interface
   function  DigChar(n: byte): char;
   function  avg(a, b: WORD): WORD;
 
-CONST CDIGTBL: STRING[64] =
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';
+{CONST CDIGTBL: STRING[64] =
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';}
 
-  function  ITOA(d: longint; cvt: pstr; base: word): str35;
-  PROCEDURE ATOI(s:string;VAR RES:DWORD;cvt:pstr;VAR ERR:word;BASE:WORD);
+  function  ITOA(d: longint; base: word): str35;
+  PROCEDURE ATOI(s:string;VAR RES:DWORD; VAR ERR:word);
 
 implementation
 
   var zstr: byte; {do not assign anithing to it}
+
+  procedure perform( selfp, method: pointer); assembler;
+  asm
+    les  di,selfp
+    push es
+    push di
+    call method
+  end;
 
   function ltos(l: longint): str7;
   var res: str7; p: plong;
@@ -80,38 +94,40 @@ implementation
     stol := plong(@s[1])^;
   end;
 
-  PROCEDURE FIXBASE(VAR BASE: WORD; VAR CVT: PSTR);
-  VAR LCVT: WORD;  CONST NEWCVT: STRING [2] = '01';
-  BEGIN
-    IF BASE < 2 THEN BASE := 2 ELSE IF BASE > 94 THEN BASE := 94;
-    if cvt <> nil THEN BEGIN LCVT := LENGTH(CVT^);
-      IF LCVT < 2 THEN BEGIN CVT := @NEWCVT; LCVT := 2; END;
-      IF LCVT < BASE THEN BASE := LCVT;
-    END;
-  END;
-
-  PROCEDURE ATOI(s:string;VAR RES:DWORD;cvt:pstr;VAR ERR:word;BASE:WORD);
-  var p, LCVT, len, ind: word; B: INTEGER;  DD: DWORD;
-  begin IND := 1; LEN := BYTE(S[0]); DD := 0; ERR := 0; FIXBASE(BASE,CVT);
-    WHILE LEN > 0 DO BEGIN  B := BYTE(S[IND]);
-      if cvt = nil THEN BEGIN  B := B - ORD('!');
-        IF NOT ( B IN [0..PRED(BASE)]) THEN BREAK;
-      END ELSE BEGIN
-        p := pos(CHAR(B),cvt^); if p = 0 then BREAK; B := PRED(P);
-      end;
-      res := DD * base + B;     dec(len); INC(IND);
+  PROCEDURE ATOI(s:string;VAR RES:DWORD; VAR err: word);
+  var p, LCVT, len, ind: word; B: byte; c: char absolute b;
+      DD: DWORD; BASE:WORD; tonum: word; sign: boolean;
+    procedure incri; begin inc(ind); dec(len); end;
+    procedure dincri; begin dd := DD * base + tonum;  INCri; end;
+    procedure convert; begin
+      WHILE LEN > 0 DO BEGIN  c := S[IND]; tonum := b - ord('0');
+        if c > '9' then dec(tonum,7); IF NOT ( tonum < BASE) THEN BREAK;
+      dINCri; end;  end;
+  begin IND := 1; LEN := BYTE(S[0]); DD := 0; base := 10; err := 0;
+    sign := s[ind] ='-' ; if sign then incri;
+    convert;
+    while len > 0 do begin
+      if (len > 1) and (c in ['$','%','#','^','''']) then begin incri;
+        case c of
+        '$' : base := 16;
+        '%' : base := 2;
+        '#' : begin base := ((dd-2) and 255)+2; dd := 0; end;
+        '^' : begin c := S[IND]; tonum:= b and 31; dincri; end;
+        '''': begin c := S[IND]; tonum:= b; dincri; end;
+        end;
+      end else break;
+      convert;
     end;
-    RES := DD; if LEN <> 0 then ERR := ind;
+    if len <> 0 then ERR := ind;
+    if sign then dd := - dd;
+    RES := DD;
   end;
 
-  function ITOA(d: longint; cvt: pstr; base: word): str35;
-  var i: INTEGER; MODUL: BYTE; C : CHAR ABSOLUTE MODUL; RES: STR35;
-  begin  i := pred(sizeof(str35)); FIXBASE(BASE,CVT);
-    repeat  MODUL := divmod(d, base);
-      if cvt = nil
-        THEN MODUL := MODUL + byte('!')
-        ELSE C := cvt^[succ(MODUL)];
-      RES[i] := C;
+  function ITOA(d: longint; base: word): str35;
+  var i: INTEGER; C : CHAR; RES: STR35;
+  begin  i := pred(sizeof(str35)); base := ((base-2) and 255)+2;
+    repeat
+      RES[i] := digChar(divmod(d, base));
       dec(i);
     until d=0;
     RES[i] := char(33-i);
@@ -125,10 +141,10 @@ implementation
   end;
 
   function  now: dword;
-  var h,m,s,hs: word;
+  var h,m,s,hs: word; d: dword;
   begin
-    gettime(h,m,s,hs);
-    now := ((h * 60 + m) * 60 + s) * 100 + hs;
+    gettime(h,m,s,hs);  d := h;
+    now := ((d * 60 + m) * 60 + s) * 100 + hs;
   end;
 
   procedure stradd(var sd: string; ss: string; del: char);
@@ -160,7 +176,7 @@ implementation
   VAR RES: STR15;
   begin res := '';
     if n < 0 then begin n := -n; res := '-'; end;
-    res := res + itoa(n,@CDIGTBL,10);
+    res := res + itoa(n,10);
     NTOSTR := RES;
   end;
 
