@@ -4,27 +4,31 @@ interface
 
   uses dos;
 
+  const himemw = 65520;
+
   TYPE
     DWORD = LONGINT;
     Pbyte   = ^BYTE;
     Pword   = ^WORD;
     Plong   = ^dWORD;
+    ptext   = ^text;
     PSTR    = ^STRING;
-    wordREC = record lo, hi:  BYTE; end;
-    LONGREC = record lo, hi:  word; end;
     str7    = string[7];      {256/37}
     str15   = string[15];     {256/17}
     str35   = string[35];     {256/7}
     str85   = string[85];     {256/3}
+    wordREC = record lo, hi:  BYTE; end;
+    LONGREC = record lo, hi:  word; end;
     LONGSTR = RECORD CP: pChaR; REM: WORD; END;
+    tPrgPnt = record ja: pointer; spr, bpr: word; end;
 
     tshow   = function (l: longint): string;
     tproc   = procedure;
 
     ppary   = ^pary;
-    pary    = array[0..2047] of pointer;
+    pary    = array[0..himemw div sizeof(pointer)] of pointer;
     parbyte = ^arbyte;
-    arbyte  = array[0..65535-256] of byte;
+    arbyte  = array[0..himemw] of byte;
 
 {  var aMethod: procedure of object;  in lazarus}
   procedure perform( selfp, method: pointer);
@@ -57,6 +61,11 @@ interface
   procedure putc(what: char; var where: pchar);
   function  DigChar(n: byte): char;
   function  avg(a, b: WORD): WORD;
+
+  PROCEDURE SAVEPOINT(PNT: tPRGPNT);
+  PROCEDURE RECALL(PNT, SELFP: tPRGPNT);
+  PROCEDURE GOTOPOINT(PNT: tPRGPNT);
+  PROCEDURE INITCO(PNT: tPRGPNT);
 
 {CONST CDIGTBL: STRING[64] =
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';}
@@ -95,8 +104,8 @@ implementation
   end;
 
   PROCEDURE ATOI(s:string;VAR RES:DWORD; VAR err: word);
-  var p, LCVT, len, ind: word; B: byte; c: char absolute b;
-      DD: DWORD; BASE:WORD; tonum: word; sign: boolean;
+  var len, ind, BASE, tonum: word; sign: boolean;
+      B: byte; c: char absolute b;   DD: DWORD;
     procedure incri; begin inc(ind); dec(len); end;
     procedure dincri; begin dd := DD * base + tonum;  INCri; end;
     procedure convert; begin
@@ -239,8 +248,13 @@ implementation
   function  DigChar(n: byte): char;              EXTERNAL;
   FUNCTION  ADDPTR(P:POINTER;I:INTEGER):POINTER; EXTERNAL;
   FUNCTION  AFTERSTR(P: POINTER): POINTER;       EXTERNAL;
+  PROCEDURE SAVEPOINT(PNT: tPRGPNT);              EXTERNAL;
+  PROCEDURE RECALL(PNT, SELFP: tPRGPNT);          EXTERNAL;
+  PROCEDURE GOTOPOINT(PNT: tPRGPNT);              EXTERNAL;
+  PROCEDURE INITCO(PNT: tPRGPNT);                 EXTERNAL;
 
 {$L ASMLIB.OBJ}
 
 begin
 END.
+
