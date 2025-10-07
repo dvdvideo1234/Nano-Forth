@@ -10,6 +10,7 @@ uses baselib;
   PROCEDURE REVERT(Data: PCHAR; LEN: Word);
   PROCEDURE ONPLACE(Data: PCHAR; LEN1, LEN2: Word);
 
+  function  TokenPack(s: string; VAR CMD: CHAR): string;
   function  ascUnPack(s, d: pchar; l: WORD): WORD;
   function  ascPack(s, d: pchar; l: WORD): WORD;
   function  strPack(s: string): string;
@@ -27,6 +28,20 @@ uses baselib;
   function  GETOKEN(var s: string) : string;
 
 IMPLEMENTATION
+
+  function  TokenPack(s: string; VAR CMD: CHAR): string;
+  VAR P: PSTR; C: CHAR; L: BYTE ABSOLUTE S; IND: WORD;
+  BEGIN CMD := #0; TokenPACK := '';
+    IF (L < 2) OR (S[L]<>'"') THEN EXIT;
+    C := S[1]; IND := 1; DEC(L,2);
+    IF (C <> '"') THEN
+      IF (L=0)
+        THEN EXIT
+        ELSE BEGIN INC(IND); DEC(L); END;
+    IF NOT (C IN ['"', ',', '.', '!', '?']) THEN EXIT;
+    P := @S[IND]; S[IND] := S[0];
+    CMD := C; TokenPACK := STRpACK(P^);
+  END;
 
   function lextract(var ls: longstr): string;
   var sz: word;

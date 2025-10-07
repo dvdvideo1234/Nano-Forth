@@ -952,12 +952,3 @@ Start   Label byte
 MyCseg  ends
         end  Start
 
-">T
-;(>"
-;(EVL
-@+
-ABORT
-BYE
-PARSE
-S1+
-WORD

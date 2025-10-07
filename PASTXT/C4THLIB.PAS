@@ -27,7 +27,6 @@ uses baselib, FILIB, strLib, hashlib;
 
 
     ptc4th = ^tc4th;
-    tproc4th = procedure ( selfp: ptc4th; method: pointer);
     tc4th = object
       fcomph: nhash;
       finteh: nhash;
@@ -36,72 +35,76 @@ uses baselib, FILIB, strLib, hashlib;
       fstack: tstack;
       ftxtst: tfileStack;
       fstate: pointer;
-      {fproc : tproc4th;}
       fmem  : parbyte;
       fsize : word;
       fhp   : word;   {pointer in compiler memory == here pointer}
       fToken: str85;    {last token}
-      fLine:  string;   {last line}
+      fLine:  string;   {last line  when in main loop}
       fls:    longstr;  {current position in text buffer}
       fprpnt: tprgPnt;
       falign: word;
 
       constructor create(stksz, fbsz, sz: word);
       destructor  done;
-      procedure   forth;
-      procedure   bye;
+      procedure   forth;  {main loop}
 
-      procedure   toInter;
-      procedure   toComp;
-      procedure   Colon;
-      procedure   Semi;
-      procedure   align;
-      procedure   comma;
+      {compiler intro}
       procedure   eval(p: pchar; l: word);
-      procedure   bcomma;
-      function    pop: dword;
-      procedure   here;
-      procedure   push(L: dword);
-
-      procedure   Locate;
       procedure   getToken(chk: boolean);
-      procedure   newDEA; {dictionary (enabled) address}
-      procedure   equColon; {dictionary established address}
       procedure   macro(s: string);
       procedure   error(cond: boolean; s: string);
-      procedure   strcomp;
-      procedure   execute(p: pel);
-      procedure   compile(p: pel);
+      function    strcomp: boolean;
+      function    execute(p: pel): boolean;
+      function    compile(p: pel): boolean;
       procedure   getNum;
       procedure   compNum;
       procedure   IntSearch;
       procedure   compSearch;
-
-      procedure   dup;
-      procedure   drop;
-      procedure   swap;
-      procedure   over;
-
       procedure   drop2(var d1, d2: dword);
+      FUNCTION    MEMADR(A: WORD): POINTER;
+      procedure   push(L: dword);
+      function    pop: dword;
+
+      {common commands}
+      procedure   bye;
+      procedure   toInter;
+      procedure   toComp;
+      procedure   align;
+      procedure   comma;
+      procedure   bcomma;
+      PROCEDURE   reMARK;
+
+      {create commands}
+      procedure   Colon;
+      procedure   Semi;
+      procedure   newDEA; {dictionary equ here address}
+      procedure   equColon; {dictionary established address}
+
+      {compiling control commands}
       PROCEDURE   FWDMARK;
       PROCEDURE   BWDMARK;
       PROCEDURE   FWDRELS;
       PROCEDURE   BWDRELS;
 
-      FUNCTION    MEMADR(A: WORD): POINTER;
-      PROCEDURE   STOREW;
+      {interpretter commands}
+      procedure   here;
+      procedure   Locate;
+      procedure   dup;      {stack}
+      procedure   drop;
+      procedure   swap;
+      procedure   over;
+      PROCEDURE   STOREW;   {memory}
       PROCEDURE   STOREB;
       PROCEDURE   FETCHW;
       PROCEDURE   FETCHB;
-
-      procedure   plus;
+      procedure   plus;     {math & logic}
       procedure   minus;
       procedure   orw;
       procedure   xorw;
       procedure   andw;
       procedure   notw;
       procedure   negw;
-      procedure   dot;
+      procedure   dot;      {io }
       procedure   cr;
     end;
 
@@ -199,7 +202,6 @@ implementation
     getmem(fmem,sz);         {memory}
     fsize := sz;
     fhp := 0;
-    fstate:= @tc4th.toInter;
   end;
 
   destructor  tc4th.done;
@@ -253,12 +255,14 @@ implementation
   procedure   tc4th.macro(s: string);
   begin eval(@s[1],byte(s[0])); end;
 
-  procedure   tc4th.compile(p: pel);
-  begin push(pnumel(p)^.tnum); comma;  end;
+  function    tc4th.compile(p: pel): boolean;
+  begin compile := p <> nil; if p = nil then exit;
+    push(pnumel(p)^.tnum); comma;  end;
 
-  procedure   tc4th.execute(p: pel);
+  function   tc4th.execute(p: pel): boolean;
   var q: pointer;
-  begin q := pointer(pnumel(p)^.tnum); perform(@self,q);  end;
+  begin execute := p <> nil; if p = nil then exit;
+    q := pointer(pnumel(p)^.tnum); perform(@self,q);  end;
 
   procedure   tc4th.here;
   begin
@@ -269,16 +273,10 @@ implementation
   var p: pel; len: word;
   begin
     p := finteh.search(fToken);
-    if p <> nil then begin
-      execute(p);
-      exit;
-    end;
-    len := length(ftoken);
-    if (len > 3) and (ftoken[len] = '"') and
-       (ftoken[1] in [',','.','!']) and (ftoken[2] = '"') then begin
-       strcomp;
-      exit;
-    end;
+    if execute(p)    {if found}
+      then exit;
+    if strcomp
+      then exit;
     getnum;
   end;
 
@@ -287,15 +285,11 @@ implementation
   begin ftoken := ftoken + '`';
     p := fcomph.search(fToken);
     dec(byte(ftoken[0]));
-    if p <> nil then begin
-      execute(p);
-      exit;
-    end;
+    if execute(p)    {if found}
+      then  exit;
     p := fcomph.search(fToken);
-    if p <> nil then begin
-      compile(p);
-      exit;
-    end;
+    if compile(p)    {if found}
+      then exit;
     compNum;
   end;
 
@@ -369,6 +363,7 @@ implementation
 
     savePoint(fprpnt); {program state reset point - on error}
 
+    fstate:= @tc4th.toInter;     {interpretter}
     ftxtst.reset; {close all open files}
     fstack.reset; {}
     ffwdbr.reset;
@@ -401,15 +396,15 @@ implementation
     error(fToken = '', 'empty token');
   end;
 
-  procedure   tc4th.strcomp;
-  var temp: string; cmd, endc: char;
-  begin temp := ftoken; dec(temp[0]); cmd := temp[1];
-    repeat endc := temp[1]; delete(temp,1,1);   until endc = '"';
-    temp := strpack(temp);
+  function tc4th.strcomp: boolean;
+  var temp: string; cmd: char;
+  begin temp := TokenPACK(ftoken,cmd);
+    strcomp := cmd <> #0; if cmd = #0 then exit;
     case cmd of
       ',':  begin move(temp[1],fmem^[fhp],byte(temp[0]));
               inc(fhp,byte(temp[0])); end;
       '.':  write(temp);
+      '?': push(pos(char(pop),temp));
       '!': begin ftoken := ''; error(true, temp); end;
     end;
   end;
@@ -491,6 +486,9 @@ implementation
   procedure   tc4th.bcomma;  begin PUSH(fhp); STOREB; inc(fhp); end;
 
   procedure   tc4th.comma; begin PUSH(fhp); STOREW; inc(fhp,2); end;
+
+  PROCEDURE   TC4TH.reMARK;
+  BEGIN fls.rem := 0; END;
 
 
 begin
