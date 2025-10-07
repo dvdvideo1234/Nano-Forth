@@ -2,7 +2,7 @@ unit c4thlib;
 
 interface
 
-uses baselib, strLib, hashlib;
+uses baselib, FILIB, strLib, hashlib;
 
   type
     tstack= object
@@ -21,7 +21,7 @@ uses baselib, strLib, hashlib;
 
     tFileStack= object(tstack)
       procedure reset;                    virtual;
-      procedure add;
+      function  add(name: string): BOOLEAN;
       function  top: ptext;
     end;
 
@@ -83,6 +83,17 @@ uses baselib, strLib, hashlib;
       procedure   over;
 
       procedure   drop2(var d1, d2: dword);
+      PROCEDURE   FWDMARK;
+      PROCEDURE   BWDMARK;
+      PROCEDURE   FWDRELS;
+      PROCEDURE   BWDRELS;
+
+      FUNCTION    MEMADR(A: WORD): POINTER;
+      PROCEDURE   STOREW;
+      PROCEDURE   STOREB;
+      PROCEDURE   FETCHW;
+      PROCEDURE   FETCHB;
+
       procedure   plus;
       procedure   minus;
       procedure   orw;
@@ -149,19 +160,22 @@ implementation
 {-------------------------------------------}
 
   procedure tFileStack.reset;
-  var fptr: pointer;
+  var fptr: pTEXT;
   begin
     while depth > 0 do begin
-      fptr := pointer(pop);
-      close(ptext(fptr)^);
-      freeMem(fptr,sizeof(text));
+      fptr := PTEXT(pointer(pop));
+      close(fptr^);
+      DISPOSE(fptr);
     end;
   end;
 
-  procedure tFileStack.add;
-  var fptr: ptext;
+  function  tFileStack.add(name: string): BOOLEAN;
+  var fptr: ptext; ok:  boolean;
   begin
     fptr := new(ptext);
+    ok := OPENTEXT(NAME,FPTR^, FALSE);
+    ADD := OK;
+    IF NOT OK THEN BEGIN DISPOSE(FPTR); EXIT; END;
     push(longint(fptr));
   end;
 
@@ -208,15 +222,6 @@ implementation
   procedure   tc4th.Semi; begin macro('(;');
     if (ffwdbr.depth or fbwdbr.depth) = 0 then toInter;
   end;
-
-  procedure   tc4th.bcomma; begin fmem^[fhp] := pop; inc(fhp); end;
-
-  procedure   tc4th.comma;  var p: pword;
-  begin p := @fmem^[fhp]; p^ := pop; inc(fhp,2); end;
-
-  function    tc4th.pop: dword;   begin pop := fstack.pop; end;
-
-  procedure   tc4th.push(L: dword);  begin fstack.push(l);  end;
 
   procedure   tc4th.equColon; { =: dictionary established address}
   var p: pel;
@@ -345,12 +350,21 @@ implementation
       add('NEG'    ,DWORD(@tc4th.negw));
       add('.'      ,DWORD(@tc4th.dot));
       add('CR'     ,DWORD(@tc4th.cr));
+      add('!'      ,DWORD(@tc4th.STOREW));
+      add('C!'     ,DWORD(@tc4th.STOREB));
+      add('@'      ,DWORD(@tc4th.FETCHW));
+      add('C@'     ,DWORD(@tc4th.FETCHB));
     END;
+
 
          {initialization of compiler dictionary}
     WITH fCOMPh DO BEGIN
-      add(',<`',DWORD(@tc4th.toInter));
-      add(':`',DWORD(@tc4th.Colon)); {COMPILE VERSION}
+      add(',<`'    ,DWORD(@tc4th.toInter));
+      add(':`'     ,DWORD(@tc4th.Colon)); {COMPILE VERSION}
+      add('MARK>`' ,DWORD(@tc4th.FWDMARK));
+      add('BEGIN`' ,DWORD(@tc4th.BWDMARK));
+      add('THEN`'  ,DWORD(@tc4th.FWDRELS));
+      add('RELS>`' ,DWORD(@tc4th.BWDRELS));
     END;
 
     savePoint(fprpnt); {program state reset point - on error}
@@ -408,10 +422,16 @@ implementation
     push(dd);
   end;
 
+  function    tc4th.pop: dword;   begin
+    ERROR(FSTACK.DEPTH=0,'EMPTY STACK'); pop := fstack.pop; end;
+
+  procedure   tc4th.push(L: dword);  begin
+    ERROR(FSTACK.FSTKP=0,'STACK FULL');  fstack.push(l);  end;
+
   procedure   tc4th.dup;  var dd: dword;
   begin dd := pop; push(dd);  push(dd);  end;
 
-  procedure   tc4th.drop;  begin pop;  end;
+  procedure   tc4th.drop;  begin   pop;  end;
 
   procedure   tc4th.swap;  var d1, d2: dword;
   begin drop2(d1, d2); push(d1); push(d2);  end;
@@ -445,5 +465,34 @@ implementation
 
   procedure   tc4th.cr; begin writeln; end;
 
+  {----------------COMPILER--------------------}
+
+  PROCEDURE   TC4TH.FWDMARK;  BEGIN fFwdBr.PUSH(FHP); PUSH(0); COMMA;  END;
+
+  PROCEDURE   TC4TH.BWDMARK;  BEGIN HERE; fBwdBr.PUSH(POP);  END;
+
+  PROCEDURE   TC4TH.FWDRELS;  BEGIN HERE; PUSH(fFwdBr.POP); STOREW;  END;
+
+  PROCEDURE   TC4TH.BWDRELS;  BEGIN PUSH(fBwdBr.POP); COMMA;  END;
+
+  PROCEDURE   TC4TH.STOREW;  var d1, d2: dword;
+  BEGIN DROP2(D1,D2); PWORD(MEMADR(D1))^ := D2;  END;
+
+  PROCEDURE   TC4TH.STOREB;  var d1, d2: dword;
+  BEGIN DROP2(D1,D2);  PBYTE(MEMADR(D1))^ := D2;  END;
+
+  FUNCTION    TC4TH.MEMADR(A: WORD): POINTER;
+  BEGIN ERROR(A >= FSIZE,'MEMORY RANGE'); MEMADR := @fmem^[A]; END;
+
+  PROCEDURE   TC4TH.FETCHW;  BEGIN PUSH(PWORD(MEMADR(POP))^);  END;
+
+  PROCEDURE   TC4TH.FETCHB;  BEGIN PUSH(PBYTE(MEMADR(POP))^);  END;
+
+  procedure   tc4th.bcomma;  begin PUSH(fhp); STOREB; inc(fhp); end;
+
+  procedure   tc4th.comma; begin PUSH(fhp); STOREW; inc(fhp,2); end;
+
+
 begin
 end.
+
