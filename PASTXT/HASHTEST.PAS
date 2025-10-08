@@ -2,162 +2,63 @@ PROGRAM hashTEST;  {TESTING UNIT hashlib}
 
 USES baselib, filib, strlib, hashlib;
 
-  type TMyFunc = function(s: string): word;
-
-  var tps: longstr;
-      buckets: array[0..top-1] of  ptrnode;
-      unused: ptrnode;
-
-      {statistics}
+  var tpls: longstr;
+      PH: PHASH;
       used_buckets: word;
       tuples_count: word;
+  const top = 101;
+
+  FUNCTION FIND(KEY: STRING): STRING;
+    VAR P: PEL;
+  BEGIN
+    FIND := '';
+    P   := PH^.SEARCH(KEY);
+    IF  P <> NIL
+      THEN FIND := PH^.VALUEtoStr(P);
+  END;
 
   procedure setTuples;
   var token, tkey: string;
-      ls: longstr; tuple: ptrNode;
-  begin ls := tps; unused := nil;  {prepare for rehash}
-    token := lextract(ls);
-    while token <> '' do begin
+      ls: longstr; p: peL;
+      IDX: WORD;
+  begin ls := tpLs;
+    REPEAT  token := lextract(ls);
+      IF TOKEN = ''
+        THEN BREAK;
       tkey := cutstr(token,',');
       if tkey = ''
          then continue;
-      tuple := makeTuple(tkey,token);
-      {idx := hash(tkey);}
-      if findTuple(tkey, unused) <> nil then begin
-         writeln('Duplicate key : ',tkey);
-         freetuple(tuple);
+      if find(tkey) <> '' then begin
+         writeln('Duplicate key : "',tkey,'"');
          continue;
       end;
-      inc(tuples_count);
-      pushTuple(tuple, unused);
-      token := lextract(ls);
-    end;
-    with tps do
+      PH^.ADDstr(TKEY,TOKEN);
+    UNTIL FALSE;
+    with tpLs do
       freeMem(cp,rem);
   end;
 
-
-{$f+}
-
-  function h32H(s: string): integer;
-  var res: dword;
-  begin     res := GETh32(s[1], 0, byte(s[0]), 94);
-    H32H := divmod(res,top);
-  end;
-
-  function h32t(s: string): word;
-  VAR RES: DWORD;
-  begin RES := CRC32t(@s[1],byte(s[0]), -1);
-    h32t :=  DIVMOD(RES, top) ;
-  end;
-
-  function h32(s: string): word;
-  VAR RES: DWORD; { $EDB88320}
-  begin RES :=  CRC32(@s[1],byte(s[0]), -1, $EDB88320);
-    h32 :=  DIVMOD(RES, top) ;
-  end;
-
-  function h16t(s: string): word;
-  var res : word;
-  begin
-    res := CRC16t(@s[1],byte(s[0]), $ffff);
-    h16t := res mod top ;
-  end;
-
-  function h8t(s: string): BYTE;
-  var res : word;
-  begin
-    res := CRC8t(@s[1],byte(s[0]), $ff);
-    h8t := res mod top ;
-  end;
-
-  function h8t2(s: string): BYTE;
-  var res : word;
-  begin
-    res := CRC8t2(@s[1],@tcrc8,byte(s[0]), $ff);
-    h8t2 := res mod top ;
-  end;
-
-  function h16(s: string): word;
-  var res : word;
-  begin
-    res := CRC16(s[1],byte(s[0]), $ffff, $c867);
-    h16 := res mod top ;
-  end;
-
-  function h8(s: string): word;
-  var res : word;
-  begin
-    res := CRC8(s[1],byte(s[0]), $ff, $67);
-    h8 := res mod top ;
-  end;
-
-  function hghw(s: string): word;
-  var res : word;
-  begin
-    res := GEThash(s[1],byte(s[0]), $ffff, $c867);
-    hghw := res mod top ;
-  end;
-
-  function hgh(s: string): integer;
-  var res : word;
-  begin
-    res := GEThw(@s[1],byte(s[0]), $ffff, $c867);
-    hgh := res mod top ;
-  end;
-
-  function hgh2(s: string): integer;
-  var res : word;
-  begin
-    res := GEThw2(@s[1],byte(s[0]), $ffff, $c867);
-    hgh2 := res mod top ;
-  end;
-
-{$f-}
-
-  procedure rehash(MyHash: pointer; msg: string);
-  var i: integer; bucket, tuple: ptrNode;
+  procedure rhash(MyHash: pointer; msg: string);
+  var i: integer; tuple: pel;
       w, tot, maxind, maxdeep, total: word;
-      start, _END_: dword;
-
-  PROCEDURE DO_REHASH;
-    VAR I: INTEGER;
-    BEGIN
-      {free buckets}
-      for i := top-1 downto 0 do begin
-        bucket := buckets[i];
-        buckets[i] := nil ;
-        while bucket <> nil do begin
-          pushTuple(poptuple(bucket), unused);
-        end;
-      end;
-
-    total := 0;
-    {real rehash}
-    while unused <> nil do begin
-      tuple := popTuple(unused);
-      w := tMyFunc(MyHash)(ptuple(tuple)^.key);
-      pushTuple(tuple,buckets[w]);
-      inc(total);
-    end;
-    END;
-
-  begin
+      start, _END_: dword; buckets: ppary;
+  begin  buckets := ph^.fpels;
     start := now;
 
-    FOR TOT := 1 TO 1000 DO DO_REHASH;
+    FOR TOT := 1 TO 1000 DO
+      total := ph^.REHASH(top,MyHash);
 
     tot := total; _END_ := NOW;
     {count new buckets & and chk deep}
     used_buckets := 0;  maxdeep := 0;
     for i := top-1 downto 0 do
-      if buckets[i] <> nil then begin
+      if buckets^[i] <> nil then begin
         inc(used_buckets);
-        tuple := buckets[i];
+        tuple := buckets^[i];
         w := 0;
         while tuple <> nil do begin
           inc(w);
-          tuple := tuple^.next;
+          tuple := tuple^.fnext;
           dec(total);
         end;
         if maxdeep < w then begin
@@ -175,16 +76,17 @@ USES baselib, filib, strlib, hashlib;
       ' ',(used_buckets*100) div top,
       '  avg_dp:', (tot*100) div used_buckets);
 
-        tuple := buckets[maxind];
+        tuple := buckets^[maxind];
         while tuple <> nil do begin
-          write(ptuple(tuple)^.key,' ');
-          tuple := tuple^.next;
+          write(pstr(@tuple^.ft1)^,' ');
+          tuple := tuple^.fnext;
         end;
         writeln;
   end;
 
 BEGIN
-  if not getuples(paramstr(1)+'.tup',tps) then begin
+  ph := new(phash,create(101,@hgh));
+  if not readbin(paramstr(1)+'.tup',tpls) then begin
     writeln('such file not present : ', paramstr(1));
     exit;
   end;
@@ -193,17 +95,17 @@ BEGIN
   setTuples;
 
 writeln('  tuples : ',tuples_count);
-  rehash(@hgh  ,'hgh    ');
-  rehash(@hghw ,'hghw   ');
-  rehash(@h8   ,'h8     ');
-  rehash(@h16  ,'h16    ');
-  rehash(@h32  ,'h32    ');
-  rehash(@h8t  ,'h8t    ');
-  rehash(@h8t2 ,'h8t2   ');
-  rehash(@h16t ,'h16t   ');
-  rehash(@h32t ,'h32t   ');
-  REHASH(@h32H ,'h32H   ');
-  rehash(@hgh2 ,'hgh2   ');
+  rhash(@hgh  ,'hgh    ');
+  rhash(@hghw ,'hghw   ');
+  rhash(@h8   ,'h8     ');
+  rhash(@h16  ,'h16    ');
+  rhash(@h32  ,'h32    ');
+  rhash(@h8t  ,'h8t    ');
+  rhash(@h8t2 ,'h8t2   ');
+  rhash(@h16t ,'h16t   ');
+  rhash(@h32t ,'h32t   ');
+  RHASH(@h32H ,'h32H   ');
+  rhash(@hgh2 ,'hgh2   ');
 
   readln;
 END.

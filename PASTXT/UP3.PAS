@@ -18,7 +18,7 @@ USES BASELIB, STRLIB, FILIB, HASHLIB;
     FIND := '';
     P   := PH^.SEARCH(KEY);
     IF  P <> NIL
-      THEN FIND := PH^.GETVALUE(P)^;
+      THEN FIND := PH^.VALUEtoStr(P);
   END;
 
   {$f+}
@@ -112,7 +112,7 @@ USES BASELIB, STRLIB, FILIB, HASHLIB;
          writeln('Duplicate key : "',tkey,'"');
          continue;
       end;
-      PH^.ADD(TKEY,TOKEN);
+      PH^.ADDstr(TKEY,TOKEN);
     UNTIL FALSE;
     with tpLs do
       freeMem(cp,rem);

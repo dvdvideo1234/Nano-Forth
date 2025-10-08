@@ -19,10 +19,10 @@ Start   Label byte
 @_ABORT:
         CLD
 		mov bp,0
-        mov sp,-256
-
-        call @_TROFF
-        call @_does
+    mov sp,-256
+    
+    call @_TROFF
+    call @_does
 		dw _lpar 						;init interpretter
 @_CICLE	dw _init,_eval,_nop,_BRAN,@_CICLE
 
