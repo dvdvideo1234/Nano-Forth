@@ -10,7 +10,7 @@ uses baselib;
   PROCEDURE REVERT(Data: PCHAR; LEN: Word);
   PROCEDURE ONPLACE(Data: PCHAR; LEN1, LEN2: Word);
 
-  function  UnPackEdge(s, d: pchar; l, edge: WORD): dWORD;
+  function  UnPackEdge(s, d: pchar; l: word; var edge: WORD): WORD;
   function  edgeUnpack(var ls: longstr; edge: word): string;
   function  TokenPack(s: string; VAR CMD: CHAR): string;
   function  ascUnPack(s, d: pchar; l: WORD): WORD;
@@ -31,18 +31,9 @@ uses baselib;
 
 IMPLEMENTATION
 
-  function UnPackEdge(s, d: pchar; l, edge: WORD): dWORD; assembler;
+  {$f-}
+  procedure  byte1; assembler;
   asm
-    push ds
-    lds  si,s
-    les  di,d
-    mov  cx,l
-    mov  bx,edge
-    add  bx,di
-    jc   @@res
-    jcxz @@res
-    jmp  @@loop
-@@one:
     lodsb
     mov  dx,di
     mov  ah,al
@@ -56,7 +47,7 @@ IMPLEMENTATION
     add  al,'@'
     push ax
     mov  al,'^'
-    db   $3c
+    db   $3d
 @@store:
     mov  al,'"'
     stosb
@@ -73,10 +64,23 @@ IMPLEMENTATION
     cmp  al,'_'
     jz   @@store
     pop  ax
-    ret
+  end;
+  {$f+}
 
+
+  function UnPackEdge(s, d: pchar; l: word; var edge: WORD): WORD; assembler;
+  asm
+    push ds
+    lds  bx,edge
+    mov  bx,[bx]
+    lds  si,s
+    les  di,d
+    mov  cx,l
+    add  bx,di
+    jc   @@res
+    jcxz @@res
 @@loop:
-    call @@one
+    call byte1
     stosb
     shl  ah,1
     jnc  @@endlp
@@ -92,18 +96,20 @@ IMPLEMENTATION
     dec  si
     mov  di,dx
 @@res:
-    pop  ds
-    mov  dx,di
+    lds  bx,edge
+    sub  di,word ptr d
+    mov  [bx],di
     xchg ax,si
+    sub  ax,word ptr s
+    pop  ds
   end;
 
   function edgeUnpack(var ls: longstr; edge: word): string;
-  var s, d: pchar; i, l: word; dd: dword; res: string;
-  begin s := ls.cp; d := @res[1]; l := ls.rem;
-    dd := UnPackEdge(s, d, l, edge); i:= dd; l := longrec(dd).hi;
-    i := i-longrec(dword(s)).lo;    l := l-longrec(dword(d)).lo;
+  var s, d: pchar; i: word; res: string;
+  begin s := ls.cp; d := @res[1];
+    i := UnPackEdge(s, d, ls.rem, edge);
     with ls do begin  cp := cp + i; rem:= rem- i;  end;
-    res[0] := char(l);
+    res[0] := char(edge);
     edgeUnpack := res;
   end;
 

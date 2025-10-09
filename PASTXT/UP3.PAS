@@ -163,7 +163,8 @@ begin
       END;
       chkproc := @TuplefOut;    finish := @Close3;
     END ELSE begin
-      SETTUPLES;                writeBody;
+      SETTUPLES;
+      writeBody;
       chkproc := @ChkName;      finish := @Close2;
     end;
 
