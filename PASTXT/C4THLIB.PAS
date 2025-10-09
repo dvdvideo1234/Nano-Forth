@@ -41,11 +41,11 @@ uses baselib, FILIB, strLib, hashlib;
       fLine:  string;   {last line  when in main loop}
       fls:    longstr;  {current position in text buffer}
       fprpnt: tprgPnt;
-      falign: word;
+      fSAVEP: word;
 
       constructor create(stksz, fbsz, sz: word);
       destructor  done;
-      procedure   forth;  {main loop}
+      procedure   forth(FNAME: STRING);  {main loop}
 
       {compiler intro}
       procedure   eval(p: pchar; l: word);
@@ -53,6 +53,8 @@ uses baselib, FILIB, strLib, hashlib;
       function    getParam(chk: boolean): string;
       procedure   macro(s: string);
       procedure   error(cond: boolean; s: string);
+      FUNCTION    FIND(AWORD: STR85): PEL;
+      PROCEDURE   FIX(AWORD: STR85; W: WORD);
       function    strcomp: boolean;
       function    execute(p: pel): boolean;
       function    compile(p: pel): boolean;
@@ -64,6 +66,7 @@ uses baselib, FILIB, strLib, hashlib;
       FUNCTION    MEMADR(A: WORD): POINTER;
       procedure   push(L: dword);
       function    pop: dword;
+      procedure   STRCOMMA(STR: STRING);
 
       {common commands}
       procedure   bye;
@@ -73,12 +76,17 @@ uses baselib, FILIB, strLib, hashlib;
       procedure   comma;
       procedure   bcomma;
       PROCEDURE   reMARK;
+      procedure   ALLOT;
+      procedure   SAVE;
+      procedure   UNLINKED;
 
       {create commands}
       procedure   Colon;
       procedure   Semi;
       procedure   newDEA; {dictionary equ here address}
       procedure   equColon; {dictionary established address}
+      PROCEDURE   MAC2VAR; {CREATE VAR VALUE ...}
+      PROCEDURE   MACDEF; {IF REPEAT UNTIL ...}
 
       {compiling control commands}
       PROCEDURE   FWDMARK;
@@ -87,11 +95,9 @@ uses baselib, FILIB, strLib, hashlib;
       PROCEDURE   BWDRELS;
       PROCEDURE   BWDswap;
       PROCEDURE   FWDswap;
-      PROCEDURE   MCOLON;
+      PROCEDURE   MCOLON;   {USED BY MAC2VAR}
 
       {interpretter commands}
-      PROCEDURE   MAC2VAR;
-      PROCEDURE   MACDEF;
       procedure   here;
       procedure   Locate;
       procedure   dup;      {stack}
@@ -120,15 +126,15 @@ implementation
 
   constructor tstack.create(sz: word);
   begin
-      fstkp:= sz;  {empty stack}
+      fstkp:= sz;  {empty stack ON START}
       fedge:= sz;
-      getmem(fdata,sz * 4);
+      getmem(fdata,sz * SIZEOF(POINTER));
   end;
 
   destructor tstack.done;
   begin
       reset;
-      freemem(fdata,fedge * 4);
+      freemem(fdata,fedge * SIZEOF(POINTER));
   end;
 
   procedure tstack.reset;
@@ -221,10 +227,20 @@ implementation
   end;
 
   procedure   tc4th.equColon; { =: dictionary established address}
-  var p: pel;
+  var p: pel; OLD: DWORD; D, ADR: WORD;
   begin getToken(true);
     p :=  fcomph.search(ftoken);
-    error(p <> nil,'duplicated');
+    IF P<> NIL THEN WITH P^ DO BEGIN
+      ERROR(FTYPE<>1, 'ILLEGAL TYPE');
+      OLD := DWORD(FVALUE);
+      error(LONGREC(OLD).HI = 0,'duplicated');
+      D := POP; ADR := LONGREC(OLD).LO;
+      WHILE ADR <> 0 DO BEGIN OLD := PWORD(MEMADR(ADR))^;
+        PWORD(MEMADR(ADR))^ := D; ADR := OLD;
+      END;
+      DWORD(FVALUE) := D;
+      EXIT;
+    END;
     fcomph.addNum(ftoken,pop);
   end;
 
@@ -251,12 +267,22 @@ implementation
   begin eval(@s[1],byte(s[0])); end;
 
   function    tc4th.compile(p: pel): boolean;
-  begin compile := p <> nil; if p = nil then exit;
-    push(dword(p^.fvalue)); comma;  end;
+  VAR OLD: DWORD; ADR: WORD;
+  begin
+    if (p = nil) OR (P^.FTYPE <> 1)
+      then BEGIN COMPILE := FALSE; exit; END;
+    OLD := dword(p^.fvalue);
+    ADR := FHP;
+    push(OLD); comma;
+    IF LONGREC(OLD).HI <> 0 THEN LONGREC(P^.FVALUE).LO := ADR;
+    COMPILE := TRUE;
+  end;
 
   function   tc4th.execute(p: pel): boolean;
   var fi: boolean; kp: pstr;
-  begin execute := p <> nil; if p = nil then exit;
+  begin
+    if (p = nil) OR (P^.FTYPE=1)
+      then BEGIN execute := FALSE; exit; END;
     with p^ do case ftype of
       0:  perform(@self,fvalue);
       2:  begin kp := @ft1; fi := kp^[ft1] <> '`';
@@ -265,6 +291,7 @@ implementation
             if fi then tointer;
           end;
     end;
+    EXECUTE := TRUE;
   end;
 
   procedure   tc4th.here;
@@ -296,13 +323,23 @@ implementation
     compNum;
   end;
 
-  procedure   tc4th.Locate;
+  PROCEDURE   tc4th.FIX(AWORD: STR85; W: WORD);
+  var p: pel; D: DWORD;
+  BEGIN P := FIND(AWORD); D := DWORD(P^.FVALUE);
+    ERROR(LONGREC(D).HI <> 0, 'NOT DEFINED YET');
+    PWORD(MEMADR(D+2))^ := W;
+  END;
+
+  FUNCTION    tc4th.FIND(AWORD: STR85): PEL;
   var p: pel;
-  begin getToken(true);
-    p := fcomph.search(fToken);
-    error(p = nil, 'not found');
-    push(dword(p^.fvalue));
-  end;
+  BEGIN FTOKEN := AWORD;  {ZARADI ERROR}
+    p := fcomph.search(AWORD);
+    error((p = nil) OR (P^.FTYPE<>1), 'not found');
+    FIND := P;
+  END;
+
+  procedure   tc4th.Locate;
+  begin getToken(true); push(dword(FIND(FTOKEN)^.fvalue));  end;
 
   procedure   tc4th.bye;
   begin
@@ -315,19 +352,18 @@ implementation
   procedure   tc4th.error(cond: boolean; s: string);
   begin if not cond then exit;
     writeln;
-    writeln(ftoken,' ',s);
+    writeln(ftoken,':  ',s);
     gotoPoint(fprpnt);
   end;
 
 
-  procedure   tc4th.forth;
+  procedure   tc4th.forth(FNAME: STRING);
   begin  {initialization of interpretter dictionary}
     WITH finteh DO BEGIN
       add('\'      ,@TC4TH.reMARK);
       add('BYE'    ,@tc4th.bye);
       add('>,'     ,@tc4th.toComp);
       add(':'      ,@tc4th.Colon);
-      add(';`'     ,(@tc4th.Semi));
       add('C,'     ,@tc4th.bcomma);
       add(','      ,@tc4th.comma);
       add('=:'     ,@tc4th.equColon);
@@ -353,12 +389,17 @@ implementation
       add('@'      ,@tc4th.FETCHW);
       add('C@'     ,@tc4th.FETCHB);
       add('INCLUDE',@TC4TH.include);
+      add('ALLOT'  ,@TC4TH.ALLOT);
+      add('SAVE'   ,@TC4TH.SAVE);
+      add('=!'     ,@TC4TH.UNLINKED);
       add('V:'     ,@TC4TH.MAC2VAR);
+      add('M:'     ,@TC4TH.MACDEF);
     END;
 
 
          {initialization of compiler dictionary}
     WITH fCOMPh DO BEGIN
+      add(';`'     ,@tc4th.Semi);
       add('\`'     ,@TC4TH.reMARK);
       add('<CSWAP`',@TC4TH.BWDswap);
       add('CSWAP>`',@TC4TH.FWDswap);
@@ -369,12 +410,14 @@ implementation
       add('THEN`'  ,@tc4th.FWDRELS);
       add('RELS>`' ,@tc4th.BWDRELS);
       add('(V:`'   ,@TC4TH.MCOLON);
-      add('M:'     ,@TC4TH.MACDEF);
     END;
 
     savePoint(fprpnt); {program state reset point - on error}
 
-    fstate:= @tc4th.toInter;     {interpretter}
+    toInter;     {interpretter}
+
+    IF FNAME <> '' THEN BEGIN FPARAM := FNAME; FNAME := ''; INCLUDE; END;
+
     ftxtst.reset; {close all open files}
     fstack.reset; {}
     ffwdbr.reset;
@@ -397,7 +440,14 @@ implementation
     DEC(NUM);
     IF (FHP AND NUM) = 0
       THEN EXIT;
-    FHP := SUCC(FHP OR NUM);
+      {ON OTHER VERSIONS HERE MUST BE SOMETHING}
+    STRCOMMA(MKSTROF(#0, SUCC(FHP OR NUM) - FHP));
+  end;
+
+  procedure tc4th.STRCOMMA(STR: STRING);
+  begin
+    move(STR[1],fmem^[fhp],byte(STR[0]));
+    inc(fhp,byte(STR[0]));
   end;
 
   function  tc4th.getParam(chk: boolean): string;
@@ -409,8 +459,7 @@ implementation
   procedure tc4th.getToken(chk: boolean);
   begin
     Ftoken := lextract(fls);
-    if not chk then exit;
-    error(fToken = '', 'empty token');
+    if chk then error(fToken = '', 'empty token');
   end;
 
   function tc4th.strcomp: boolean;
@@ -418,8 +467,7 @@ implementation
   begin temp := TokenPACK(ftoken,cmd);
     strcomp := cmd <> #0; if cmd = #0 then exit;
     case cmd of
-      ',':  begin move(temp[1],fmem^[fhp],byte(temp[0]));
-              inc(fhp,byte(temp[0])); end;
+      ',':  STRCOMMA(temp);
       '.':  write(temp);
       '"':  FPARAM := temp;
       '?': push(pos(char(pop),temp));
@@ -519,21 +567,20 @@ implementation
   PROCEDURE   TC4TH.BWDswap;    var b1, b2: dword; BEGIN
     error(fbwdBr.depth < 2, 'bwd stack empty');
     b1 := fbwdBr.POP;  b2 := fbwdBr.POP;  fbwdBr.Push(b1);
-    fbwdBr.Push(b2);    END;
-
+    fbwdBr.Push(b2);
+  END;
 
   procedure TC4TH.include;
   VAR ALINE: STR85;
-  begin  ERROR(ftxtst.FSTKP=0, 'TOO MANY OPEN FILES');
-    ERROR(NOT ftxtst.ADD(FPARAM), 'CAN''T OPEN FILE "'+FPARAM+'"');
-    REMARK; FPARAM := ''; {SKIP REMAINING TOKEMS IN CALLING LINE}
-    WHILE NOT EOF(ftxtst.TOP^) DO BEGIN
-      READLN(ftxtst.TOP^,ALINE);  MACRO(ALINE);
-    END;
-    CLOSE(ftxtst.TOP^);
+  begin
+    WITH ftxtst DO BEGIN ERROR(FSTKP=0, 'TOO MANY OPEN FILES');
+      ERROR(NOT ADD(FPARAM), 'CAN''T OPEN FILE "'+FPARAM+'"');
+      REMARK; FPARAM := ''; {SKIP REMAINING TOKEMS IN CALLING LINE}
+      WHILE NOT EOF(TOP^) DO BEGIN READLN(TOP^,ALINE);  MACRO(ALINE); END;
+    CLOSE(TOP^); END;
   end;
 
-  PROCEDURE   TC4TH.MACDEF;  {DEFINE CONTROLS USE IN COMP MODE}
+  PROCEDURE   TC4TH.MACDEF;  {DEFINE CONTROLS USED IN COMP MODE}
   BEGIN GETTOKEN(TRUE); fcomph.addstr(ftoken + '`', getParam(true));  END;
 
   PROCEDURE   TC4TH.MCOLON;  {  (V: HERE 2- =: , }
@@ -541,6 +588,28 @@ implementation
 
   PROCEDURE   TC4TH.MAC2VAR; {DEFINE DEFINERS BY (V: ON INTERP MODE }
   BEGIN GETTOKEN(TRUE);  finteh.addstr(ftoken, getParam(true));  END;
+
+  procedure TC4TH.ALLOT;  BEGIN INC(FHP,POP);  END;
+
+  procedure TC4TH.UNLINKED;  BEGIN PUSH(-65536); EQUCOLON;  END;
+
+  procedure TC4TH.SAVE;
+  VAR I: INTEGER; KEY: STR15; P: PEL; HIADR, SIZE, ERR: WORD; D: DWORD;
+      FNAME: STR85; FOUT: FILE;    {SPACE FOR VOCABULARY SIZE}
+  BEGIN FSAVEP := FHP; INC(FHP,2);     ERR := 0; WRITELN;
+    WITH fcomph DO FOR I := FCOUNT-1 DOWNTO 0 DO BEGIN  P := FPELS^[I];
+        WHILE P <> NIL DO WITH P^ DO IF FTYPE = 1 THEN BEGIN
+          KEY := GETKEY(P)^; D := DWORD(FVALUE); HIADR := LONGREC(D).HI;
+          IF HIADR <> 0 THEN BEGIN INC(ERR); WRITE(' =! ',KEY);  END;
+          IF NOT ((KEY[1] = '`') OR (HIADR <> 0 )) THEN BEGIN
+          STRCOMMA(KEY); PLONG(MEMADR(FHP))^ := D; INC(FHP,4); END;
+        P := P^.FNEXT; END;
+    END;  WRITELN; WRITELN;  STRCOMMA(#0); PUSH(FHP-2-FSAVEP);
+    PUSH(FSAVEP); STOREW; FNAME := GETPARAM(TRUE); SIZE := FHP;
+    FHP := FSAVEP;    IF ERR <> 0 THEN EXIT;
+    FIX('H',FHP+$100);  ERROR( NOT WRITEbin(FNAME,MEMADR(0)^, SIZE),
+      'UNCOMPLETED WRITING A FILE '+FNAME);
+  END;
 
 begin
 end.

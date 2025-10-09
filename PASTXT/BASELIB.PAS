@@ -67,9 +67,6 @@ interface
   PROCEDURE GOTOPOINT(PNT: tPRGPNT);
   PROCEDURE INITCO(PNT: tPRGPNT);
 
-{CONST CDIGTBL: STRING[64] =
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';}
-
   function  ITOA(d: longint; base: word): str35;
   PROCEDURE ATOI(s:string;VAR RES:DWORD; VAR ERR:word);
 

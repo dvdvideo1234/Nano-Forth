@@ -10,6 +10,8 @@ uses baselib;
   PROCEDURE REVERT(Data: PCHAR; LEN: Word);
   PROCEDURE ONPLACE(Data: PCHAR; LEN1, LEN2: Word);
 
+  function  UnPackEdge(s, d: pchar; l, edge: WORD): dWORD;
+  function  edgeUnpack(var ls: longstr; edge: word): string;
   function  TokenPack(s: string; VAR CMD: CHAR): string;
   function  ascUnPack(s, d: pchar; l: WORD): WORD;
   function  ascPack(s, d: pchar; l: WORD): WORD;
@@ -28,6 +30,107 @@ uses baselib;
   function  GETOKEN(var s: string) : string;
 
 IMPLEMENTATION
+
+  function UnPackEdge(s, d: pchar; l, edge: WORD): dWORD; assembler;
+  asm
+    push ds
+    lds  si,s
+    les  di,d
+    mov  cx,l
+    mov  bx,edge
+    add  bx,di
+    jc   @@res
+    jcxz @@res
+    jmp  @@loop
+@@one:
+    lodsb
+    mov  dx,di
+    mov  ah,al
+    and  al,127
+    cmp  al,32
+    jg   @@gtspc
+    jc   @@less
+    mov  al,'_'
+    ret
+@@less:
+    add  al,'@'
+    push ax
+    mov  al,'^'
+    db   $3c
+@@store:
+    mov  al,'"'
+    stosb
+    pop  ax
+    ret
+@@gtspc:
+    push ax
+    cmp  al,'~'
+    jz   @@store
+    cmp  al,'"'
+    jz   @@store
+    cmp  al,'^'
+    jz   @@store
+    cmp  al,'_'
+    jz   @@store
+    pop  ax
+    ret
+
+@@loop:
+    call @@one
+    stosb
+    shl  ah,1
+    jnc  @@endlp
+    mov  al,'~'
+    stosb
+@@endlp:
+    cmp  bx,di
+    jc   @@end
+    loop @@loop
+@@end:
+    cmp  bx,di
+    jnc  @@res
+    dec  si
+    mov  di,dx
+@@res:
+    pop  ds
+    mov  dx,di
+    xchg ax,si
+  end;
+
+  function edgeUnpack(var ls: longstr; edge: word): string;
+  var s, d: pchar; i, l: word; dd: dword; res: string;
+  begin s := ls.cp; d := @res[1]; l := ls.rem;
+    dd := UnPackEdge(s, d, l, edge); i:= dd; l := longrec(dd).hi;
+    i := i-longrec(dword(s)).lo;    l := l-longrec(dword(d)).lo;
+    with ls do begin  cp := cp + i; rem:= rem- i;  end;
+    res[0] := char(l);
+    edgeUnpack := res;
+  end;
+
+  function edgeUnpak(var ls: longstr; edge: word): string;
+  var s, bkp, d: pchar; i, l: word; b: byte; c: char absolute b;
+      res: string; hi: boolean;
+    procedure put(ch:char); begin d^ := ch; d := d +1; end;
+  begin i := 0; l := 0; s := ls.cp; d := @res[1]; edgeUnpak := '';
+    repeat  c := s^; s := s + 1;  inc(i); bkp := d;
+      hi := b > 127;   if hi then dec(b,$80);
+      case c of
+        ' ' :    c := '_';
+        #0..#31: begin put('^'); inc(b,ord('@')); end;
+        '"','_','^','~': put('"');
+      end;
+      put(c);
+      if hi then put('~');
+      l := d - @res[1];
+    until (l > edge) or (i = ls.rem);
+    IF L > EDGE THEN BEGIN DEC(I); L := BKP -@RES[1]; END;
+    with ls do begin
+      cp := cp + i;
+      rem:= rem- i;
+    end;
+    res[0] := char(l);
+    edgeUnpak := res;
+  end;
 
   function  TokenPack(s: string; VAR CMD: CHAR): string;
   VAR P: PSTR; C: CHAR; L: BYTE ABSOLUTE S; IND: WORD;
@@ -56,16 +159,11 @@ IMPLEMENTATION
   BEGIN  LEN := (LEN AND 255) OR 15;  WRITELN;
     FOR I := 0 TO LEN DO BEGIN
       IF (I AND 15) = 0 THEN BEGIN
-        RES := LongTOHEX(DWORD(@AR[I]))+' ';
-        TXT := '   [';
-        T := I;
+        RES := LongTOHEX(DWORD(@AR[I]))+' ';  TXT := '   [';
       END;
-      C := CHAR(AR[I]); IF C IN [#0..#31] THEN C := '.';
-      RES := RES + ' ' + BYTETOHEX(AR[I]);
-      TXT := TXT + C;
-      IF (I AND 15) = 15 THEN BEGIN
-        WRITELN(RES,TXT,']');
-      END;
+      C := CHAR(AR[I]); IF C IN [#0..#31,#127,#255] THEN C := '.';
+      RES := RES + ' ' + BYTETOHEX(AR[I]);    TXT := TXT + C;
+      IF (I AND 15) = 15 THEN WRITELN(RES,TXT,']');
     END;
   END;
 
@@ -153,33 +251,33 @@ IMPLEMENTATION
   begin
     RES := LS;
     asm
-  LES     DI,[RES.CP]
-  mov CX,RES.REM
-  mov AL,' '
-  inc CX
+    LES     DI,[RES.CP]
+    mov CX,RES.REM
+    mov AL,' '
+    inc CX
 @@1:
-  DEC CX
-  JZ @@SKIPX
-  SCASB
-  JAE @@1       { SPACE IS ABOVE OR EQUAL TO }
-  DEC     DI
+    DEC CX
+    JZ @@SKIPX
+    SCASB
+    JAE @@1       { SPACE IS ABOVE OR EQUAL TO }
+    DEC     DI
 @@SKIPX:
-  push    di    {;  START OF THE WORD}
-  JCXZ @@WEX
-  inc CX
+    push    di    {;  START OF THE WORD}
+    JCXZ @@WEX
+    inc CX
 @@3:
-  DEC CX
-  JZ @@WEX
-  SCASB           { SPACE IS BELOW THEN}
-  JB @@3
-  DEC     DI
+    DEC CX
+    JZ @@WEX
+    SCASB           { SPACE IS BELOW THEN}
+    JB @@3
+    DEC     DI
 @@WEX:          {; END OF THE WORD  IN DI}
-  POP AX      {; START OF THE WORD}
-  mov WORD PTR [RES.CP],DI
-  SUB     DI,ax   {; LENGTH OF THE WORD}
-  mov WORD PTR [LEN],DI
-  mov WORD PTR [RES.REM],CX
-  END;
+    POP AX      {; START OF THE WORD}
+    mov WORD PTR [RES.CP],DI
+    SUB     DI,ax   {; LENGTH OF THE WORD}
+    mov WORD PTR [LEN],DI
+    mov WORD PTR [RES.REM],CX
+    END;
     LS := RES;
     pars := LEN;
   END;
@@ -275,20 +373,16 @@ IMPLEMENTATION
   function fixblanks(s: string): STRING;
   var p: integer;
   begin
-    for p := length(s) downto 1 do begin
+    for p := length(s) downto 1 do
       if s[p] < ' ' then s[p] := ' ';
-    end;
     FIXBLANKS := S;
   end;
 
   FUNCTION upcase(s: string): STRING;
-  var p: integer; bcod: byte;
+  var p: integer;
   begin
-    for p := length(s) downto 1 do begin
-      bcod := byte(s[p]);
-      if (bcod <= byte('z')) and (bcod >= byte('a')) then
-      s[p] := char(bcod-32);
-    end;
+    for p := length(s) downto 1 do
+      if S[P] IN ['a'..'z'] then s[p] := char(BYTE(S[P])-32);
     UPCASE := S;
   end;
 
@@ -304,65 +398,6 @@ IMPLEMENTATION
     cutstr := copy(s,1,p-1);
     delete(s,1,p);
   end;
-
-{
-  FUNCTION  STKPTR: WORD;
-  VAR P: WORD;
-  BEGIN
-    ASM
-      LEA AX,[BP+4]
-      MOV P,AX
-    END;
-    STKPTR := P;
-  END;
-}
-{
-  PROCEDURE TEST;
-  VAR SRS, DST: STRING;
-  DD: DWORD; DELTA: INTEGER; DVD: WORD;
-  CH: CHAR;  PC: PCHAR;
-  BEGIN
-    SRS := ^A^B^C'4~_^"';
-    WRITELN('function  DigChar(n: byte): char;',CHAR($6E));
-    CH := DigChar(11);
-    WRITELN('DigChar ',11,' = ',CH);
-
-    WRITELN('DST := STRUNPACK(SRS)');
-    DST := STRUNPACK(SRS);
-    WRITELN(DST,BOOLTXT(STRPACK(DST)=SRS));
-\    TESTPARAM(SRS,3);
-\    WRITELN(VA,' ',VB,' ',VC);
-
-  WRITELN('function  getc(var where: pchar): char');
-  PC := @CH;
-  WRITELN('getc = ',GETC(PC),' ',BOOLTXT((PC-1)=(@CH)));
-
-
-  WRITELN('procedure putc(what: char; var where: pchar)');
-  PC := @CH;
-  PUTC('A',PC);
-  WRITELN('PUTc = ',BOOLTXT(CH='A'),' ',BOOLTXT((PC-1)=(@CH)));
-
-  WRITELN('function  divmod(var w: dword; d: word): word');
-  DD := 70;
-  DVD := divmod(DD, 17);
-  WRITELN('DIVMOD = ',BOOLTXT(DVD=(70 MOD 17)),' ',BOOLTXT(DD=(70 DIV 17)));
-
-  function  strToNum(s: shortstring): longint;
-  procedure stradd(var sd: shortstring; ss: shortstring; del: char);
-  function  NToHex(n: dword; chars: byte): str15;
-  function  LongToHex(n: dword): str15;
-  function  NumberToStr(n: longint; chars, BASE: byte): str33;
-  function  byteTohex(n: byte): str5;
-  function  NToStr(n: longint): str15;
-  function  byteTobin(n: byte): str15;
-  function  WordTohex(n: word): str15;
-
-  function  RelADR(inw, Mask: WORD): WORD;
-
-    READLN;
-  END;
-}
 
 BEGIN
 END.

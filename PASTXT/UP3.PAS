@@ -49,31 +49,6 @@ USES BASELIB, STRLIB, FILIB, HASHLIB;
 
   {$f-}
 
-  function edgeUnpack(var ls: longstr; edge: word): string;
-  var s, bkp, d: pchar; i, l: word; b: byte; c: char absolute b;
-      res: string; hi: boolean;
-    procedure put(ch:char); begin d^ := ch; d := d +1; end;
-  begin i := 0; l := 0; s := ls.cp; d := @res[1]; edgeUnpack := '';
-    if edge < 6 then exit; dec(edge,3);
-    repeat  c := s^; s := s + 1;  inc(i); bkp := d;
-      hi := b > 127;   if hi then dec(b,$80);
-      case c of
-        ' ' :    c := '_';
-        #0..#31: begin put('^'); inc(b,ord('@')); end;
-        '"','_','^','~': put('"');
-      end;
-      put(c);
-      if hi then put('~');
-      l := d - @res[1];
-    until (l > edge) or (i = ls.rem);
-    with ls do begin
-      cp := cp + i;
-      rem:= rem- i;
-    end;
-    res[0] := char(l);
-    edgeUnpack := res;
-  end;
-
   procedure writeBody;
   var ls: longstr; fo_bdy: text;
   begin

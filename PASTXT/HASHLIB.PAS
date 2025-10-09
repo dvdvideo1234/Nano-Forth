@@ -68,7 +68,6 @@ type
   function GEThw2( var s; len,      CRC,       POLY: word) : word;
 
   procedure genTable(bits: word; showp, hashp: pointer; mask: longint);
-  {function newdm(var d: dword; w: word): word;}
 
 {$i hashinc}
 
@@ -90,19 +89,6 @@ type
   function h8t2( s: string): BYTE;
 
 IMPLEMENTATION
-
-{  function dvmd(d: dword; w: word): dword ;
-  inline($5b/$58/$5a/$f7/$f3);
-
-  function newdm(var d: dword; w: word): word;
-  var dd: dword absolute d; d1, res: dword;
-  begin d1 := longrec(dd).hi; res := dvmd(d1,w);
-     longrec(dd).hi := longrec(res).lo;  d1 := res; hi
-     longrec(d1).lo := longrec(dd).lo;  res := dvmd(d1,w);
-     longrec(dd).lo := longrec(res).lo;
-     newdm := longrec(res).hi;
-  end;
-}
 
   procedure   hash.Free(p: pel);
     var sz: word;
@@ -212,7 +198,7 @@ IMPLEMENTATION
   VAR I: DWORD;
   begin
     I := Thfunc(fHASH)(key);
-    I := {newdm}DIVMOD(I,fcount);
+    I := DIVMOD(I,fcount);
     whereTo := ppel(@fPels^[I]);
   end;
 
@@ -235,7 +221,6 @@ IMPLEMENTATION
       if p = nil
         then continue;
       cnt := 0; line := 0;
-
       if newlin then lp(ntostr(i),' ');
       while p <> nil do begin
         lp(getkey(p)^,','); lp(valueToStr(p),' ');
@@ -297,13 +282,7 @@ IMPLEMENTATION
     getKey := pstr(@p^.ft1);
   end;
 
-{  function    hash.GetValue(p: pel): pointer;
-  begin
-    getValue := p^.fvalue;
-  end;
-
-----------------------------------------------}
-
+{----------------------------------------------}
 
   function h32H(s: string): DWORD;
   begin
@@ -662,26 +641,4 @@ end;
   end;
 
 begin
-{
-VAR PH: PHASH;
-    I: WORD;
-    P: PEL;
-begin
-  WRITELN('GAGA');
-  ph := new(phash,create(19,@H32H));
-  I  := H32H('A');
-  ph^.ADD('A','B');
-  PH^.SHOW;
-  ph^.ADD('B','C');
-  PH^.SHOW;
-  ph^.ADD('C','D');
-  PH^.SHOW;
-  ph^.ADD('D','E');
-  PH^.SHOW;
-  P := PH^.SEARCH('B');
-  WRITELN(PH^.GETVALUE(P)^);
-  readln;
-  PH^.DONE;
-}
-
 end.
