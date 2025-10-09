@@ -32,7 +32,7 @@ uses baselib;
 IMPLEMENTATION
 
   {$f-}
-  procedure  byte1; assembler;
+  procedure  unbyte; assembler;
   asm
     lodsb
     mov  dx,di
@@ -65,6 +65,40 @@ IMPLEMENTATION
     jz   @@store
     pop  ax
   end;
+
+  procedure pkbyte; assembler;
+  asm
+    dec  cx
+    je   @@wave
+    cmp  al,'"'
+    jne  @@chav
+    lodsb
+@@store:
+    dec  cx
+    stosb
+    ret
+@@chav:
+    cmp  al,'^'
+    jne  @@wave
+    lodsb
+    and  al,31
+    jmp  @@store
+@@wave:
+    cmp  al,'~'
+    jne  @@end_
+    cmp  dx,di
+    je   @@end_
+    mov  al,$80
+    xor  es:[di-1],al
+    ret
+@@end_:
+    cmp  al,'_'
+    jne  @@end
+    mov  al,' '
+@@end:
+    stosb
+  end;
+
   {$f+}
 
 
@@ -80,7 +114,7 @@ IMPLEMENTATION
     jc   @@res
     jcxz @@res
 @@loop:
-    call byte1
+    call unbyte
     stosb
     shl  ah,1
     jnc  @@endlp
@@ -111,31 +145,6 @@ IMPLEMENTATION
     with ls do begin  cp := cp + i; rem:= rem- i;  end;
     res[0] := char(edge);
     edgeUnpack := res;
-  end;
-
-  function edgeUnpak(var ls: longstr; edge: word): string;
-  var s, bkp, d: pchar; i, l: word; b: byte; c: char absolute b;
-      res: string; hi: boolean;
-    procedure put(ch:char); begin d^ := ch; d := d +1; end;
-  begin i := 0; l := 0; s := ls.cp; d := @res[1]; edgeUnpak := '';
-    repeat  c := s^; s := s + 1;  inc(i); bkp := d;
-      hi := b > 127;   if hi then dec(b,$80);
-      case c of
-        ' ' :    c := '_';
-        #0..#31: begin put('^'); inc(b,ord('@')); end;
-        '"','_','^','~': put('"');
-      end;
-      put(c);
-      if hi then put('~');
-      l := d - @res[1];
-    until (l > edge) or (i = ls.rem);
-    IF L > EDGE THEN BEGIN DEC(I); L := BKP -@RES[1]; END;
-    with ls do begin
-      cp := cp + i;
-      rem:= rem- i;
-    end;
-    res[0] := char(l);
-    edgeUnpak := res;
   end;
 
   function  TokenPack(s: string; VAR CMD: CHAR): string;
@@ -173,52 +182,42 @@ IMPLEMENTATION
     END;
   END;
 
-  function ascPack(s, d: pchar; l: WORD): WORD;
-  var oldd: pchar; ch : char; c: byte absolute ch;
-    procedure getc1; begin ch := getc(s); dec(l); end;
-  begin  oldd := d;
-    while l > 0 do begin  getc1;
-      case ch of
-        '"': if l <> 0  then begin getc1; putc(ch,d);  end;
-        '^': if l <> 0  then begin getc1; c := c and 31; putc(ch,d); end;
-        '~': if oldd <> d then  byte((d-1)^) := byte((d-1)^) xor $80;
-        '_': begin ch := ' '; putc(ch,d); end;
-      else putc(ch,d);;
-      end;
-    end;
-    ASCPACK := d - oldd;
+  function ascPack(s, d: pchar; l: WORD): WORD; assembler;
+  asm
+    push ds
+    lds  si,s
+    les  di,d
+    mov  dx,di
+    mov  cx,l
+@@loop:
+    jcxz @@res
+    lodsb
+    call pkbyte
+    jmp  @@loop
+@@res:
+    sub  di,dx
+    xchg ax,di
+    pop  ds
   end;
 
   function strPack(s: string): string;
-  var c: byte;
   begin
-    c := ascPack(@s[1], @s[1], length(s));
-    s[0] := char(c);
+    s[0] := char(ascPack(@s[1], @s[1], length(s)));
     STRPACK := S;
   end;
 
   function strUnPack(s: str85): string;
-  var RA: string;
-  begin
-    ra[0] := char(ascUnPack(@s[1], @RA[1], length(s)));
+  var RA: string; edge: word;
+  begin edge :=255;
+    UnPackEdge(@s[1], @RA[1], length(s), edge);
+    ra[0] := char(edge);
     strUnPack := RA;
   end;
 
   function ascUnPack(s, d: pchar; l: WORD): WORD;
-  var oldd: pchar; ch : char; c: byte absolute ch;  hibit: boolean;
-    procedure put(chr: char); begin d^ := chr; d := d + 1; end;
-  begin  oldd := d;
-    while l > 0 do begin  ch := s^; inc(s); dec(l);
-      hibit := c > 127; c :=  c and 127;
-      case ch of
-        #0..#31: begin put('^');  c := c or ord('@'); end;
-        '~','"','^','_':  put('"');
-        ' ': ch := '_';
-      end;
-      put(ch);
-      if hibit then put('~');
-    end;
-    ascUnPack := d - oldd;
+  var edge: word;
+  begin  edge := succ(not dword(s));   UnPackEdge(s, d, l, edge);
+    ascUnPack := edge;
   end;
 
   PROCEDURE REVERT(Data: PCHAR; LEN: Word); ASSEMBLER;
