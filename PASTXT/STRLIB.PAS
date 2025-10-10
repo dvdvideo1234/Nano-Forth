@@ -35,26 +35,31 @@ IMPLEMENTATION
   procedure  unbyte; assembler;
   asm
     lodsb
+    shl  al,1
+    jnc  @@cont
+    call @@cont
+    mov  al,'~'
+    db   $3d
+@@equ:
+    mov  al,'_'
+    stosb
+    ret
+@@cont:
+    shr  al,1
     mov  dx,di
-    mov  ah,al
-    and  al,127
     cmp  al,32
     jg   @@gtspc
-    jc   @@less
-    mov  al,'_'
-    ret
-@@less:
+    je   @@equ
     add  al,'@'
-    push ax
-    mov  al,'^'
-    db   $3d
+    mov  ah,'^'
 @@store:
-    mov  al,'"'
+    xchg al,ah
     stosb
-    pop  ax
+    mov  al,ah
+    stosb
     ret
 @@gtspc:
-    push ax
+    mov  ah,'"'
     cmp  al,'~'
     jz   @@store
     cmp  al,'"'
@@ -63,26 +68,26 @@ IMPLEMENTATION
     jz   @@store
     cmp  al,'_'
     jz   @@store
-    pop  ax
+    stosb
   end;
 
   procedure pkbyte; assembler;
   asm
     dec  cx
     je   @@wave
+    mov  ah,255
     cmp  al,'"'
     jne  @@chav
-    lodsb
 @@store:
+    lodsb
+    and  al,ah
     dec  cx
     stosb
     ret
 @@chav:
+    mov  ah,31
     cmp  al,'^'
-    jne  @@wave
-    lodsb
-    and  al,31
-    jmp  @@store
+    je   @@store
 @@wave:
     cmp  al,'~'
     jne  @@end_
@@ -102,6 +107,24 @@ IMPLEMENTATION
   {$f+}
 
 
+  function ascPack(s, d: pchar; l: WORD): WORD; assembler;
+  asm
+    push ds
+    lds  si,s
+    les  di,d
+    mov  dx,di
+    mov  cx,l
+@@loop:
+    jcxz @@res
+    lodsb
+    call pkbyte
+    jmp  @@loop
+@@res:
+    sub  di,dx
+    xchg ax,di
+    pop  ds
+  end;
+
   function UnPackEdge(s, d: pchar; l: word; var edge: WORD): WORD; assembler;
   asm
     push ds
@@ -115,36 +138,46 @@ IMPLEMENTATION
     jcxz @@res
 @@loop:
     call unbyte
-    stosb
-    shl  ah,1
-    jnc  @@endlp
-    mov  al,'~'
-    stosb
-@@endlp:
     cmp  bx,di
-    jc   @@end
+    jc   @@endlp
     loop @@loop
-@@end:
-    cmp  bx,di
-    jnc  @@res
+    jmp  @@res
+@@endlp:
     dec  si
     mov  di,dx
 @@res:
     lds  bx,edge
-    sub  di,word ptr d
-    mov  [bx],di
-    xchg ax,si
-    sub  ax,word ptr s
+    sub  si,word ptr s
+    mov  [bx],si
+    xchg ax,di
+    sub  ax,word ptr d
     pop  ds
   end;
 
   function edgeUnpack(var ls: longstr; edge: word): string;
-  var s, d: pchar; i: word; res: string;
-  begin s := ls.cp; d := @res[1];
-    i := UnPackEdge(s, d, ls.rem, edge);
-    with ls do begin  cp := cp + i; rem:= rem- i;  end;
-    res[0] := char(edge);
+  var res: string;
+  begin  res[0] := char(UnPackEdge(ls.cp, @res[1], ls.rem, edge));
+    with ls do begin  cp := cp + edge; rem:= rem- edge;  end;
     edgeUnpack := res;
+  end;
+
+  function strPack(s: string): string;
+  begin
+    s[0] := char(ascPack(@s[1], @s[1], length(s)));
+    STRPACK := S;
+  end;
+
+  function strUnPack(s: str85): string;
+  var RA: string; edge: word;
+  begin edge :=255;
+    ra[0] := char(UnPackEdge(@s[1], @RA[1], length(s), edge));
+    strUnPack := RA;
+  end;
+
+  function ascUnPack(s, d: pchar; l: WORD): WORD;
+  var edge: word;
+  begin  edge := succ(not dword(s));
+    ascUnPack := UnPackEdge(s, d, l, edge);
   end;
 
   function  TokenPack(s: string; VAR CMD: CHAR): string;
@@ -181,44 +214,6 @@ IMPLEMENTATION
       IF (I AND 15) = 15 THEN WRITELN(RES,TXT,']');
     END;
   END;
-
-  function ascPack(s, d: pchar; l: WORD): WORD; assembler;
-  asm
-    push ds
-    lds  si,s
-    les  di,d
-    mov  dx,di
-    mov  cx,l
-@@loop:
-    jcxz @@res
-    lodsb
-    call pkbyte
-    jmp  @@loop
-@@res:
-    sub  di,dx
-    xchg ax,di
-    pop  ds
-  end;
-
-  function strPack(s: string): string;
-  begin
-    s[0] := char(ascPack(@s[1], @s[1], length(s)));
-    STRPACK := S;
-  end;
-
-  function strUnPack(s: str85): string;
-  var RA: string; edge: word;
-  begin edge :=255;
-    UnPackEdge(@s[1], @RA[1], length(s), edge);
-    ra[0] := char(edge);
-    strUnPack := RA;
-  end;
-
-  function ascUnPack(s, d: pchar; l: WORD): WORD;
-  var edge: word;
-  begin  edge := succ(not dword(s));   UnPackEdge(s, d, l, edge);
-    ascUnPack := edge;
-  end;
 
   PROCEDURE REVERT(Data: PCHAR; LEN: Word); ASSEMBLER;
   ASM
