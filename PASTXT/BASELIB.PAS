@@ -19,6 +19,7 @@ interface
     str85   = string[85];     {256/3}
     wordREC = record lo, hi:  BYTE; end;
     LONGREC = record lo, hi:  word; end;
+    ary4b   = array[0..3] of byte;
     LONGSTR = RECORD CP: pChaR; REM: WORD; END;
     tPrgPnt = record ja: pointer; spr, bpr: word; end;
 
@@ -48,6 +49,7 @@ interface
   function  bytetohex(b: byte) : str7;
   function  wordToHex(W: WORD) : str7;
   function  LongToHex(L: DWORD) : str15;
+  PROCEDURE DUMP(ADR: PLONG; LEN:  WORD);
   function  ltos(l: longint): str7;
   function  stol(s: str15): longint;
 
@@ -69,10 +71,45 @@ interface
 
   function  ITOA(d: longint; base: word): str35;
   PROCEDURE ATOI(s:string;VAR RES:DWORD; VAR ERR:word);
+  function  sqrl(n: dword): word;
+  function  mul(a,b:word):dword; inline($58/$5a/$f7/$e2);
+
 
 implementation
 
   var zstr: byte; {do not assign anithing to it}
+
+  PROCEDURE DUMP(ADR: PLONG; LEN:  WORD);
+  VAR O: WORD ABSOLUTE ADR; CNT: WORD;
+  BEGIN CNT := 0;
+    FOR LEN := LEN DOWNTO 1 DO BEGIN
+      WRITE('$',LONGTOHEX(ADR^),',');
+      INC(CNT); INC(O,SIZEOF(POINTER));
+      IF (CNT AND 7) = 0 THEN WRITELN;
+    END;
+  END;
+
+  function sqrl(n: dword): word;
+  var i, r, r2: word; n2: dword; a: array[boolean] of word;
+     f: boolean;  ar: ary4b absolute n;
+    const w4: array[0..3] of word = (1, 16, 256, 256*16);
+  begin r2 := longrec(n).hi; sqrl := r2;
+    if (r2 > $fffd) or (n=0) then exit;
+    for r2 := 3 downto 0 do
+      begin r := ar[r2]; if r <> 0 then break; end;
+    i := 1;
+    while r > 0 do begin
+      r := r shr 2; i  := i  * 2;
+    end;
+    r2 :=  w4[r2] * i;
+    if r2 = 0 then dec(r2);
+    f := false; a[f] := r2;
+    repeat n2 := n; f := not f;
+      a[f] := divmod(n2,r2);
+      r2  := avg(n2,r2);
+    until (n2=r2) or (a[true] = a[false]);
+    sqrl := r2;
+  end;
 
   procedure perform( selfp, method: pointer); assembler;
   asm
@@ -96,7 +133,6 @@ implementation
   begin
     if sz < sizeof(longint)
       then fillchar(s[sz+1],4,#0);
-    {sz := 4;}
     stol := plong(@s[1])^;
   end;
 

@@ -4,9 +4,8 @@ PROGRAM PRIME;
 
   TYPE p48 = set of 0..47;
     PRISET = SET OF BYTE;  {wordREC	= record lo, hi:  BYTE; end;}
-    ary4b  = array[0..3] of byte;
-    ap4    = array[0..dword(65536+209) div 210] of p48;
   const
+    PRTOP = WORD(-1);
     pm210: priset = [1,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,
            79,83,89,97,101,103,107,109,113,121,127,131,137,139,143,149,151,
            157,163,167,169,173,179,181,187,191,193,197,199,209
@@ -30,11 +29,18 @@ PROGRAM PRIME;
          61,67,71,73,79,83,89,97,101,103,107,109,113,121,127,131,137,139,
          143,149,151,157,163,167,169,173,179,181,187,191,193,197,199,209
          );
-
+    I38: array[0..37] of byte = (23,29,31,37,41,43,47,53,59,61,67,
+           71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,
+           157,163,167,173,179,181,191,193,197,199
+         );
   VAR  AP: ARRAY[BYTE] OF PRISET;
-       t, t2: priset;
+       ap4: array[1..SUCC(dword(65536+209) div 210)] of p48;
+       ind,  {IN P48                GLOBAL VARIABLES}
+       SIB,  {IN I48  I38}
+       base, { IND * 210}
+       psbl: word; {POSIBLE CANDIDATE}
 
-  CONST PRTOP = WORD(-1);
+
 
   function  mul(a,b:word):dword; inline($58/$5a/$f7/$e2);
 
@@ -125,59 +131,77 @@ PROGRAM PRIME;
     WRITELN;
   END;
 
-  function sqrby(n: byte): byte;
-  var i : byte;
-  begin i := 1;
-    while n > 0 do begin
-      n := n shr 2; i  := i  * 2;
-    end;
-    sqrby := i;
-  end;
-
-  function sqrdw(n: dword): word;
-  var res: word;  a: ary4b absolute n;
-    const w4: array[0..3] of word = (1, 16, 256, 256*16);
-  begin for res := 3 downto 0 do  if a[res] <> 0 then break;
-    res :=  w4[res] * sqrby(a[res]);
-    if res = 0 then dec(res);
-    sqrdw := res;
-  end;
-
   function mymod(n: dword; m: word): word;
   begin
     mymod := divmod(n,m);
   end;
 
-  function sqrl(n: dword): word;
-  var r2: word; n2: dword; a: array[boolean] of word;
-     f, sgn: boolean;
-  begin r2 := longrec(n).hi; sqrl := r2;
-    if r2 > $fffd then exit;
-    r2 := sqrdw(n);  a[f] := r2;
-    repeat n2 := n; f := not f;
-      a[f] := divmod(n2,r2);
-      r2  := avg(n2,r2);
-    until (n2=r2) or (a[true] = a[false]);
-    sqrl := r2;
+  procedure convert; {ind in }
+  var t: dword;
+  begin ind := 1;
+    for SIB := 0 to 47 do ap4[1] := ap4[1] - [SIB]; {CLEAR FIRST}
+    for SIB := 2 to SUCC(dword(65536+209) div 210) do
+      ap4[SIB] := ap4[1]; {clear all}
+    base := 0; ind := 0; SIB := 48;
+    repeat if SIB = 48 then begin SIB := 0; inc(ind); inc(base,210); end;
+      t := base; INC(T,i48[SIB]);  inc(SIB);
+      if t > 65535 then break;
+      if inpr(t)
+        then  ap4[ind] := ap4[ind] + [SIB];
+    until false;
+    DUMP(@AP4,SIZEOF(AP4) DIV SIZEOF(POINTER));
+    writeln(SIZEOF(AP4));
+    writeln(ind,' ',ind*210,' ',t, ' ',SIB,' ',I48[SIB]);
   end;
 
+  PROCEDURE CONVERT_TEST;
+  BEGIN
+  END;
+
   function isPrime(n: longint): boolean;
-  var qrt, i: word;  hlp: dword;
-  begin isPrime := true;
-    if (longrec(n).hi = 0) and (n in p256) then exit;
-    isPrime := false;
-    if not (mymod(n,210) in pm210) then exit;
-    if     mymod(n,209)  in pm209  then exit;
-    if     mymod(n,221)  in pm221  then exit;
-    qrt := sqrl(n); hlp := 0;
-    i := mymod(n,210);
+  var qrt, ind, j, base, psbl: word;
+    PROCEDURE NEXT;    BEGIN
+      IF IND = WORD(-1) THEN BEGIN PSBL := I38[J];
+        IF J = 38 THEN BEGIN INC(IND); J := 46; END;
+        INC(J); EXIT;
+      END;
+      REPEAT INC(J);
+        if j = 48 then begin j := 0; inc(ind); inc(base,210); end;
+        PSBL := BASE + i48[j];
+      UNTIL J IN AP4[IND];
+    END;
+  begin  isPrime := false;
+    if (n < 256) and (n in p256) then BEGIN isPrime := true; exit; END;
+    if not (mymod(n,210) in pm210) then exit; {2, 3, 5, 7}
+    if     mymod(n,209)  in pm209  then exit; {11, 19}
+    if     mymod(n,221)  in pm221  then exit; {13, 17}
+    if n < 19*19 then begin isPrime := true; exit; end;
+    qrt := sqrl(n);
+    J := 0; BASE := 0; IND := WORD(-1);
     repeat
-    until i > qrt;
+      NEXT;
+      IF MYMOD(N,PSBL) = 0 THEN EXIT;
+    until psbl = qrt;
+    isPrime := true;
   end;
+
+  BEGIN
+    erato;
+    convert;
+    show(pm210);
+    {CONVERT_TEST;
+    show(p256-[0..22,210..255]);
+    show(pM210-[0..22,210..255]);}
+
+  END.
+
+    {hlp := n;
+    rest := divmod(hlp,210); divmod(hlp,sizeof(p48));
+    ind := hlp;}
 
   procedure pl(n: dword);
   begin
-    write(n:11,' ',sqrl(n):5,' ',sqrdw(n):11,' '); readln;
+    write(n:11,' ',sqrl(n):5,' '{,sqrt(abs(n)):11:3,' '}); readln;
   end;
 
   procedure testsqrt;
@@ -188,10 +212,6 @@ PROGRAM PRIME;
     repeat pl(n1); n1 := n1 div 2;
     until n1 = 0;
   end;
-
-  BEGIN
-    testsqrt;
-  END.
 
     writeln(sizeof(ap4));
     t2 := pm210; t := t2 - p256;
