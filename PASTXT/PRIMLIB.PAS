@@ -298,6 +298,21 @@ $28D1091F,$AD529818,$00020881,$00000000,$00000000,$00000000,$00000000
     writeln(count);
   END;
 
+  PROCEDURE PrimesCnt(n: longint; cnt: word);
+  var count: word;
+  BEGIN writeln;  count := 0;
+    repeat
+      if isPrime(n) then begin write(n);
+        inc(count);
+
+        if (count mod  7) = 0 then writeln else write(' ');
+      end;
+      inc(n);
+    until (n = 0) or (cnt = 0);
+    writeln;
+    writeln(count);
+  END;
+
   begin
   end.
 

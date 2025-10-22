@@ -42,6 +42,7 @@ uses baselib, FILIB, strLib, hashlib;
       fls:    longstr;  {current position in text buffer}
       fprpnt: tprgPnt;
       fSAVEP: word;
+      FDEBUG: BOOLEAN;
 
       constructor create(stksz, fbsz, sz: word);
       destructor  done;
@@ -79,6 +80,9 @@ uses baselib, FILIB, strLib, hashlib;
       procedure   ALLOT;
       procedure   SAVE;
       procedure   UNLINKED;
+      procedure   TRON;
+      procedure   TROFF;
+      procedure   DEBUG;
 
       {create commands}
       procedure   Colon;
@@ -95,7 +99,7 @@ uses baselib, FILIB, strLib, hashlib;
       PROCEDURE   BWDRELS;
       PROCEDURE   BWDswap;
       PROCEDURE   FWDswap;
-      PROCEDURE   MCOLON;   {USED BY MAC2VAR}
+      {PROCEDURE   MCOLON;   USED BY MAC2VAR}
 
       {interpretter commands}
       procedure   here;
@@ -117,6 +121,7 @@ uses baselib, FILIB, strLib, hashlib;
       procedure   notw;
       procedure   negw;
       procedure   dot;      {io }
+      procedure   Hdot;
       procedure   cr;
     end;
 
@@ -259,6 +264,7 @@ implementation
     repeat getToken(false);
       if ftoken <> ''
         then perform(@self,fstate);
+      DEBUG;
     until (fls.rem = 0);
     fls := ls;
   end;
@@ -266,11 +272,24 @@ implementation
   procedure   tc4th.macro(s: string);
   begin eval(@s[1],byte(s[0])); end;
 
+  procedure   tc4th.DEBUG;
+  VAR I: WORD;
+  begin
+    IF NOT FDEBUG THEN EXIT;
+    WITH FLS DO WRITE(MKSTR(CP^,REM),' "',FTOKEN,'"');
+    I := FSTACK.DEPTH;
+    IF I <> 0 THEN BEGIN WRITELN;
+      WRITE('STK: '); IF I > 6 THEN I := 6;
+      WITH FSTACK DO WHILE I > 0 DO BEGIN DEC(I);
+        WRITE(DWORD(FDATA^[I+FSTKP]),' '); END;
+    END;
+    READLN;
+  end;
+
   function    tc4th.compile(p: pel): boolean;
   VAR OLD: DWORD; ADR: WORD;
-  begin
-    if (p = nil) OR (P^.FTYPE <> 1)
-      then BEGIN COMPILE := FALSE; exit; END;
+  begin COMPILE := FALSE;
+    if (p = nil) OR (P^.FTYPE <> 1) then  exit;
     OLD := dword(p^.fvalue);
     ADR := FHP;
     push(OLD); comma;
@@ -288,7 +307,10 @@ implementation
       2:  begin kp := @ft1; fi := kp^[ft1] <> '`';
             if fi then tocomp;
             macro(pstr(fvalue)^);
-            if fi then tointer;
+            if fi then begin
+              tointer;  {PROCEDURE   TC4TH.MCOLON;}
+              GETTOKEN(TRUE); HERE; PUSH(2); MINUS; EQUCOLON; COMMA;
+            end;
           end;
     end;
     EXECUTE := TRUE;
@@ -383,6 +405,7 @@ implementation
       add('NOT'    ,@tc4th.notw);
       add('NEG'    ,@tc4th.negw);
       add('.'      ,@tc4th.dot);
+      add('H.'     ,@tc4th.Hdot);
       add('CR'     ,@tc4th.cr);
       add('!'      ,@tc4th.STOREW);
       add('C!'     ,@tc4th.STOREB);
@@ -391,6 +414,8 @@ implementation
       add('INCLUDE',@TC4TH.include);
       add('ALLOT'  ,@TC4TH.ALLOT);
       add('SAVE'   ,@TC4TH.SAVE);
+      add('TRON'   ,@TC4TH.TRON);
+      add('TROFF'  ,@TC4TH.TROFF);
       add('=!'     ,@TC4TH.UNLINKED);
       add('V:'     ,@TC4TH.MAC2VAR);
       add('M:'     ,@TC4TH.MACDEF);
@@ -409,25 +434,28 @@ implementation
       add('BEGIN`' ,@tc4th.BWDMARK);
       add('THEN`'  ,@tc4th.FWDRELS);
       add('RELS>`' ,@tc4th.BWDRELS);
-      add('(V:`'   ,@TC4TH.MCOLON);
     END;
 
     savePoint(fprpnt); {program state reset point - on error}
 
     toInter;     {interpretter}
-
-    IF FNAME <> '' THEN BEGIN FPARAM := FNAME; FNAME := ''; INCLUDE; END;
-
     ftxtst.reset; {close all open files}
     fstack.reset; {}
     ffwdbr.reset;
     fbwdbr.reset;
 
     writeln;
+
+    IF FNAME <> '' THEN
+      BEGIN fline := FNAME; TRON; FNAME := ''; macro(fline); END;
+    TROFF;
+
     repeat
       write('=> ');
-      readln(fline); macro(fline);
-      writeln(' Ok');
+      readln(fline);
+      macro(fline);
+      write(' Ok');
+      writeln;
     until false;
   end;
 
@@ -504,10 +532,10 @@ implementation
   begin d1 := pop; d2 := pop ;   end;
 
   procedure   tc4th.plus;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d2-d1);  end;
+  begin drop2(d1, d2); push(d2+d1);  end;
 
   procedure   tc4th.minus;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d2+d1);  end;
+  begin drop2(d1, d2); push(d2-d1);  end;
 
   procedure   tc4th.orw;  var d1, d2: dword;
   begin drop2(d1, d2); push(d2 or d1);  end;
@@ -523,6 +551,8 @@ implementation
   procedure   tc4th.negw;  begin push(- pop); end;
 
   procedure   tc4th.dot; begin write(ntostr(pop)+' '); end;
+
+  procedure   tc4th.Hdot; begin write(ItoA(pop,16)+' '); end;
 
   procedure   tc4th.cr; begin writeln; end;
 
@@ -581,13 +611,15 @@ implementation
   end;
 
   PROCEDURE   TC4TH.MACDEF;  {DEFINE CONTROLS USED IN COMP MODE}
-  BEGIN GETTOKEN(TRUE); fcomph.addstr(ftoken + '`', getParam(true));  END;
+  var par: str85;
+  BEGIN GETTOKEN(TRUE); par := getParam(true);
+    fcomph.addstr(ftoken + '`', Par);  END;
 
-  PROCEDURE   TC4TH.MCOLON;  {  (V: HERE 2- =: , }
-  BEGIN GETTOKEN(TRUE); HERE; PUSH(2); MINUS; EQUCOLON; COMMA;  END;
-
-  PROCEDURE   TC4TH.MAC2VAR; {DEFINE DEFINERS BY (V: ON INTERP MODE }
-  BEGIN GETTOKEN(TRUE);  finteh.addstr(ftoken, getParam(true));  END;
+  PROCEDURE   TC4TH.MAC2VAR; {DEFINE DEFINERS ON INTERP MODE }
+  var par: str85;
+  BEGIN GETTOKEN(TRUE); par := getParam(true);
+    finteh.addstr(ftoken, par);
+  END;
 
   procedure TC4TH.ALLOT;  BEGIN INC(FHP,POP);  END;
 
@@ -610,6 +642,16 @@ implementation
     FIX('H',FHP+$100);  ERROR( NOT WRITEbin(FNAME,MEMADR(0)^, SIZE),
       'UNCOMPLETED WRITING A FILE '+FNAME);
   END;
+
+      procedure   TC4TH.TRON;
+      BEGIN
+        FDEBUG := TRUE;
+      END;
+
+      procedure   TC4TH.TROFF;
+      BEGIN
+        FDEBUG := FALSE;
+      END;
 
 begin
 end.

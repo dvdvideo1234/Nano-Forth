@@ -31,9 +31,7 @@ interface
     parbyte = ^arbyte;
     arbyte  = array[0..himemw] of byte;
 
-{  var aMethod: procedure of object;  in lazarus}
   procedure perform( selfp, method: pointer);
-
 
   PROCEDURE mygetmem(var p: POINTER; sz:word);
   function  strToMem(str: string): pstr;
@@ -95,18 +93,11 @@ implementation
     const w4: array[0..3] of word = (1, 16, 256, 256*16);
   begin r2 := longrec(n).hi; sqrl := r2;
     if (r2 > $fffd) or (n=0) then exit;
-    for r2 := 3 downto 0 do
-      begin r := ar[r2]; if r <> 0 then break; end;
-    i := 1;
-    while r > 0 do begin
-      r := r shr 2; i  := i  * 2;
-    end;
-    r2 :=  w4[r2] * i;
-    if r2 = 0 then dec(r2);
+    for r2 := 3 downto 0 do  begin r := ar[r2]; if r <> 0 then break; end;
+    i := 1;  while r > 0 do begin  r := r shr 2; i  := i  * 2; end;
+    r2 :=  w4[r2] * i;  if r2 = 0 then dec(r2);
     f := false; a[f] := r2;
-    repeat n2 := n; f := not f;
-      a[f] := divmod(n2,r2);
-      r2  := avg(n2,r2);
+    repeat n2 := n; f := not f; a[f] := divmod(n2,r2);  r2  := avg(n2,r2);
     until (n2=r2) or (a[true] = a[false]);
     sqrl := r2;
   end;
@@ -146,7 +137,7 @@ implementation
         if c > '9' then dec(tonum,7); IF NOT ( tonum < BASE) THEN BREAK;
       dINCri; end;  end;
   begin IND := 1; LEN := BYTE(S[0]); DD := 0; base := 10; err := 0;
-    sign := s[ind] ='-' ; if sign then incri;
+    sign := (LEN>1) AND (s[ind] ='-'); if sign then incri;
     convert;
     while len > 0 do begin
       if (len > 1) and (c in ['$','%','#','^','''']) then begin incri;
@@ -167,12 +158,14 @@ implementation
 
   function ITOA(d: longint; base: word): str35;
   var i: INTEGER; C : CHAR; RES: STR35;
-  begin  i := pred(sizeof(str35)); base := ((base-2) and 255)+2;
+  begin  i := pred(sizeof(str35));
+    DEC(base,2); BASE := BASE AND 255;
+    INC(BASE,2);
     repeat
       RES[i] := digChar(divmod(d, base));
       dec(i);
     until d=0;
-    RES[i] := char(33-i);
+    RES[i] := char(pred(sizeof(str35))-i);
     ITOA := pstr(@RES[i])^;
   end;
 
