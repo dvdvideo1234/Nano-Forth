@@ -9,10 +9,11 @@ uses baselib, FILIB, strLib, hashlib;
       fdata: ppary;
       fedge: word;    {after last element of stack}
       fstkp: word;
+      FERR : BOOLEAN;
       constructor create(sz: word); {in elements}
       destructor  done;
       procedure reset;                    virtual;
-      function  push(L: dword): boolean;
+      procedure push(L: dword);
       function  pop:  longint;
       function  depth:  word;
     end;
@@ -133,7 +134,7 @@ implementation
   begin
       fstkp:= sz;  {empty stack ON START}
       fedge:= sz;
-      getmem(fdata,sz * SIZEOF(POINTER));
+      MYgetmem(POINTER(fdata),sz * SIZEOF(POINTER));
   end;
 
   destructor tstack.done;
@@ -147,9 +148,9 @@ implementation
     fstkp := fedge;
   end;
 
-  function tstack.push(L: dword): boolean;
-  begin push := fstkp <> 0;
-    if fstkp = 0 then exit;
+  procedure tstack.push(L: dword);
+  begin FERR := fstkp <> 0;
+    if FERR  then exit;
     dec(fstkp);
     fdata^[fstkp] := pointer(l);
   end;
@@ -558,17 +559,39 @@ implementation
 
   {----------------COMPILER--------------------}
 
-  PROCEDURE   TC4TH.FWDMARK;  BEGIN
-    error( not fFwdBr.PUSH(FHP), 'fwd stack full'); PUSH(0); COMMA;  END;
+  PROCEDURE   TC4TH.FWDMARK;
+  BEGIN
+    fFwdBr.PUSH(FHP);
+    error( fFwdBr.FERR, 'fwd stack full');
+    PUSH(0); COMMA;
+  END;
 
-  PROCEDURE   TC4TH.BWDMARK;  BEGIN HERE;
-    error(not fBwdBr.PUSH(POP),'bwd stack full');  END;
+  PROCEDURE   TC4TH.BWDMARK;
+  VAR TEMP: DWORD;
+  BEGIN
+    HERE;
+    TEMP := POP;
+    fBwdBr.PUSH(TEMP);
+    error(fBwdBr.FERR,'bwd stack full');
+  END;
 
-  PROCEDURE   TC4TH.FWDRELS;  var fwd: dword; BEGIN HERE; fwd := fFwdBr.POP;
-    error(fwd=-1, 'fwd stack empty');  PUSH(fwd); STOREW;  END;
+  PROCEDURE   TC4TH.FWDRELS;  var fwd: dword;
+  BEGIN
+    HERE;
+    fwd := fFwdBr.POP;
+    error(fFwdBr.FERR, 'fwd stack empty');
+    PUSH(fwd);
+    STOREW;
+  END;
 
-  PROCEDURE   TC4TH.BWDRELS; var bwd: dword; BEGIN bwd := fBwdBr.POP;
-    error(bwd=-1, 'bwd stack empty');  PUSH(bwd); COMMA;  END;
+  PROCEDURE   TC4TH.BWDRELS;
+  var bwd: dword;
+  BEGIN
+    bwd := fBwdBr.POP;
+    error(fBwdBr.FERR, 'bwd stack empty');
+    PUSH(bwd);
+    COMMA;
+  END;
 
   PROCEDURE   TC4TH.STOREW;  var d1, d2: dword;
   BEGIN DROP2(D1,D2);  PWORD(MEMADR(D1))^ := D2;  END;
