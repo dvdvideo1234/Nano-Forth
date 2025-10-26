@@ -45,9 +45,9 @@ type
     function    ValueToStr(p: pel): string;
     function    GetKey(p: pel): pstr;
     procedure   Free(p: pel);
-    procedure   Add(key: string; value: pointer);
-    procedure   AddStr(key, value: string);
-    procedure   addNum(key: string; num: dword);
+    function    Add(key: string; value: pointer): PEL;
+    function    AddStr(key, value: string): PEL;
+    function    addNum(key: string; num: dword): PEL;
   end;
 
   function CRC32t(var s; LEN: Word; CRC: DWord): DWord;
@@ -115,7 +115,7 @@ IMPLEMENTATION
     makel := p;
   end;
 
-  procedure   hash.add(key: string; value: pointer);
+  function  hash.add(key: string; value: pointer): PEL;
   var p: pel;
   begin if fUnicate then Remove(key);
     p := MakEl(key);
@@ -124,9 +124,10 @@ IMPLEMENTATION
       ftype := 0;
     end;
     push(P,whereTo(key)^);
+    add := P;
   end;
 
-  procedure   hash.addnum(key: string; num: dword);
+  function  hash.addnum(key: string; num: dword): PEL;
   var p: pel;
   begin if fUnicate then Remove(key);
     p := MakEl(key);
@@ -135,9 +136,10 @@ IMPLEMENTATION
       ftype := 1;
     end;
     push(P,whereTo(key)^);
+    addNum := P;
   end;
 
-  procedure   hash.AddStr(key, value: string);
+  function  hash.AddStr(key, value: string): PEL;
   var P: pel;
   begin if fUnicate then Remove(key);
     p := MakEl(key);
@@ -146,6 +148,7 @@ IMPLEMENTATION
       ftype := 2;
     end;
     push(P,whereTo(key)^);
+    addStr := P;
   end;
 
   function    hash.ValueToStr(p: pel): string;

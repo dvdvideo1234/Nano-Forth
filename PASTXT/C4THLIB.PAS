@@ -2,7 +2,7 @@ unit c4thlib;
 
 interface
 
-uses baselib, FILIB, strLib, hashlib;
+uses baselib, FILIB, strLib, hashlib, MEMLIB;
 
   type
     tstack= object
@@ -12,10 +12,11 @@ uses baselib, FILIB, strLib, hashlib;
       FERR : BOOLEAN;
       constructor create(sz: word); {in elements}
       destructor  done;
-      procedure reset;                    virtual;
-      procedure push(L: dword);
-      function  pop:  longint;
-      function  depth:  word;
+      procedure   reset;                    virtual;
+      procedure   push(L: dword);
+      function    pop:  longint;
+      function    depth:  word;
+      procedure   drop2(var d1, d2: dword);
     end;
 
     tFileStack= object(tstack)
@@ -26,7 +27,7 @@ uses baselib, FILIB, strLib, hashlib;
 
 
     ptc4th = ^tc4th;
-    tc4th = object
+    tc4th = object(TMEM)
       fcomph: hash;
       finteh: hash;
       ffwdbr,         {count of branches forward & backward}
@@ -34,9 +35,6 @@ uses baselib, FILIB, strLib, hashlib;
       fstack: tstack;
       ftxtst: tfileStack;
       fstate: pointer;
-      fmem  : parbyte;
-      fsize : word;
-      fhp   : word;   {pointer in compiler memory == here pointer}
       fToken: str85;    {last token}
       FPARAM: STR85;
       fLine:  string;   {last line  when in main loop}
@@ -45,7 +43,7 @@ uses baselib, FILIB, strLib, hashlib;
       fSAVEP: word;
       FDEBUG: BOOLEAN;
 
-      constructor create(stksz, fbsz, sz: word);
+      constructor create(stksz, fbsz, MEMSTART, sz: word);
       destructor  done;
       procedure   forth(FNAME: STRING);  {main loop}
 
@@ -54,7 +52,7 @@ uses baselib, FILIB, strLib, hashlib;
       procedure   getToken(chk: boolean);
       function    getParam(chk: boolean): string;
       procedure   macro(s: string);
-      procedure   error(cond: boolean; s: string);
+      procedure   error(cond: boolean; s: string);  VIRTUAL;
       FUNCTION    FIND(AWORD: STR85): PEL;
       PROCEDURE   FIX(AWORD: STR85; W: WORD);
       function    strcomp: boolean;
@@ -64,21 +62,22 @@ uses baselib, FILIB, strLib, hashlib;
       procedure   compNum;
       procedure   IntSearch;
       procedure   compSearch;
-      procedure   drop2(var d1, d2: dword);
-      FUNCTION    MEMADR(A: WORD): POINTER;
       procedure   push(L: dword);
       function    pop: dword;
-      procedure   STRCOMMA(STR: STRING);
+      procedure   IsStackEmpty(f: boolean);
+      procedure   IsStackFull(f: boolean);
 
       {common commands}
       procedure   bye;
       procedure   toInter;
       procedure   toComp;
       procedure   align;
-      procedure   comma;
       procedure   bcomma;
+      procedure   comma;
+      procedure   Dcomma;
       PROCEDURE   reMARK;
       procedure   ALLOT;
+      procedure   DUMP;
       procedure   SAVE;
       procedure   UNLINKED;
       procedure   TRON;
@@ -89,7 +88,7 @@ uses baselib, FILIB, strLib, hashlib;
       procedure   Colon;
       procedure   Semi;
       procedure   newDEA; {dictionary equ here address}
-      procedure   equColon; {dictionary established address}
+      FUNCTION    EquColon: PEL; {dictionary established address}
       PROCEDURE   MAC2VAR; {CREATE VAR VALUE ...}
       PROCEDURE   MACDEF; {IF REPEAT UNTIL ...}
 
@@ -100,20 +99,21 @@ uses baselib, FILIB, strLib, hashlib;
       PROCEDURE   BWDRELS;
       PROCEDURE   BWDswap;
       PROCEDURE   FWDswap;
-      {PROCEDURE   MCOLON;   USED BY MAC2VAR}
 
       {interpretter commands}
+      procedure   include;
       procedure   here;
       procedure   Locate;
       procedure   dup;      {stack}
       procedure   drop;
       procedure   swap;
       procedure   over;
-      PROCEDURE   STOREW;   {memory}
-      PROCEDURE   STOREB;
-      PROCEDURE   FETCHW;
+      PROCEDURE   STOREB;   {memory}
+      PROCEDURE   STOREW;
+      PROCEDURE   STOREL;
       PROCEDURE   FETCHB;
-      procedure   include;
+      PROCEDURE   FETCHW;
+      PROCEDURE   FETCHL;
       procedure   plus;     {math & logic}
       procedure   minus;
       procedure   orw;
@@ -121,6 +121,9 @@ uses baselib, FILIB, strLib, hashlib;
       procedure   andw;
       procedure   notw;
       procedure   negw;
+      procedure   mulw;
+      procedure   divw;
+      procedure   modw;
       procedure   dot;      {io }
       procedure   Hdot;
       procedure   cr;
@@ -149,7 +152,7 @@ implementation
   end;
 
   procedure tstack.push(L: dword);
-  begin FERR := fstkp <> 0;
+  begin FERR := fstkp = 0;
     if FERR  then exit;
     dec(fstkp);
     fdata^[fstkp] := pointer(l);
@@ -157,7 +160,8 @@ implementation
 
   function  tstack.pop: longint;
   begin
-    if fstkp = fedge then begin pop := -1; exit; end;
+    FERR := fstkp = fedge;
+    if feRR then exit;
     pop := dword(fdata^[fstkp]);
     inc(fstkp);
   end;
@@ -165,6 +169,13 @@ implementation
   function  tstack.depth:  word;
   begin
     depth := fedge - fstkp ;
+  end;
+
+  procedure   tstack.drop2(var d1, d2: dword);
+  begin
+    FERR := DEPTH < 2; if feRR then exit;
+    d1 := pop;
+    d2 := pop ;
   end;
 
 {-------------------------------------------}
@@ -196,19 +207,20 @@ implementation
 
 {-------------------------------------------}
 
-  constructor tc4th.create(stksz, fbsz, sz: word);
+  constructor tc4th.create(stksz, fbsz, MEMSTART, sz: word);
   begin
     fcomph.create(101,@h32h);     {hashes}
     finteh.create(101,@h32h);
 
-    fstack.create(stksz);  {stecks}
+    fstack.create(stksz);  {stacks}
     ffwdbr.create(fbsz);
     fbwdbr.create(fbsz);
     ftxtst.create(8);
 
-    getmem(fmem,sz);         {memory}
+    MYgetmem(POINTER(fmem),sz);         {memory}
     fsize := sz;
-    fhp := 0;
+    fhp   := MEMSTART;
+    fOFST := MEMSTART;
   end;
 
   destructor  tc4th.done;
@@ -230,24 +242,6 @@ implementation
 
   procedure   tc4th.Semi; begin macro('(;');
     if (ffwdbr.depth or fbwdbr.depth) = 0 then toInter;
-  end;
-
-  procedure   tc4th.equColon; { =: dictionary established address}
-  var p: pel; OLD: DWORD; D, ADR: WORD;
-  begin getToken(true);
-    p :=  fcomph.search(ftoken);
-    IF P<> NIL THEN WITH P^ DO BEGIN
-      ERROR(FTYPE<>1, 'ILLEGAL TYPE');
-      OLD := DWORD(FVALUE);
-      error(LONGREC(OLD).HI = 0,'duplicated');
-      D := POP; ADR := LONGREC(OLD).LO;
-      WHILE ADR <> 0 DO BEGIN OLD := PWORD(MEMADR(ADR))^;
-        PWORD(MEMADR(ADR))^ := D; ADR := OLD;
-      END;
-      DWORD(FVALUE) := D;
-      EXIT;
-    END;
-    fcomph.addNum(ftoken,pop);
   end;
 
   procedure   tc4th.newDEA;
@@ -287,39 +281,9 @@ implementation
     READLN;
   end;
 
-  function    tc4th.compile(p: pel): boolean;
-  VAR OLD: DWORD; ADR: WORD;
-  begin COMPILE := FALSE;
-    if (p = nil) OR (P^.FTYPE <> 1) then  exit;
-    OLD := dword(p^.fvalue);
-    ADR := FHP;
-    push(OLD); comma;
-    IF LONGREC(OLD).HI <> 0 THEN LONGREC(P^.FVALUE).LO := ADR;
-    COMPILE := TRUE;
-  end;
-
-  function   tc4th.execute(p: pel): boolean;
-  var fi: boolean; kp: pstr;
-  begin
-    if (p = nil) OR (P^.FTYPE=1)
-      then BEGIN execute := FALSE; exit; END;
-    with p^ do case ftype of
-      0:  perform(@self,fvalue);
-      2:  begin kp := @ft1; fi := kp^[ft1] <> '`';
-            if fi then tocomp;
-            macro(pstr(fvalue)^);
-            if fi then begin
-              tointer;  {PROCEDURE   TC4TH.MCOLON;}
-              GETTOKEN(TRUE); HERE; PUSH(2); MINUS; EQUCOLON; COMMA;
-            end;
-          end;
-    end;
-    EXECUTE := TRUE;
-  end;
-
   procedure   tc4th.here;
   begin
-    push(fhp + $100);
+    push(fhp);
   end;
 
   procedure   tc4th.IntSearch;
@@ -332,26 +296,6 @@ implementation
       then exit;
     getnum;
   end;
-
-  procedure   tc4th.compSearch;
-  var p: pel;
-  begin ftoken := ftoken + '`';
-    p := fcomph.search(fToken);
-    dec(byte(ftoken[0]));
-    if execute(p)    {if found}
-      then  exit;
-    p := fcomph.search(fToken);
-    if compile(p)    {if found}
-      then exit;
-    compNum;
-  end;
-
-  PROCEDURE   tc4th.FIX(AWORD: STR85; W: WORD);
-  var p: pel; D: DWORD;
-  BEGIN P := FIND(AWORD); D := DWORD(P^.FVALUE);
-    ERROR(LONGREC(D).HI <> 0, 'NOT DEFINED YET');
-    PWORD(MEMADR(D+2))^ := W;
-  END;
 
   FUNCTION    tc4th.FIND(AWORD: STR85): PEL;
   var p: pel;
@@ -389,6 +333,7 @@ implementation
       add(':'      ,@tc4th.Colon);
       add('C,'     ,@tc4th.bcomma);
       add(','      ,@tc4th.comma);
+      add('D,'     ,@tc4th.Dcomma);
       add('=:'     ,@tc4th.equColon);
       add('=H'     ,@tc4th.newDEA);
       add('HERE'   ,@tc4th.here);
@@ -405,15 +350,21 @@ implementation
       add('AND'    ,@tc4th.andw);
       add('NOT'    ,@tc4th.notw);
       add('NEG'    ,@tc4th.negw);
+      add('*'      ,@tc4th.mulw);
+      add('/'      ,@tc4th.divw);
+      add('MOD'    ,@tc4th.modw);
       add('.'      ,@tc4th.dot);
       add('H.'     ,@tc4th.Hdot);
       add('CR'     ,@tc4th.cr);
-      add('!'      ,@tc4th.STOREW);
       add('C!'     ,@tc4th.STOREB);
-      add('@'      ,@tc4th.FETCHW);
+      add('!'      ,@tc4th.STOREW);
+      add('D!'     ,@TC4TH.STOREL);
       add('C@'     ,@tc4th.FETCHB);
+      add('@'      ,@tc4th.FETCHW);
+      add('D@'     ,@tc4th.FETCHL);
       add('INCLUDE',@TC4TH.include);
       add('ALLOT'  ,@TC4TH.ALLOT);
+      add('DUMP'   ,@TC4TH.DUMP);
       add('SAVE'   ,@TC4TH.SAVE);
       add('TRON'   ,@TC4TH.TRON);
       add('TROFF'  ,@TC4TH.TROFF);
@@ -461,24 +412,6 @@ implementation
   end;
 
 
-  procedure   tc4th.align;
-  VAR NUM: BYTE;
-  begin NUM := POP;
-    IF NOT (NUM IN [0,2,4,8,16,32,64,128])
-      THEN EXIT;
-    DEC(NUM);
-    IF (FHP AND NUM) = 0
-      THEN EXIT;
-      {ON OTHER VERSIONS HERE MUST BE SOMETHING}
-    STRCOMMA(MKSTROF(#0, SUCC(FHP OR NUM) - FHP));
-  end;
-
-  procedure tc4th.STRCOMMA(STR: STRING);
-  begin
-    move(STR[1],fmem^[fhp],byte(STR[0]));
-    inc(fhp,byte(STR[0]));
-  end;
-
   function  tc4th.getParam(chk: boolean): string;
   begin getParam := fparam;
     if chk then error(fparam='','string parametter expected');
@@ -488,20 +421,7 @@ implementation
   procedure tc4th.getToken(chk: boolean);
   begin
     Ftoken := lextract(fls);
-    if chk then error(fToken = '', 'empty token');
-  end;
-
-  function tc4th.strcomp: boolean;
-  var temp: string; cmd: char;
-  begin temp := TokenPACK(ftoken,cmd);
-    strcomp := cmd <> #0; if cmd = #0 then exit;
-    case cmd of
-      ',':  STRCOMMA(temp);
-      '.':  write(temp);
-      '"':  FPARAM := temp;
-      '?': push(pos(char(pop),temp));
-      '!': begin ftoken := ''; error(true, temp); end;
-    end;
+    if chk then error(fToken = '', 'token expected');
   end;
 
   procedure   tc4th.getnum;
@@ -512,40 +432,117 @@ implementation
     push(dd);
   end;
 
-  function    tc4th.pop: dword;   begin
-    ERROR(FSTACK.DEPTH=0,'EMPTY STACK'); pop := fstack.pop; end;
+  procedure   tc4th.IsStackEmpty(f: boolean);
+  begin ERROR(F,'EMPTY STACK'); end;
 
-  procedure   tc4th.push(L: dword);  begin
-    ERROR(FSTACK.FSTKP=0,'STACK FULL');  fstack.push(l);  end;
+  procedure   tc4th.IsStackFull(f: boolean);
+  begin ERROR(F,'FULL STACK'); end;
+
+  function    tc4th.pop: dword;
+  begin
+    pop := fstack.pop;
+    IsStackEmpty(FSTACK.FERR);
+  end;
+
+  procedure   tc4th.push(L: dword);
+  begin
+    fstack.push(l);
+    IsStackFull(FSTACK.FERR);
+  end;
 
   procedure   tc4th.dup;  var dd: dword;
   begin dd := pop; push(dd);  push(dd);  end;
 
   procedure   tc4th.drop;  begin   pop;  end;
 
-  procedure   tc4th.swap;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d1); push(d2);  end;
+  procedure   tc4th.swap;
+  var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    push(d1); push(d2);
+  end;
 
-  procedure   tc4th.over;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d2); push(d1); push(d2);  end;
-
-  procedure   tc4th.drop2(var d1, d2: dword);
-  begin d1 := pop; d2 := pop ;   end;
+  procedure   tc4th.over;
+  var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    push(d2);
+    push(d1);
+    push(d2);
+  end;
 
   procedure   tc4th.plus;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d2+d1);  end;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    push(d2+d1);
+  end;
 
-  procedure   tc4th.minus;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d2-d1);  end;
+  procedure   tc4th.minus;
+  var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    push(d2-d1);
+  end;
 
-  procedure   tc4th.orw;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d2 or d1);  end;
+  procedure   tc4th.orw;
+  var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    push(d2 or d1);
+  end;
 
-  procedure   tc4th.xorw;  var d1, d2: dword;
-  begin drop2(d1, d2); push(d2 xor d1);  end;
+  procedure   tc4th.xorw;
+  var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    push(d2 xor d1);
+  end;
 
   procedure   tc4th.andw; var d1, d2: dword;
-  begin drop2(d1, d2); push(d2 and d1);  end;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    push(d2 and d1);
+  end;
+
+  procedure   tc4th.mulw; var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    D1 := D1 * D2;
+    push(d1);
+  end;
+
+  procedure   tc4th.divw; var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    if d1 in [0,1] then inc(d1,256);
+    D1 := divmod(d2,d1);
+    push(d2);
+  end;
+
+  procedure   tc4th.DUMP; var d1, d2: dword;
+  begin
+    FSTACK.drop2(d2, d1);
+    IsStackEmpty(FSTACK.FERR);
+    DUMPMEM(D1,D2);
+  end;
+
+  procedure   tc4th.modw; var d1, d2: dword;
+  begin
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    if d1 in [0,1] then inc(d1,256);
+    D1 := divmod(d2,d1);
+    push(d1);
+  end;
 
   procedure   tc4th.notw;  begin push(not pop); end;
 
@@ -557,74 +554,10 @@ implementation
 
   procedure   tc4th.cr; begin writeln; end;
 
-  {----------------COMPILER--------------------}
-
-  PROCEDURE   TC4TH.FWDMARK;
-  BEGIN
-    fFwdBr.PUSH(FHP);
-    error( fFwdBr.FERR, 'fwd stack full');
-    PUSH(0); COMMA;
-  END;
-
-  PROCEDURE   TC4TH.BWDMARK;
-  VAR TEMP: DWORD;
-  BEGIN
-    HERE;
-    TEMP := POP;
-    fBwdBr.PUSH(TEMP);
-    error(fBwdBr.FERR,'bwd stack full');
-  END;
-
-  PROCEDURE   TC4TH.FWDRELS;  var fwd: dword;
-  BEGIN
-    HERE;
-    fwd := fFwdBr.POP;
-    error(fFwdBr.FERR, 'fwd stack empty');
-    PUSH(fwd);
-    STOREW;
-  END;
-
-  PROCEDURE   TC4TH.BWDRELS;
-  var bwd: dword;
-  BEGIN
-    bwd := fBwdBr.POP;
-    error(fBwdBr.FERR, 'bwd stack empty');
-    PUSH(bwd);
-    COMMA;
-  END;
-
-  PROCEDURE   TC4TH.STOREW;  var d1, d2: dword;
-  BEGIN DROP2(D1,D2);  PWORD(MEMADR(D1))^ := D2;  END;
-
-  PROCEDURE   TC4TH.STOREB;  var d1, d2: dword;
-  BEGIN DROP2(D1,D2);  PBYTE(MEMADR(D1))^ := D2;  END;
-
-  FUNCTION    TC4TH.MEMADR(A: WORD): POINTER;
-  BEGIN ERROR(A >= FSIZE,'MEMORY RANGE'); MEMADR := @fmem^[A]; END;
-
-  PROCEDURE   TC4TH.FETCHW;  BEGIN PUSH(PWORD(MEMADR(POP))^);  END;
-
-  PROCEDURE   TC4TH.FETCHB;  BEGIN PUSH(PBYTE(MEMADR(POP))^);  END;
-
-  procedure   tc4th.bcomma;  begin PUSH(fhp); STOREB; inc(fhp); end;
-
-  procedure   tc4th.comma; begin PUSH(fhp); STOREW; inc(fhp,2); end;
-
   PROCEDURE   TC4TH.reMARK;  BEGIN fls.rem := 0; END;
 
-  PROCEDURE   TC4TH.FWDswap;    var f1, f2: dword; BEGIN
-    error(fFwdBr.depth < 2, 'fwd stack empty');
-    f1 := fFwdBr.POP;  f2 := fFwdBr.POP;  fFwdBr.Push(f1);
-    fFwdBr.Push(f2);    END;
-
-  PROCEDURE   TC4TH.BWDswap;    var b1, b2: dword; BEGIN
-    error(fbwdBr.depth < 2, 'bwd stack empty');
-    b1 := fbwdBr.POP;  b2 := fbwdBr.POP;  fbwdBr.Push(b1);
-    fbwdBr.Push(b2);
-  END;
-
   procedure TC4TH.include;
-  VAR ALINE: STR85;
+  VAR ALINE: STRING;
   begin
     WITH ftxtst DO BEGIN ERROR(FSTKP=0, 'TOO MANY OPEN FILES');
       ERROR(NOT ADD(FPARAM), 'CAN''T OPEN FILE "'+FPARAM+'"');
@@ -643,10 +576,6 @@ implementation
   BEGIN GETTOKEN(TRUE); par := getParam(true);
     finteh.addstr(ftoken, par);
   END;
-
-  procedure TC4TH.ALLOT;  BEGIN INC(FHP,POP);  END;
-
-  procedure TC4TH.UNLINKED;  BEGIN PUSH(-65536); EQUCOLON;  END;
 
   procedure TC4TH.SAVE;
   VAR I: INTEGER; KEY: STR15; P: PEL; HIADR, SIZE, ERR: WORD; D: DWORD;
@@ -675,6 +604,196 @@ implementation
       BEGIN
         FDEBUG := FALSE;
       END;
+
+  {----------------COMPILER--------------------}
+
+  function    tc4th.compile(p: pel): boolean;
+  VAR ADR: WORD;
+  begin COMPILE := FALSE;
+    if (p = nil) OR (NOT (P^.FTYPE IN [1,129])) then  exit;
+    ADR := FHP;
+    commaW(DWORD(p^.fvalue));
+    IF P^.FTYPE = 129 THEN DWORD(P^.FVALUE) := ADR;
+    COMPILE := TRUE;
+  end;
+
+  PROCEDURE   TC4TH.BWDMARK;
+  BEGIN
+    fBwdBr.PUSH(FHP);
+    error(fBwdBr.FERR,'bwd stack full');
+  END;
+
+  PROCEDURE   TC4TH.FWDRELS;
+  var fwd: dword;
+  BEGIN
+    fwd := fFwdBr.POP;
+    error(fFwdBr.FERR, 'fwd stack empty');
+    TOMEMW(fwd,FHP);
+  END;
+
+  PROCEDURE   TC4TH.BWDRELS;
+  var bwd: dword;
+  BEGIN
+    bwd := fBwdBr.POP;
+    error(fBwdBr.FERR, 'bwd stack empty');
+    COMMAW(Bwd);
+  END;
+
+  PROCEDURE   TC4TH.FWDMARK;
+  BEGIN
+    fFwdBr.PUSH(FHP);
+    error( fFwdBr.FERR, 'fwd stack full');
+    COMMAW(0);
+  END;
+
+  PROCEDURE   TC4TH.STOREB;  var d1, d2: dword;
+  BEGIN
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    TOMEMB(D1,D2);
+  END;
+
+  PROCEDURE   TC4TH.STOREW;
+  var d1, d2: dword;
+  BEGIN
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    TOMEMW(D1,D2);
+  END;
+
+  PROCEDURE   TC4TH.STOREL;
+  var d1, d2: dword;
+  BEGIN
+    FSTACK.drop2(d1, d2);
+    IsStackEmpty(FSTACK.FERR);
+    TOMEML(D1,D2);
+  END;
+
+  PROCEDURE   TC4TH.FETCHB;  BEGIN PUSH(FROMEMB(POP)); END;
+
+  PROCEDURE   TC4TH.FETCHW;  BEGIN PUSH(FROMEMW(POP));  END;
+
+  PROCEDURE   TC4TH.FETCHL;  BEGIN PUSH(FROMEML(POP));  END;
+
+  procedure   tc4th.bcomma;  begin COMMAB(POP);  end;
+
+  procedure   tc4th.comma; begin COMMAW(POP); end;
+
+  procedure   tc4th.Dcomma; begin COMMAL(POP); end;
+
+  PROCEDURE   TC4TH.FWDswap;
+  var f1, f2: dword;
+  BEGIN
+    WITH fFwdBr DO BEGIN
+      DROP2(F1,F2);
+      error(FERR, 'fwd stack empty');
+      Push(f1);
+      Push(f2);
+    END;
+  END;
+
+  PROCEDURE   TC4TH.BWDswap;
+  var b1, b2: dword;
+  BEGIN
+    WITH fFwdBr DO BEGIN
+      DROP2(B1,B2);
+      error(FERR, 'BWD stack empty');
+      Push(B1);
+      Push(B2);
+    END;
+  END;
+
+  procedure   tc4th.align;
+  VAR NUM: BYTE;
+  begin NUM := POP;
+    IF NOT (NUM IN [0,2,4,8,16,32,64,128])
+      THEN EXIT;
+    DEC(NUM);
+    IF (FHP AND NUM) = 0
+      THEN EXIT;
+      {ON OTHER VERSIONS HERE MUST BE SOMETHING}
+    STRCOMMA(MKSTROF(#0, SUCC(FHP OR NUM) - FHP));
+  end;
+
+  procedure TC4TH.ALLOT;  BEGIN INC(FHP,POP);  END;
+
+  function tc4th.strcomp: boolean;
+  var temp: string; cmd: char;
+  begin temp := TokenPACK(ftoken,cmd);
+    strcomp := cmd <> #0; if cmd = #0 then exit;
+    case cmd of
+      ',':  STRCOMMA(temp);
+      '.':  write(temp);
+      '"':  FPARAM := temp;
+      '?':  begin ftoken := ''; error(POP <> 0, temp); end;
+      '!':  begin ftoken := ''; error(true, temp); end;
+    end;
+  end;
+
+  procedure   tc4th.compSearch;
+  var p: pel;
+  begin ftoken := ftoken + '`';
+    p := fcomph.search(fToken);
+    dec(byte(ftoken[0]));
+    if execute(p)    {if found}
+      then  exit;
+    p := fcomph.search(fToken);
+    if compile(p)    {if found}
+      then exit;
+    compNum;
+  end;
+
+  function   tc4th.execute(p: pel): boolean;
+  var fi: boolean; kp: pstr;
+  begin
+    if (p = nil) OR (P^.FTYPE IN [1,129])
+      then BEGIN execute := FALSE; exit; END;
+    with p^ do case ftype of
+      0:  perform(@self,fvalue);
+      2:  begin kp := @ft1; fi := kp^[ft1] <> '`';
+            if fi then tocomp;
+            macro(pstr(fvalue)^);
+            if fi then begin
+              tointer;  {PROCEDURE   TC4TH.MCOLON;}
+              GETTOKEN(TRUE); HERE; PUSH(2); MINUS; EQUCOLON; COMMA;
+            end;
+          end;
+    end;
+    EXECUTE := TRUE;
+  end;
+
+  FUNCTION      tc4th.equColon: PEL; { =: dictionary established address}
+  var p: pel; OLD, D, ADR: WORD;
+  begin getToken(true); D := POP;
+    p :=  fcomph.search(ftoken);
+    IF P<> NIL THEN WITH P^ DO BEGIN
+      ERROR(NOT (FTYPE IN [1,129]), 'ILLEGAL TYPE');
+      error(FTYPE = 1,'duplicated');
+      ADR := DWORD(FVALUE);
+      WHILE ADR <> 0 DO BEGIN OLD := FROMEMW(ADR);
+        TOMEMW(ADR,D); ADR := OLD;
+      END;
+      FCOMPH.REMOVE(FTOKEN);
+    END;
+    equColon := fcomph.addNum(ftoken,D);
+  end;
+
+  procedure TC4TH.UNLINKED;
+  var p: pel;
+  BEGIN
+    PUSH(0);
+    P := EQUCOLON;
+    WITH P^ DO FTYPE := 129;
+  END;
+
+  PROCEDURE   tc4th.FIX(AWORD: STR85; W: WORD);
+  var p: pel; D: DWORD;
+  BEGIN
+    P := FIND(AWORD);
+    D := DWORD(P^.FVALUE);
+    ERROR(P^.FTYPE = 129, 'NOT DEFINED YET');
+    TOMEMW(D+2,W);
+  END;
 
 begin
 end.
