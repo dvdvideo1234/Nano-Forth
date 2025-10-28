@@ -37,10 +37,13 @@ uses baselib, FILIB, strLib, hashlib, MEMLIB;
       fstate: pointer;
       fToken: str85;    {last token}
       FPARAM: STR85;
+      finc:   str85;    {last include file name}
       fLine:  string;   {last line  when in main loop}
       fls:    longstr;  {current position in text buffer}
       fprpnt: tprgPnt;
-      fSAVEP: word;
+      fSAVEP,           {end of code in save procedure}
+      fnline: word;     {line number in include file}
+      fmak:   pstr;     {last macro key processed}
       FDEBUG: BOOLEAN;
 
       constructor create(stksz, fbsz, MEMSTART, sz: word);
@@ -320,6 +323,8 @@ implementation
   begin if not cond then exit;
     writeln;
     writeln(ftoken,':  ',s);
+    if fmak <> nil then writeln('in macro ',fmak^);
+    if finc <> '' then writeln('at line - ',fnline,' - in file "',finc,'"');
     gotoPoint(fprpnt);
   end;
 
@@ -395,6 +400,8 @@ implementation
     fstack.reset; {}
     ffwdbr.reset;
     fbwdbr.reset;
+    fmak := nil;     {no macro processed}
+    finc := '';      {no include file processed}
 
     writeln;
 
@@ -557,13 +564,22 @@ implementation
   PROCEDURE   TC4TH.reMARK;  BEGIN fls.rem := 0; END;
 
   procedure TC4TH.include;
-  VAR ALINE: STRING;
+  VAR ALINE, oldfname: STRING; oldline: word;
   begin
     WITH ftxtst DO BEGIN ERROR(FSTKP=0, 'TOO MANY OPEN FILES');
       ERROR(NOT ADD(FPARAM), 'CAN''T OPEN FILE "'+FPARAM+'"');
+      oldfname := finc; finc := fparam;
+      oldline := fnline; fnline := 0;
       REMARK; FPARAM := ''; {SKIP REMAINING TOKEMS IN CALLING LINE}
-      WHILE NOT EOF(TOP^) DO BEGIN READLN(TOP^,ALINE);  MACRO(ALINE); END;
-    CLOSE(TOP^); END;
+      WHILE NOT EOF(TOP^) DO BEGIN
+        READLN(TOP^,ALINE);
+        inc(fnline); {line counter}
+        MACRO(ALINE);
+      END;
+      CLOSE(TOP^);
+      finc := oldfname;
+      fnline := oldline;
+    END;
   end;
 
   PROCEDURE   TC4TH.MACDEF;  {DEFINE CONTROLS USED IN COMP MODE}
@@ -744,19 +760,21 @@ implementation
   end;
 
   function   tc4th.execute(p: pel): boolean;
-  var fi: boolean; kp: pstr;
+  var fi: boolean; oldkp, kp: pstr;
   begin
     if (p = nil) OR (P^.FTYPE IN [1,129])
       then BEGIN execute := FALSE; exit; END;
     with p^ do case ftype of
       0:  perform(@self,fvalue);
       2:  begin kp := @ft1; fi := kp^[ft1] <> '`';
+            oldkp := fmak; fmak := kp;
             if fi then tocomp;
             macro(pstr(fvalue)^);
             if fi then begin
               tointer;  {PROCEDURE   TC4TH.MCOLON;}
               GETTOKEN(TRUE); HERE; PUSH(2); MINUS; EQUCOLON; COMMA;
             end;
+            fmak := oldkp;
           end;
     end;
     EXECUTE := TRUE;
