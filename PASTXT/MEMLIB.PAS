@@ -47,19 +47,18 @@ implementation
   PROCEDURE   tMEM.DUMPMEM(ADR, LEN:  WORD);
   VAR O: WORD ABSOLUTE ADR; CNT: WORD;
       C: CHAR; B: BYTE ABSOLUTE C; RES: STR35;
+  FUNCTION START: BOOLEAN; BEGIN START := (CNT AND 15) = 0; END;
   BEGIN CNT := 0;
     FOR LEN := LEN DOWNTO 1 DO BEGIN
-      IF (CNT AND 15) = 0 THEN BEGIN
-        WRITE(WORDTOHEX(ADR),':'); RES := ' [';
-      END;
+      IF START THEN BEGIN WRITE(WORDTOHEX(ADR),':  '); RES := ' [';  END;
       B := FROMEMB(ADR);
       WRITE(BYTETOHEX(B),' ');
       IF B IN [0..31,127,255] THEN C := '.';
       RES := RES + C;
-      IF (CNT AND 15) = 15 THEN WRITELN(RES,']');
       INC(CNT); INC(O);
+      IF START THEN WRITELN(RES,']');
     END;
-    IF (CNT AND 15) <> 0 THEN WRITELN(RES,']');
+    IF NOT START THEN WRITELN(RES,']');
   END;
 
   {constructor tMEM.create(START, sz: word);

@@ -1,0 +1,313 @@
+
+
+********************************
+*                              *
+*                              *
+*     ALL  RIGHTS RESERVED     *
+*                              *
+*         V. VASILEV           *
+*                              *
+********************************
+*                              *
+* TITLE:  SWEETF   INTERPRETER *
+*                              *
+********************************
+
+ja      equ  10
+R0L     EQU  $0
+R0H     EQU  $1
+R15L    EQU  $1E
+R15H    EQU  $1F
+SAVE    EQU  $FF4A
+RESTORE EQU  $FF3F
+
+        ORG  $F689
+
+        AST  32
+
+Start   CLD
+        SEC
+RETURN  PLA
+        ADC  #0
+        STA  R15L           ;INIT SWEETF PC
+        PLA
+        ADC  #0
+        STA  R15H
+mnop:   jsr  step1
+        jmp  mnop
+
+step1   LDY  #0
+        LDA  (R15L),Y       ;FETCH INSTR
+        INC  R15L
+        BEq  @3
+@1      ASL
+        bcs  @4
+@2      sta  ja
+        jmp  ja-1
+
+@3      INC  R15H
+        jmp  @1
+
+@4      bpl  @5         ; number
+        dey
+@5      ror
+        dex
+        dex
+        sta  0,x
+        sty  1,x
+
+@6      LDY  #0
+        LDA  (R15L),Y       ;FETCH INSTR
+        INC  R15L
+        bne  @7
+        INC  R15H
+@7      asl
+        bcc  @2
+
+        ror  1,x
+        ror  0,x
+        ldy  0,x
+        ror
+        sta  0,x
+        sty  1,x
+        jmp  @6
+
+CALL    PLA
+        PLA
+        LDA  PCH
+        PHA
+        LDA  PCL
+        PHA
+        JSR  JUMP
+        JMP  MNOP
+
+RTNZ    PLA                 ;POP RETURN ADDRESS
+        PLA
+        JMP  (R15L)         ;RETURN TO 6502 CODE VIA PC
+
+exit    pla
+        pla
+        jmp  return
+
+push    pla
+        pla
+        JSR  DROPW
+        pha
+        TYA
+        pha
+        jmp  MNOP
+
+POP     PLA                     ;
+        PLA                     ;
+        PLA                     ;
+        TAY                     ;
+        PLA                     ;
+        JSR  DUPW
+        JMP  MNOP
+
+
+DUP     LDY  0,X
+        LDA  1,X
+DUPW    DEX
+        DEX
+NIPW    STA  1,X
+        STY  0,X
+        RTS
+
+NIP     JSR  DROPW
+        JMP  NIPW
+
+OVER    INX
+        INX
+        LDY  0,X
+        LDA  1,X
+DUPZ    DEX
+        DEX
+        JMP  DUPW
+
+SWAP    INX
+        JSR  SWAPH
+        DEX
+SWAPH   LDA  2,X
+        LDY  0,X
+        STA  0,X
+        STY  2,X
+        RTS
+
+DROPW   LDY  0,X
+        LDA  1,X
+        INX
+        INX
+        RTS
+
+BP      LDA  3,X            ;TEST FOR PLUS
+        ASL
+        JMP  JUMP?          ;BRANCH IF SO
+
+BZ      LDA  2,X          ;TEST FOR ZERO
+        ORA  3,X          ;(BOTH BYTES)
+        CMP  #1
+JUMP?   BCS  DROP         ;BRANCH IF SO
+
+jump    clc
+        lda  0,x
+        adc  pc
+        sta  pc
+        lda  1,x
+        adc  pc+1
+        sta  pc+1
+drop    inx
+        inx
+        rts
+
+LDDAT   JSR  LDAT           ;LOW ORDER BYTE TO R0, INCR RX
+        tay
+LDAT    LDA  (R0L,X)        ;LOAD INDIRECT (RX)
+INR     INC  R0L,X              ;INCR RX
+        BNE  INR2
+        INC  R0H,X
+INR2    RTS
+
+POPD    JSR  DCR            ;DECR RX
+        LDA  (R0L,X)        ;POP HIGH ORDER BYTE @RX
+        TAY                 ;SAVE IN Y REG
+POPB    JSR  DCR            ;DECR RX
+        LDA  (R0L,X)        ;LOW ORDER BYTE
+        RTS
+
+STDAT   JSR  STAT           ;STORE INDIRECT LOW ORDER
+        TYA
+STAT    STA  (R0L,X)        ;STORE HIGH ORDER BYTE.
+        JMP  INR            ;INCR RX AND RETURN
+
+STPAT   JSR  DCR            ;DECR RX
+        LDA  R0L
+        STA  (R0L,X)        ;STORE R0 LOW BYTE @RX
+        JMP  POP3           ;INDICATE R0 AS LAST RESULT REG
+
+DCR     LDA  R0L,X
+        BNE  @1           ;DECR RX
+        DEC  R0H,X
+@1      DEC  R0L,X
+        RTS
+
+cmp     sec
+        LDA  2,x
+        sbC  R0L,X
+        tay
+        LDA  3,x
+        sbC  R0H,X
+        rts
+
+ADDC    clc
+        LDA  2,x
+        ADC  R0L,X
+        tay
+        LDA  3,x
+        ADC  R0H,X
+        RTS
+
+ADD     JSR  ADDC
+bInary  INx
+        INx
+BIN2    sta  1,x
+        sty  0,x
+NUL     RTS
+
+ADD2D   JSR  ADD
+DUP2D   JSR  DUPW
+DIV2Z   ROR  R0H,X
+        ROR  R0L,X
+        RTS
+
+DIV2    LDA  R0H,X
+        ASL
+        JMP  DIVZ
+
+UDIV2   CLC
+        BCC  DIV2Z
+
+SUB     JSR  CMP
+        JMP  bInary
+
+AND     LDA  2,X
+        AND  R0L,X
+        TAY
+        LDA  3,X
+        AND  R0H,X
+        JMP  BINARY
+
+OR      LDA  2,X
+        ORA  R0L,X
+        TAY
+        LDA  3,X
+        ORA  R0H,X
+        JMP  BINARY
+
+XOR     LDA  2,X
+        XOR  R0L,X
+        TAY
+        LDA  3,X
+        XOR  R0H,X
+        JMP  BINARY
+
+W2B     LDA  1,X
+UNPZ    STY  1,X
+        DEX
+        DEX
+        STY  1,X
+        STA  0,X
+        RTS
+
+B2H     LDA  0,X
+        PHA
+        AND  #15
+        STA  0,X
+        PLA
+        LSR
+        LSR
+        LSR
+        LSR
+        JMP  UNPZ
+
+PACK    JSR  DROPW
+        STY  1,X
+        RTS
+
+SETA    JSR  DROPW
+        STA  R_H
+        STY  R_L
+        RTS
+
+GETR    LDA  R_H
+        LDY  R_L
+        JMP  DUPW
+
+PEEK    LDA  (R_L),Y
+        JMP  DUPW
+
+POKE    LDA  0,X
+        INX
+        INX
+        STA  (R_L),Y
+        RTS
+
+DEEK    INY
+        LDA  (R_L),Y
+        PHA
+        DEY
+        LDA  (R_L),Y
+        TAY
+        PLA
+        JMP  DUPW
+
+DOKE    JSR  DROPW
+        PHA
+        TYA
+        LDY  #0
+        STA  (R_L),Y
+        INY
+        PLA
+        STA  (R_L),Y
+        RTS
+

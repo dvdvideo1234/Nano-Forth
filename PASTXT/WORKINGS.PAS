@@ -1,18 +1,14 @@
-
-
 {CONST CDIGTBL: STRING[64] =
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_';}
 
-
 {  DIVMOD PURE PASCAL
-
   function dvmd(d: dword; w: word): dword ;
   inline($5b/$58/$5a/$f7/$f3);
 
   function newdm(var d: dword; w: word): word;
   var dd: dword absolute d; d1, res: dword;
   begin d1 := longrec(dd).hi; res := dvmd(d1,w);
-     longrec(dd).hi := longrec(res).lo;  d1 := res; hi
+     longrec(dd).hi := longrec(res).lo;  d1 := res;
      longrec(d1).lo := longrec(dd).lo;  res := dvmd(d1,w);
      longrec(dd).lo := longrec(res).lo;
      newdm := longrec(res).hi;

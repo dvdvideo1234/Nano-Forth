@@ -241,7 +241,7 @@ implementation
 
   procedure   tc4th.toComp;  begin fstate := @tc4th.compSearch;  end;
 
-  procedure tc4th.Colon; begin newDEA;toComp;macro('(:'); end;
+  procedure tc4th.Colon; begin newDEA; toComp; macro('(:'); end;
 
   procedure   tc4th.Semi; begin macro('(;');
     if (ffwdbr.depth or fbwdbr.depth) = 0 then toInter;
@@ -411,7 +411,8 @@ implementation
 
     repeat
       write('=> ');
-      readln(fline);
+      {readln(fline);}
+      FLINE := EXPECT; WRITE(' ');
       macro(fline);
       write(' Ok');
       writeln;
@@ -487,24 +488,21 @@ implementation
     push(d2+d1);
   end;
 
-  procedure   tc4th.minus;
-  var d1, d2: dword;
+  procedure   tc4th.minus;  var d1, d2: dword;
   begin
     FSTACK.drop2(d1, d2);
     IsStackEmpty(FSTACK.FERR);
     push(d2-d1);
   end;
 
-  procedure   tc4th.orw;
-  var d1, d2: dword;
+  procedure   tc4th.orw;    var d1, d2: dword;
   begin
     FSTACK.drop2(d1, d2);
     IsStackEmpty(FSTACK.FERR);
     push(d2 or d1);
   end;
 
-  procedure   tc4th.xorw;
-  var d1, d2: dword;
+  procedure   tc4th.xorw;   var d1, d2: dword;
   begin
     FSTACK.drop2(d1, d2);
     IsStackEmpty(FSTACK.FERR);
@@ -555,13 +553,13 @@ implementation
 
   procedure   tc4th.negw;  begin push(- pop); end;
 
-  procedure   tc4th.dot; begin write(ntostr(pop)+' '); end;
+  procedure   tc4th.dot;   begin write(ntostr(pop)+' '); end;
 
-  procedure   tc4th.Hdot; begin write(ItoA(pop,16)+' '); end;
+  procedure   tc4th.Hdot;  begin write(ItoA(pop,16)+' '); end;
 
-  procedure   tc4th.cr; begin writeln; end;
+  procedure   tc4th.cr;    begin writeln; end;
 
-  PROCEDURE   TC4TH.reMARK;  BEGIN fls.rem := 0; END;
+  PROCEDURE   TC4TH.reMARK;BEGIN fls.rem := 0; END;
 
   procedure TC4TH.include;
   VAR ALINE, oldfname: STRING; oldline: word;
@@ -584,12 +582,12 @@ implementation
 
   PROCEDURE   TC4TH.MACDEF;  {DEFINE CONTROLS USED IN COMP MODE}
   var par: str85;
-  BEGIN GETTOKEN(TRUE); par := getParam(true);
+  BEGIN par := getParam(true); GETTOKEN(TRUE);
     fcomph.addstr(ftoken + '`', Par);  END;
 
   PROCEDURE   TC4TH.MAC2VAR; {DEFINE DEFINERS ON INTERP MODE }
   var par: str85;
-  BEGIN GETTOKEN(TRUE); par := getParam(true);
+  BEGIN par := getParam(true); GETTOKEN(TRUE);
     finteh.addstr(ftoken, par);
   END;
 
