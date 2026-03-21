@@ -19,6 +19,23 @@
 : 2/ +2/ NIP ;
 : 2* DUP + ;
 
+RSP   = 28
+PC    = 30
+TOP   = 32
+NXT   = 34
+TMP   = 36
+JA    = 39
+
+
+
+      DW  SETV
+AREG  DW  CNST
+ARW   DW  0
+
+ZERO  DW  CNST
+      DW  0
+
+
 FROMF JMP (PC)
 
 PUSHW PLA
@@ -284,21 +301,6 @@ NEXT1 LDA   (PC),Y  ; 5
       INC   PC+1    ; 
 NXT1  JMP   JA-1    ; 9  43
 
-      DW  SETV
-AREG  DW  CNST
-ARW   DW  0
-
-ZERO  DW  CNST
-      DW  0
-
-
-RSP   = 28
-PC    = 30
-TOP   = 32
-NXT   = 34
-TMP   = 36
-JA    = 39
-
 EXEC  PLA 
       TAX
       PLA
@@ -432,21 +434,21 @@ DPW1  LDA   TOP,Y
       JMP   NXTP   
 
 UPDADR:
-      SEC
-      LDA   TOP
-      SBC   TMP
-      STA   TOP
-      BCS   OK_TOP
-      DEC   TOP+1
-      SEC
-OK_TOP:
-      LDA   NXT
-      SBC   TMP
-      STA   NXT
-      BCS   OK_TOP2
-      DEC   NXT+1
-OK_TOP2:
-      RTS
+      SEC             ; 2
+      LDA   TOP       ; 4
+      SBC   TMP       ; 4
+      STA   TOP       ; 3
+      BCS   OK_TOP    ; 3 /16
+      DEC   TOP+1     ; 
+      SEC             ; 
+OK_TOP:               ; 
+      LDA   NXT       ; 4
+      SBC   TMP       ; 4
+      STA   NXT       ; 3
+      BCS   OK_TOP2   ; 3 /14
+      DEC   NXT+1     ; 
+OK_TOP2:              ; 
+      RTS             ; 6 36
 
 XMOVDZ:
       DW    PAR6   ;
@@ -465,7 +467,7 @@ MOVDLP2:
       LDA   (NXT),Y
       STA   (TOP),Y
       TYA
-      BNE   MOVDLP
+      BNE   MOVDLP      ; / 29
 XMOVDZ:
       DEC   NXT+1
       DEC   TOP+1
@@ -494,7 +496,7 @@ MOVULP2:
       LDA   (NXT),Y
       STA   (TOP),Y
       INY
-      BNE   MOVULP
+      BNE   MOVULP      ; / 27
       INC   NXT+1
       INC   TOP+1
 XMOVUZ:
