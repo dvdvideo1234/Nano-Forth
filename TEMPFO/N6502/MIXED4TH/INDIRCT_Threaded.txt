@@ -1,3 +1,4 @@
+*
 * JMP RET IF- IF PUSH POP AR XR NAND DUP J +2/ @R+ !R+ +* -/ 
 
 *  DROP; (VAR (VAR3 (CNST (SETV (DOES @ ! C@ C! LIT -IF 
@@ -130,7 +131,7 @@ JMP   LDY #0
       TAX
       INY
       LDA (PC),Y
-      JMP RET0
+      JMP RET1
 
 IF    PLA
       STA TMP
@@ -234,31 +235,20 @@ AREG1 LDX ARW,Y     ; 4 /
       JMP NEXT      ; 3 / 55
 
 TO4TH:
-      LDY #1
+      CLC           ; 2
       PLA
+      ADC   #1      ; 4
       TAX
       PLA
+      ADC   #0
       JMP RET1
 
 DROPX:
       PLA
       PLA
 RET   JSR RSPOP
-      JMP RET0
+      JMP RET1
       
-NEST:
-      SEC           ; 2
-      ADC   PC      ; 4
-      TAX           ; 2
-      LDA   PC+1    ; 4
-      ADC   #0      ; 2 / 14
-      JSR RPUSH
-      LDA JA+1
-      LDX JA
-RET0  LDY #0
-RET1  STX PC
-      STA PC+1
-      JMP NEXT1     ;
       
 VAR3  LDA #6        ; 2
       BNE VAR1
@@ -272,6 +262,7 @@ DOES  LDX PC
       PLA           ; 4
       ADC #0        ; 2
       STA PC+1      ; 3  /  18
+
 VAR   LDA #2        ; 2
 VAR1  LDY JA+1      ; 4
       CLC           ; 2
@@ -283,7 +274,19 @@ PHYX  TYA           ; 2
 PHAX  PHA           ; 3
 PHX   TXA           ; 2
       PHA           ; 3 10
+      JMP NEXT      ;
 
+NEST:
+      SEC           ; 2
+      ADC   PC      ; 4
+      TAX           ; 2
+      LDA   PC+1    ; 4
+      ADC   #0      ; 2 / 14
+      JSR RPUSH
+      LDA JA+1
+      LDX JA
+RET1  STX PC
+      STA PC+1
 NEXT:
       LDY   #0      ; 2
 NEXT1 LDA   (PC),Y  ; 5
@@ -308,6 +311,7 @@ EXEC  PLA
       STA JA+1
       JMP JA-1
 
+PAR6Z 
 PAR6  PLA           ; 4     FOR STRING OPS
       STA   TMP     ; 3
       PLA           ; 4 

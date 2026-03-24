@@ -1,1299 +1,58 @@
 ---------------------------------------------------------
-POPN:             ; GET N PARAMS -- PUSH N 1 2 3 4 
-      AND   #6
-      LSR           ; 2
-      TAY           ; 2 / 10
-PSN1  LDA   1,X     ; 4
-      PHA           ; 3
-      LDA   0,X     ; 4
-      PHA           ; 3
-      INX           ; 2
-      INX           ; 2
-      BPL   RSPOVF
-      DEY           ; 2 /     1     2     3   
-      BPL   PSN1     ; 3 / 23 N
-PSN2  JMP   NEXT    ; 3 /     61    84    107
-
-PUSHN:             ; PUT N PARAMS -- PUSH N 2 3 4 
-      AND   #6
-      LSR           ; 2
-      TAY           ; 2 / 10
-PPN   PLA           ; 4
-      DEX           ; 2
-      DEX           ; 2
-      BPL   RSPUND
-      STA   0,X     ; 4
-      PLA           ; 4
-      STA   1,X     ; 4 /     5     6     7
-      DEY           ; 2 /     1     2     3   
-      BPL   PPN     ; 3 / 25 N
-      JMP   NEXT    ; 3 /     63    88    113
-
-RDRPN:             ; PUT N PARAMS -- PUSH N 2 3 4 
-      AND   #6
-      LSR           ; 2
-      TAY           ; 2 / 10
-RDRP  INX           ; 2
-      INX           ; 2
-      BPL   RSPUND
-      DEY           ; 2 /     1     2     3   
-      BPL   RDRP    ; 3 / 25 N
-      JMP   NEXT    ; 3 /     63    88    113
-
----------------------------------------------------------
 MASHINE FORTH
 
-*  JMP IFM RET IF +2/ +* -/ NAND PUSH POP AR XR @+ !+ DUP J
-* A@ A!
+*  JMP IFM RET IF +2/ +* -/ J R@+ R!+ PUSH POP DUP AR XR NAND 
+
+* A@ A! LIT 1- + - SWAP NIP DROP OR AND XOR NOT
+* C!+ C@+ @+ !+ ! @ C@ C! STR CSTR 
+* (SETV (CON (VAR
+
+DSP   -   X 
+RSP   -   S
+IP    -   IP
+W     -   JA MEM
 
 
-MIX4  LDX   #0      ; EMPTY RSTACK
-      STX   PC      ; ZERO LO BYTE
-TO4   PLA   
-      TAY
+---------------------------------------------------------
+
+CNST:
       PLA
-      STA   PC+1
-      JSR   INCB
-      JMP   NEXT2
-
-PUSH  DEX
-      DEX
-      BMI   PH1
-      LDX   #254
-PH1   PLA
-      STA   0,X
+      STA   JA
       PLA
-      STA   1,X
-      JMP   NEXT2
-
-POP   INX
-      INX
-      BMI   PP1
-      LDX   #130
-PP1   LDA   255,X
-      PHA
-      LDA   254,X
-      PHA
-      JMP   NEXT2
-
-J     LDA   3,X
-      PHA
-      LDA   2,X
-      PHA
-      JMP   NEXT2
-
-CRLDP LDA   #0
-      PHA
-      JSR   CRLDZ 
-      PHA
-      JMP   NEXT2
-
-RLDP  JSR   CRLDZ 
-      TAY
-      JSR   CRLDZ 
-      JMP   PSHAY
-
-CRSTP PLA
-      STA   (0,X)
-      PLA
-RINC  JSR   RINCZ 
-      JMP   NEXT2
-
-RSTP  PLA
-      JSR   CRSTZ 
-      PLA
-      JSR   CRSTZ 
-      JMP   NEXT2
-
-CRSTZ STA   (0,X)
-      JMP   RINC
-
-CRLDZ LDA   (0,X)
-RINCZ INC   0,X
-      BNE   RINC1
-      INC   1,X
-RINC1 RTS
-
-
-RDRPX INX   
-      INX
-RTN   LDY   0,X     ; 4
-      INX           ; 2
-      LDA   0,X     ; 4
-      INX           ; 2
-      STA   PC+1    ; 3
-NOOP  JMP   NEXT2   ; 3  18
-
-IF    PLA           ; 4
-      STA   TMP     ; 3
-      PLA           ; 4
-      ORA   TMP     ; 4
-      BEQ   BRNCH   ; 3  18
-
-SKIP  JSR   INCB    ; 17
-      JSR   INCB    ; 17
-      JMP   NEXT2   ; 3   37
-
-IFM   PLA           ; 4
-      TAY           ; 2
-      PLA           ; 4
-      PHA           ; 3
-      ASL           ; 2
-      TYA           ; 2
-      PHA           ; 3
-      LDY   PCLO    ; 4
-      BCC   SKIP    ; 3  27
-
-BRNCH JSR   GETB    ; 22
-      STA   PCLO    ; 2
-      JSR   GETB    ; 22
-      STA   PC+1    ; 3
-      JMP   NEXT    ; 3   52 
-
-M1    SEC         ; 2
-M2    PLA         ; 4
-      SBC   #1    ; 2
-      TAY         ; 2
-      PLA         ; 4
-      SBC   #0    ; 2
-PSHAY PHA         ; 3
-      TYA         ; 2
-      PHA         ; 3
-      JMP   NEXT  ; 3  27
-
-DODUP PLA
-      TAY
-      PLA
-      STA   TMP
-      PHA
-      TYA
-      PHA
-      LDA   TMP
-      JMP   PSHAY
-      
-DOXOR PLA
-      STA   TOP
-      PLA
-      STA   TOP+1
-      PLA
-      XOR   TOP
-      TAY
-      PLA
-      XOR   TOP+1
-      JMP   PSHAY
-
-DOAND PLA
-      STA   TOP
-      PLA
-      STA   TOP+1
-      PLA
-      AND   TOP
-      TAY
-      PLA
-      AND   TOP+1
-      JMP   PSHAY
-
-MONE  LDA   #255
-      SKIP2
-ZERO  LDA   #0
-      TAY
-      JMP   PSHAY
-
-AR    LDY  0,X    ; 4
-      LDA  ARW    ; 3
-      STA  0,X    ; 4
-      STY  ARW    ; 3
-      LDY  1,X    ; 4
-      LDA  ARW+1  ; 3
-      STA  1,X    ; 4
-      STY  ARW+1  ; 3
-      JMP   NEXT  ; 3  31
-                  
-XR    PLA         ; 4 
-      STA  TMP    ; 3
-      PLA         ; 4
-      TAY         ; 2
-      LDA  1,X    ; 4
-      STY  1,X    ; 4
-      PHA         ; 3
-      LDY  TMP    ; 4
-      LDA  1,X    ; 4
-      STY  1,X    ; 4
-      PHA         ; 3 
-      JMP   NEXT  ; 3 42
-
-ST_AR PLA
-      STA  ARW
-      PLA   
-      STA  ARW+1
-      JMP  NEXT2
-
-LDAR  LDY  ARW
-      LDA  ARW+1
-      JMP  PSHAY
-
-DROP  SEC
-DROP2 PLA
-      STA   TOP
-      PLA
-      STA   TOP+1
-      BCS   DRP1
-STNXT PLA
-      STA   NXT
-      PLA
-      STA   MXT+1      
-DRP1  JMP   NEXT2  
-
-PMULZ LDA   NXT
-      LSR
-      BCC   D2DIV
-      CLC
-      LDA   TOP
-      ADC   ARW
-      STA   TOP
-      LDA   TOP+1
-      ADC   ARW+1
-      STA   TOP+1
-D2DVZ ROR   TOP+1
-      ROR   TOP
-      ROR   NXT+1
-      ROR   NXT
-      JMP   NEXT2   
-
-PL2DZ CLC
-      LDA   TOP
-      ADC   NXT
-      STA   TOP
-      STA   NXT
-      LDA   TOP+1
-      ADC   NXT+1
-      STA   TOP+1
-      STA   NXT+1
-DIV2Z ROR   TOP+1
-      ROR   TOP
-      JMP   NEXT2   
-
-LDNXT SEC
-NXTOP LDA   NXT+1
-      PHA
-      LDA   NXT
-      PHA
-      BCS   TOP1
-TOP   LDA   TOP+1
-      PHA
-      LDA   TOP
-      PHA
-TOP1  JMP   NEXT2   
-
-D2MUL CLC
-      ROL   NXT
-      ROL   NXT+1
-MUL2  ROL   TOP
-      ROL   TOP+1
-      JMP   NEXT2   
-
-SDIVZ SEC
-      LDA   TOP
-      SBC   ARW
-      TAY
-      LDA   TOP+1
-      SBC   ARW+1
-      BCC   PM2
-      STY   TOP
-      STA   TOP+1
-PM2   INC   NXT
-      JMP   NEXT   
-
-NEST  ASL           ; 2
-      STA  PCLO     ; 3
-      LDA  (PC),Y   ; 5       ;FETCH BYTE
-      INY           ; 2 
-      BNE  PCPUSH   ; 3    ;INCR PC FOR FETCH
-      INC  PC+1
-PCPSH DEX           ; 2
-      DEX           ; 2
-      BPL   UNDERP  ; 3
-      LDX   #254
-UNDRP STY  0,X      ; 4
-      LDY  PC+1     ; 4
-      STY   1,X     ; 4
-      STA   PC+1    ; 3  37  56
-                    ;    
-NEXT  LDY   PCLO    ; 4
-MEXT2 LDA  (PC),Y   ; 5      ;FETCH BYTE
-      INY           ; 2
-      BEQ  NXT1     ; 3          ;INCR PC FOR FETCH
-      INC   PC+1
-NXT1  LSR           ; 2
-      BCC   NEST    ; 3   19
-                    ; 2   18
-      STY   PCLO    ; 3
-      ASL           ; 2
-      STA   VECT+1  ; 4
-VECT  JMP   (PAGE)  ; 6   15  33
-
-GETB    LDA  (R15L),Y   ; 5  FETCH BYTE
-INCB    INY             ; 2
-        BNE  GETB2      ; 3  INCR SWEET16 PC FOR FETCH
-        INC  PC+1
-GETB2   RTS             ; 6 16
-
-LIT   JSR   GETB
-      STA   PCLO
-      JSR   GETB
-      PHA
-      LDA   PCLO
-      PHA
-      JMP   NEXT2
-
--------------------------------------------------------------
-
-
-********************************
-*                              *
-*   MIXED4TH PSEUDO MACHINE    *
-*         INTERPRETER          *
-*                              *
-*      COPYRIGHT (C) 2026      *
-*     MIXED COMPUTER,  INC     *
-*                              *
-*     ALL  RIGHTS RESERVED     *
-*                              *
-*         V. VASILEV           *
-*                              *
-********************************
-*                              *
-* TITLE:  MIXED4TH INTERPRETER *
-*                              *
-********************************
-
-*  JMP IFM RET IF +2/ +* -/ NAND PUSH POP AR XR @R+ !R+ DUP J
-*  JMP MIF RET IF AR POP PUSH J DUP @R+ !R+ XR NAND +2/ +* -/
-* TOP NXT TOP! NXT! A! A@ 2DROP DROP NXTOP 0 -1 (D2/ (D2* (+* (-/ (2/ (+2/ (2*
-* AND XOR C@R+ C!R+ 1- 2- heave
-
-ARW   DW  0
-TOP   DW  0
-NXT   DW  0
-TMP   DW  0
-
-: NAND AND
-: NOT -1 XOR ;
-
-: +2/ 2DROP (+2/ NXTOP ;
-: D2/ 2DROP (D2/ NXTOP ;
-: D2* 2DROP (D2* NXTOP ;
-: -/  2DROP (-/ NXTOP ;
-: +*  2DROP (+* NXTOP ;
-
-: 2/ DROP (2/ UP ;
-: 2* DROP (2* UP ;
-: UM*     A! 0 2DROP (+* (+* (+* (+* (+* (+* (+* (+* (+* (+* (+* (+* (+* (+* (+* (+* NXTOP ;
-: UM/MOD  A! 0 2DROP (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ (-/ MXTOP ;
-
-: EX POP XR PUSH ;
-: SWAP PUSH XR POP ;
-: I J ;
-
-MIX4  LDX   #0      ; EMPTY RSTACK
-      STX   PC      ; ZERO LO BYTE
-TO4   PLA   
-      TAY
-      PLA
-      STA   PC+1
-      JSR   INCB
-      JMP   NEXT2
-
-PUSH  DEX
-      DEX
-      BMI   PH1
-      LDX   #254
-PH1   PLA
-      STA   0,X
-      PLA
-      STA   1,X
-      JMP   NEXT2
-
-POP   INX
-      INX
-      BMI   PP1
-      LDX   #130
-PP1   LDA   255,X
-      PHA
-      LDA   254,X
-      PHA
-      JMP   NEXT2
-
-J     LDA   3,X
-      PHA
-      LDA   2,X
-      PHA
-      JMP   NEXT2
-
-CRLDP LDA   #0
-      PHA
-      JSR   CRLDZ 
-      PHA
-      JMP   NEXT2
-
-RLDP  JSR   CRLDZ 
-      TAY
-      JSR   CRLDZ 
-      JMP   PSHAY
-
-CRSTP PLA
-      STA   (0,X)
-      PLA
-RINC  JSR   RINCZ 
-      JMP   NEXT2
-
-RSTP  PLA
-      JSR   CRSTZ 
-      PLA
-      JSR   CRSTZ 
-      JMP   NEXT2
-
-CRSTZ STA   (0,X)
-      JMP   RINC
-
-CRLDZ LDA   (0,X)
-RINCZ INC   0,X
-      BNE   RINC1
-      INC   1,X
-RINC1 RTS
-
-
-RDRPX INX   
-      INX
-RTN   LDY   0,X     ; 4
-      INX           ; 2
-      LDA   0,X     ; 4
-      INX           ; 2
-      STA   PC+1    ; 3
-NOOP  JMP   NEXT2   ; 3  18
-
-IF    PLA           ; 4
-      STA   TMP     ; 3
-      PLA           ; 4
-      ORA   TMP     ; 4
-      BEQ   BRNCH   ; 3  18
-
-SKIP  JSR   INCB    ; 17
-      JSR   INCB    ; 17
-      JMP   NEXT2   ; 3   37
-
-IFM   PLA           ; 4
-      TAY           ; 2
-      PLA           ; 4
-      PHA           ; 3
-      ASL           ; 2
-      TYA           ; 2
-      PHA           ; 3
-      LDY   PCLO    ; 4
-      BCC   SKIP    ; 3  27
-
-BRNCH JSR   GETB    ; 22
-      STA   PCLO    ; 2
-      JSR   GETB    ; 22
-      STA   PC+1    ; 3
-      JMP   NEXT    ; 3   52 
-
-M1    SEC         ; 2
-M2    PLA         ; 4
-      SBC   #1    ; 2
-      TAY         ; 2
-      PLA         ; 4
-      SBC   #0    ; 2
-PSHAY PHA         ; 3
-      TYA         ; 2
-      PHA         ; 3
-      JMP   NEXT  ; 3  27
-
-DODUP PLA
-      TAY
-      PLA
-      STA   TMP
-      PHA
-      TYA
-      PHA
-      LDA   TMP
-      JMP   PSHAY
-      
-DOXOR PLA
-      STA   TOP
-      PLA
-      STA   TOP+1
-      PLA
-      XOR   TOP
-      TAY
-      PLA
-      XOR   TOP+1
-      JMP   PSHAY
-
-DOAND PLA
-      STA   TOP
-      PLA
-      STA   TOP+1
-      PLA
-      AND   TOP
-      TAY
-      PLA
-      AND   TOP+1
-      JMP   PSHAY
-
-MONE  LDA   #255
-      SKIP2
-ZERO  LDA   #0
-      TAY
-      JMP   PSHAY
-
-AR    LDY  0,X    ; 4
-      LDA  ARW    ; 3
-      STA  0,X    ; 4
-      STY  ARW    ; 3
-      LDY  1,X    ; 4
-      LDA  ARW+1  ; 3
-      STA  1,X    ; 4
-      STY  ARW+1  ; 3
-      JMP   NEXT  ; 3  31
-                  
-XR    PLA         ; 4 
-      STA  TMP    ; 3
-      PLA         ; 4
-      TAY         ; 2
-      LDA  1,X    ; 4
-      STY  1,X    ; 4
-      PHA         ; 3
-      LDY  TMP    ; 4
-      LDA  1,X    ; 4
-      STY  1,X    ; 4
-      PHA         ; 3 
-      JMP   NEXT  ; 3 42
-
-ST_AR PLA
-      STA  ARW
-      PLA   
-      STA  ARW+1
-      JMP  NEXT2
-
-LDAR  LDY  ARW
-      LDA  ARW+1
-      JMP  PSHAY
-
-DROP  SEC
-DROP2 PLA
-      STA   TOP
-      PLA
-      STA   TOP+1
-      BCS   DRP1
-STNXT PLA
-      STA   NXT
-      PLA
-      STA   MXT+1      
-DRP1  JMP   NEXT2  
-
-PMULZ LDA   NXT
-      LSR
-      BCC   D2DIV
-      CLC
-      LDA   TOP
-      ADC   ARW
-      STA   TOP
-      LDA   TOP+1
-      ADC   ARW+1
-      STA   TOP+1
-D2DVZ ROR   TOP+1
-      ROR   TOP
-      ROR   NXT+1
-      ROR   NXT
-      JMP   NEXT2   
-
-PL2DZ CLC
-      LDA   TOP
-      ADC   NXT
-      STA   TOP
-      STA   NXT
-      LDA   TOP+1
-      ADC   NXT+1
-      STA   TOP+1
-      STA   NXT+1
-DIV2Z ROR   TOP+1
-      ROR   TOP
-      JMP   NEXT2   
-
-LDNXT SEC
-NXTOP LDA   NXT+1
-      PHA
-      LDA   NXT
-      PHA
-      BCS   TOP1
-TOP   LDA   TOP+1
-      PHA
-      LDA   TOP
-      PHA
-TOP1  JMP   NEXT2   
-
-D2MUL CLC
-      ROL   NXT
-      ROL   NXT+1
-MUL2  ROL   TOP
-      ROL   TOP+1
-      JMP   NEXT2   
-
-SDIVZ SEC
-      LDA   TOP
-      SBC   ARW
-      TAY
-      LDA   TOP+1
-      SBC   ARW+1
-      BCC   PM2
-      STY   TOP
-      STA   TOP+1
-PM2   INC   NXT
-      JMP   NEXT   
-
-NEST  ASL           ; 2
-      STA  PCLO     ; 3
-      LDA  (PC),Y   ; 5       ;FETCH BYTE
-      INY           ; 2 
-      BNE  PCPUSH   ; 3    ;INCR PC FOR FETCH
-      INC  PC+1
-PCPSH DEX           ; 2
-      DEX           ; 2
-      BPL   UNDERP  ; 3
-      LDX   #254
-UNDRP STY  0,X      ; 4
-      LDY  PC+1     ; 4
-      STY   1,X     ; 4
-      STA   PC+1    ; 3  37  56
-                    ;    
-NEXT  LDY   PCLO    ; 4
-MEXT2 LDA  (PC),Y   ; 5      ;FETCH BYTE
-      INY           ; 2
-      BEQ  NXT1     ; 3          ;INCR PC FOR FETCH
-      INC   PC+1
-NXT1  LSR           ; 2
-      BCC   NEST    ; 3   19
-                    ; 2   18
-      STY   PCLO    ; 3
-      ASL           ; 2
-      STA   VECT+1  ; 4
-VECT  JMP   (PAGE)  ; 6   15  33
-
-GETB    LDA  (R15L),Y   ; 5  FETCH BYTE
-INCB    INY             ; 2
-        BNE  GETB2      ; 3  INCR SWEET16 PC FOR FETCH
-        INC  PC+1
-GETB2   RTS             ; 6 16
-
-LIT   JSR   GETB
-      STA   PCLO
-      JSR   GETB
-      PHA
-      LDA   PCLO
-      PHA
-      JMP   NEXT2
--------------------------------------------------------------
-*  JMP IF- RET IF +2/ +* -/ NAND PUSH POP AR XR @R+ !R+ DUP J
-* 
-*  @ ! C@ C! -IF   D2/ D- D+ 2DUP UM* UM/MOD EXEC LIT
-*  (CNST (VAR (VAR3 (SETV (UM/MOD (>4TH (4TH> (DOES
-* 
-
-: 1- IF- THEN ;
-: NOT DUP NAND ;
-: NEG 1- NOT ;
-: AND NAND NOT ;
-: DROP IF THEN ;
-: + +2/ DROP ;
-: - 1- NOT + ;
-: NIP PUSH DROP POP ;
-: 2/ +2/ NIP ;
-: 2* DUP + ;
-
-PUSHW PLA
-      TAX
-      PLA
-      JSR RPUSH
-      JMP NEXT
-
-POPW  JSR RSPOP
-      JMP PHAX      
-
-XREG  PLA
-      TAX
-      PLA
-      STA TMP
-      LDY #1
-      LDA (RSP),Y
+      STA   JA+1
+      LDY   #2
+      LDA   (JA),Y
       PHA
       DEY
-      LDA (RSP),Y
-      PHA
-      TXA
-      STA (RSP),Y
-      INY
-      LDA TMP
-      STA (RSP),Y
-      JMP NEXT
-      
-AREG  PLA
-      TAX
-      PLA
+      LDA   (JA),Y
       TAY
-      LDA ARW+1
-      PHA
-      LDA ARW
-      PHA
-      STY ARW+1
-      STX ARW
-      JMP NEXT
-
-RLDP  JSR RINC2
-      JMP DEEK1
-
-RLDP  JSR RINC2
-      JMP DOKE1
-
-RINC2 LDY RSPLO     ; 4
-      LDA (RSP),Y   ; 5
-      TAX           ; 2
-      ADC #2        ; 2
-      STA (RSP),Y   ; 5
-      INY           ; 2
-      LDA (RSP),Y   ; 5
-      BCS RINC3     ; 2 33
-      RTS
-RINC3 PHA           ; 3
-      ADC #0        ; 2
-      STA (RSP),Y   ; 5
-      PLA           ; 4
-      RTS           ; 6 47
-
-MIF   SEC
-IFM   PLA
-      TAX
       PLA
-      TAY
-      BCC IFM0
-      INX
-      BNE IFM0
-      INY
-IFM0  TXA
-      BNE IFM1
-      DEY
-IFM1  DEX
-      TYA
-      PHA
-      ASL
-      TXA
-      PHA
-      BCS SKIP
-
-JMP   LDY #0
-      LDA (PC),Y
-      TAX
-      INY
-      LDA (PC),Y
-      JMP RET0
-
-LIT   LDY #0
-      LDA (PC),Y
-      TAX
-      INY
-      LDA (PC),Y
-      PHA
-      TXA
-      PHA
-      INY
-      JMP NEXT1
-         
-IF    PLA
-      STA TMP
-      PLA
-      ORA TMP
-      BEQ JMP
-SKIP  LDY #2
-      JMP NEXT1
+      JMP   PUSHZ
       
-DUPW  PLA
-      TAX
-      PLA
-DUPAX TAY
-      PHA
-      TXA
-      PHA
-      JMP PHYX
-    
-JW    LDY RSPLO
-      INY
-      INY
-      BNE JW1
-      INC RSP+1
-      SEC
-JW1   LDA (RSP),Y
-      TAX
-      INY
-      LDA (RSP),Y
-      BCC JW2
-      DEC RSP+1
-JW2   JMP PHAX
-
-NAND  DW  PAR2  ; 33
-      PLA       ; 4
-      AND NXT   ; 4
-      XOR #255  ; 2
-      TAX       ; 2
-      PLA       ; 4
-      AND NXT+1 ; 4
-      XOR #255  ; 2
-      JMP PHAX  ; 3 25
-
-RET   JSR RSPOP
-RET0  LDY #0
-RET1  STX PC
-      STA PC+1
-      JMP NEXT1
-      
-NEST  JSR PCPSH
-      LDA JA+1
-      LDX JA
-      LDY #2
-      BNE RET1
-      
-PCPSH LDX PC
-      LDA PC+1
-RPUSH LDY RSPLO     ; 4
-      BEQ RPH0      ; 2
-RPH1  DEY           ; 2
-      STA (RSP),Y   ; 5
-      DEY           ; 2
-      TXA           ; 2
-      STA (RSP),Y   ; 5
-      STY RSPLO     ; 3
-      RTS           ; 6  31
-RPH0  DEC RSP+1     ; 
-      JMP RPH1
-
-RSPOP LDY RSPLO     ; 4
-      LDA (RSP),Y   ; 5
-      INY           ; 2
-      TAX           ; 2
-      LDA (RSP),Y   ; 5
-      INY           ; 2
-      BEQ RSP0      ; 2
-RSP1  STY RSPLO     ; 3
-      RTS           ; 6  31
-RSP0  INC RSP+1     ; 
-      JMP RSP1
-
-SETV  LDY #4
-SETV1 PLA
-      STA (JA),Y
-      INY
-      PLA
-      STA (JA),Y
-      JMP NEXT
-
-POKE  SEC
-DOKE  PLA 
-      TAX
-      PLA
-DOKE1 STX JA
-      STA JA+1
-      LDY #0
-      BCS POKE1
-      JMP SETV1
-POKE1 PLA
-      STA (JA),Y
-      PLA
-      JMP NEXT
-
-
-CNST  LDY #3
-CNST1 LDA (JA),Y
-      PHA
-      DEY
-PEEK2 LDA (JA),Y
-      PHA
-      JMP NEXT
-
-PEEK  SEC
-DEEK  PLA
-      TAX
-      PLA
-DEEK1 STX JA
-      STA JA+1
-      LDY #1
-      BCS  PEEK1
-      JMP CNST1
-PEEK1 DEY
-      TYA
-      PHA
-      JMP PEEK2
-
-      DW  SETV
-AREG  DW  CNST
-ARW   DW  0
-
-TOP   DW  0
-NXT   DW  0
-TMP   DW  0
-
-TOF   SEC
-      BCS TOF1
-
-DOES  JSR PCPSH
-TOF1  PLA 
-      STA PC
-      PLA
-      STA PC+1
-      INC PC
-      BNE DS1
-      INC PC+1
-DS1   BCC VAR
-      JMP NEXT
-
-VAR3  LDA #6        ; 2
-      BNE VAR1
-
-VAR   LDA #2        ; 4
-VAR1  LDY JA+1      ; 4
-      CLC           ; 2
-      ADC JA        ; 4
-      TAX           ; 2
-      BCC PHAY      ; 3 17
-      INY           ; 
-PHYX  TYA           ; 2 
-PHAX  PHA           ; 3
-PHX   TXA           ; 2
-      PHA           ; 3 8
-
-NEXT  LDY   #0      ; 2
-NEXT1 LDA   (PC),Y  ; 5
-      STA   JA      ; 3
-      INY           ; 2
-      LDA   (PC),Y  ; 5
-      STA   JA+1    ; 3
-      SEC           ; 2
-      TYA           ; 2
-      ADC   PC      ; 4
-      STA   PC      ; 3
-      BCC   NXT1    ; 3
-      CLC           ; 
-      INC   PC+1    ; 
-NXT1  JMP   JA-1    ; 9  41
-
-EXEC  PLA 
-      TAX
-      PLA
-      STX JA
-      STA JA+1
-      JMP NXT1
-
-FROMF JMP (PC)
-
-PAR4Z PLA           ; 4
-      STA  ARW      ; 3
-      PLA           ; 4
-      STA  ARW+1    ; 3 14
-PAR2Z LDA   #0      ; 2
-      PHA           ; 3
-      PHA           ; 3 8
-PAR4  PLA           ; 4
-      STA   TOP     ; 3
-      PLA           ; 4
-      STA   TOP+1   ; 3 14
-PAR2  PLA           ; 4
-      STA   NXT     ; 3
-      PLA           ; 4
-      STA   MXT+1   ; 3 14
-JAMP  LDA   #2      ; 2
-JAMPZ CLC           ; 2
-      ADC   JA      ; 4
-      STA   JA      ; 3
-      BCS   P@@0    ; 2      
-P@@1  JMP   (JA)    ; 6  19  71
-P@@0  INC   JA+1
-      CLC
-      BCC   P@@1
-
-PMUL  DW    PAR4
-      LDY   #1
-      BNE   PMULZ
-
-D2DIV DW    PAR4
-      LDY   #1
-      BNE   D2DVZ
-
-UMMUL DW    PAR4Z   ; 71
-PMUL1 LDY   #16
-PMULZ LDA   NXT     ; 4
-      LSR           ; 2
-      BCC   D2DVZ   ; 2 3 
-      CLC           ; 2
-      LDA   TOP     ; 4
-      ADC   ARW     ; 4
-      STA   TOP     ; 4
-      LDA   TOP+1   ; 4
-      ADC   ARW+1   ; 4
-      STA   TOP+1   ; 4 26
-D2DVZ ROR   TOP+1   ; 4
-      ROR   TOP     ; 4
-      ROR   NXT+1   ; 4
-      ROR   NXT     ; 4 16
-      DEY
-      BNE   PMULZ   ; 3 880 480
-NXTP  LDA   NXT+1   ; 4
-      PHA           ; 3
-      LDA   NXT     ; 4
-      PHA           ; 3
-TOP   LDA   TOP+1   ; 4
-      PHA           ; 3
-      LDA   TOP     ; 4
-      PHA           ; 3
-      JMP   NEXT    ; 3 31 984 584
-
-SDIV  DW    PAR4
-      LDX   #1
-      BNE   SDIVZ
-
-MUDMZ DW    PAR4Z   ; (MU/MOD
-      BCC   SDIV1
-
-MUDM  DW    PAR4Z   ; MU/MOD
-SDIV1 LDX   #16
-SDIVZ ROL   NXT
-      ROL   NXT+1
-      ROL   TOP
-      ROL   TOP+1
-      SEC
-      LDA   TOP
-      SBC   ARW
-      TAY
-      LDA   TOP+1
-      SBC   ARW+1
-      BCC   PM2
-      STY   TOP
-      STA   TOP+1
-      INC   NXT
-      CLC
-PM2   DEX   
-      BNE   SDIVZ
-      JMP   NXTP   
-
-P2DIV DW    PAR4   ; 
-      LDA   TOP     ; 4
-      ADC   NXT     ; 4
-      STA   TOP     ; 4
-      STA   NXT     ; 4
-      LDA   TOP+1   ; 4
-      ADC   NXT+1   ; 4
-      STA   TOP+1   ; 4 26
-      STA   NXT+1   ; 4 26
-D2DVZ ROR   TOP+1   ; 4
-      ROR   TOP     ; 4
-      JMP   NXTP   
-      
-DPLUS DW    PAR4   ; 
-      LDY   #256-4
-DPL1  PLA
-      ADC   TOP-256+4,Y
-      STA   TOP-256+4,Y
-      INY
-      BNE DPL1
-      JMP   NXTP   
-
-DMINS DW    PAR4   ; 
-      LDY   #256-4
-      SEC
-DPL1  PLA
-      SBC   TOP-256+4,Y
-      STA   TOP-256+4,Y
-      INY
-      BNE DPL1
-      JMP   NXTP   
-
-DDUPW DW    PAR4   ; 
-      LDY   #3
-DPW1  LDA   TOP,Y
-      PHA
-      DEY
-      BPL   DPW1
-      JMP   NXTP   
-
-      
-
-
-
-
--------------------------------------------------------------
-*  JMP IF- RET IF +2/ +* -/ NAND PUSH POP AR XR @R+ !R+ DUP J
-* 
-
-DROPI INC   1,X
-DROP  INX           ; 2
-      LDA   255,X     ; 4
-      INX           ; 2
-      LDY   255,X     ; 4
-      RTS
-
-CMOVD:
-      JSR   DROPI
-      BEQ   MOVEX          
-MVLPD DEY
-      LDA   2,X
-      BNE   MVLPD1
-      DEC   3,X
-MVLPD1:
-      DEC   2,X
-      LDA   (2,X)
-      PHA
-      LDA   0,X
-      BNE   MVLPD2
-      DEC   1,X
-MVLPD2:
-      DEC   0,X
-      PLA
-      STA   (0,X)
-      DEY
-      BNE   MOVLP
-MOVEX:
-      DEC   255,X
-      BNE   MOVLP
-      RTS
-
-CMOVE:
-      JSR   DROPI
-      BEQ   MOVEX          
-MOVLP LDA   (2,X)
-      INC   2,X
-      BNE   MVLP1
-      INC   3,X
-MVLP1 JSR   STBP
-      DEY
-      BNE   MOVLP
-MOVEX:
-      DEC   255,X
-      BNE   MOVLP
-      RTS
-
-VAR   PLA
+VAR:  PLA
       CLC
       ADC   #1
       TAY
       PLA
+      BCC   VAR1
       ADC   #0
-      DEX           ; 2
-      STA   0,X     ; 4
-      DEX           ; 2
-      STY   0,X     ; 4
-      RTS
+VAR1  JMP   PUSHZ
 
-CONS  PLA
-      STA   P
+SETV: PLA
+      STA   JA
       PLA
-CONS1:
-      LDY   #2
-      STA   P+1
-      LDA   (P),Y
-      DEY
-      DEX           ; 2
-      STA   0,X     ; 4
-      LDA   (P),Y
-      DEX           ; 2
-      STA   0,X     ; 4
-      RET
-
-PEEK:
-      LDA   (0,X)
-      STA   0,X
-      LDA   #0
-      STA   1,X
-      RTS
-
-DEEK: JSR   LDAT
-      TAY
-      LDA   (0,X)
-      STA   1,X
-      STY   0,X
-      RTS
-
-LIT:  PLA
-      STA   P
-      PLA
-      JSR   CONS1    
-      SEC
-      LDA   P
-      ADC   2
-      STA   P
-      BCC   LIT1
-      INC   P+1
-LIT1: JMP   (P)
-      
-      
-LDDAT JSR   LDAT
-      TAY
-LDAT  LDA   (0,X)
-INCR  INC   0,X
-      BNE   INCR1
-      INC   1,X
-      RTS
-
-DUP   JSR   DUPW1   ; 26
-DUPW1 LDA   2,X     ; 4
-      DEX           ; 2
-      STA   0,X     ; 4
-      RTS
-NIP:
-      JSR   NIP1
-      TAY
-NIP1  LDA   2,X
-      PHA
-      LDA   0,X
-      STA   2,X
-      PLA
-      INX
-      RET
-STBP:
-      STA   (0,X)
-      JMP   INCR
-      
-STW:                ; !
-      LDA   2,X
-      JSR   STBP
-      LDA   3,X
-      STA   (0,X)
-DROP2:
-      INX
-      INX
-      INX
-      INX
-      RTS
-
-STB:                ; C!
-      LDA   2,X
-      STA   (0,X)
-      JMP   DROP2
-
-STP:                ; !+
-      JSR   SWAP
-SWPSTP:
-      JSR   DROP
+      STA   JA+1
+      JSR   POPZ
       PHA
       TYA
-      JSR   STAT
+      LDY   #4
+      STA   (JA),Y
+      INY
       PLA
-STAT  STA   (0,X)
-      JMP   INCR
+      STA   (JA),Y
+      RTS
 
-NOT   INX           ; 2
-      JSR   NOT1    ; 26
-      DEX           ; 2
-NOT1  LDA   0,X     ; 4
-      EOR   #255
-      STA   0,X     ; 4 
-      RTS           ; 6 20
+-------------------------------------------------------------
 
 PLUS  CLC           ; 2
       JSR PLUS1     ; 26
@@ -1307,62 +66,286 @@ SUB   SEC           ; 2
       JSR   SUB1    ; 26
 SUB1  LDA   2,X     ; 4
       SBC   0,X     ; 4
-      STA   2,X     ; 4 
       INX           ; 2
-      RTS           ; 6 20
-
-XORA  JSR XORA1     ; 26
-XORA1 LDA   0,X     ; 4
-      INX           ; 2
-      EOR   1,X     ; 4
       STA   1,X     ; 4 
       RTS           ; 6 20
 
-INOR  JSR INOR1     ; 26
-INOR1 LDA   0,X     ; 4
-      INX           ; 2
-      ORA   1,X     ; 4
-      STA   1,X     ; 4 
-      RTS           ; 6 20
+ANDW  JSR   DROP
+      AND   0,X
+      STA   0,X
+      TYA
+      AND   1,X
+      STA   1,X
+      RTS
 
-ANDA  JSR ANDA1     ; 26
-ANDA1 LDA   0,X     ; 4
-      INX           ; 2
-      AND   1,X     ; 4
-      STA   1,X     ; 4 
-      RTS           ; 6 20
+ORW   JSR   DROP
+      ORA   0,X
+      STA   0,X
+      TYA
+      ORA   1,X
+      STA   1,X
+      RTS
 
-SWAP  INX           ; 2
-      JSR SWAP1     ; 28
-      DEX           ; 2
-SWAP1 LDA   0,X     ; 4
-      LDY   2,X     ; 4
-      STA   2,X     ; 4
-      STY   0,X     ; 4 
-      RTS           ; 6 22 54
+XORW  JSR   DROP
+      XOR   0,X
+      STA   0,X
+      TYA
+      XOR   1,X
+      STA   1,X
+      RTS
 
-SWP   PLA           ; 4
-      TAX           ; 2
-      PLA           ; 4 10
-PHW   TAY           ; 2
-      LDA   TOP+1   ; 4
-      PHA           ; 3
-      LDA   TOP+1   ; 4
-      PHA           ; 3 13
-
-
-
+DECR: LDA   0,X     ; 4      DECREMENT & CHECK FOR NEGATIVE
+      BNE   DECR1   ; 3
+      DEC   1,X     ; 5
+DECR1 DEC   0,X     ; 5
+      RTS           ; 6  23
 
 -------------------------------------------------------------
 
-PLUS  CLC           ; 2
-      JSR PLUS1     ; 26
-PLUS1 LDA   0,X     ; 4
+NOT   JSR   DUP
+NAND  JSR   DROP
+      AND   0,X
+      XOR   #255
+      STA   0,X
+      TYA
+      AND   1,X
+      XOR   #255
+      STA   1,X
+      RTS
+
+POPA  LDA   1,X     ; 4   POP ADRESS FROM PSP
+      LDY   0,X     ; 4
+      STY   JA
+      STA   JA+1
       INX           ; 2
+      INX           ; 2
+      RTS
+
+NIP   LDA   3,X     ; 4
+      LDY   2,X     ; 4
+      PHA
+      TYA
+      PHA
+      LDA   1,X     ; 4
+      LDY   0,X     ; 4
+      INX           ; 2
+      INX           ; 2
+      STA   1,X     ; 4   SET TOP ELEMENT
+      STY   0,X     ; 4
+      PLA
+      TAY
+      PLA
+      RTS           ; 6  51
+
+DROP  LDA   0,X     ; 4
+      LDY   1,X     ; 4
+      INX           ; 2
+      INX           ; 2
+      RTS
+
+POPZ  LDA   1,X     ; 4
+      LDY   0,X     ; 4
+      INX           ; 2
+      INX           ; 2
+      RTS
+
+DUP   LDA   1,X     ; 4
+      LDY   0,X     ; 4
+PUSHZ DEX
+      DEX
+SETOP STA   1,X     ; 4   SET TOP ELEMENT
+      STY   0,X     ; 4
+      RTS
+
+POP   PLA
+      STA  JA
+      PLA
+      STA  JA+1
+      PLA
+      TAY
+      PLA
+      JSR   PUSHZ
+      JMP   RETJA
+
+PUSH  PLA
+      STA  JA
+      PLA
+      STA  JA+1
+      JSR   POPZ
+      PHA
+      TAY
+      PHA
+      JMP   RETJA
+
+LIT   PLA
+      STA  JA
+      PLA
+      STA  JA+1
+      STX   PSP
+      LDX   #JA
+      DEX           ; 2
+      DEX           ; 2
+      JSR   PLDJAB0
+      STA   0,X     ; 4
+      JSR   PLDJAB
+      STA   1,X     ; 4
+RETJA:
+      INC   JA
+      BNE   RETJ
+      INC   JA+1
+RETJ  JMP   (JA)
+
+AR    SEC
+      BCS   XRZ
+ARZ   LDA   ARW+1   ; 4
+      PHA
+      LDA   ARW     ; 4
+      PHA
+      LDA   RSP
+      STY   ARW     ; 4
+      STA   ARW+1   ; 4
+      JMP   RETJA
+
+XR    CLC
+XRZ   PLA
+      STA  JA
+      PLA
+      STA  JA+1
+      PLA
+      TAY
+      PLA
+      STA   RSP
+      BCS   ARZ
+      LDA   1,X     ; 4
+      PHA
+      LDA   0,X     ; 4
+      PHA
+      LDA   RSP
+      STA   1,X     ; 4
+      STY   0,X     ; 4
+      JMP   RETJA
+
+PMULZ LDA   2,X     ; 4
+      LSR           ; 2
+      BCC   D2DVZ   ; 2 8 
+      CLC           ; 2
+      LDA   0,X     ; 4
+      ADC   ARW     ; 4
+      STA   0,X     ; 4
+      LDA   1,X     ; 4
+      ADC   ARW+1   ; 4
+      STA   1,X     ; 4 26
+D2DVZ ROR   1,X     ; 4
+      ROR   0,X     ; 4 
+      ROR   3,X     ; 4
+      ROR   2,X     ; 4
+      RTS           ; 6 22
+
+MUDM  CLC           ; 2
+      ROL   2,X     ; 5
+      ROL   3,X     ; 5
+      ROL   0,X     ; 5 
+      ROL   1,X     ; 5
+      SEC           ; 2
+      LDA   0,X     ; 4
+      SBC   ARW     ; 4
+      TAY           ; 2
+      LDA   1,X     ; 4
+      SBC   ARW+1   ; 4
+      BCC   PM2     ; 3
+      STY   0,X     ; 4
+      STA   1,X     ; 4
+      INC   2,X     ; 5
+PM2   RTS           ; 6 /61
+
+P2DIVZ:
+      CLC           ; 2
+      LDA   2,X     ; 4
+      ADC   0,X     ; 4
+      STA   2,X     ; 4
+      STA   0,X     ; 4
+      LDA   3,X     ; 4
       ADC   1,X     ; 4
-      STA   1,X     ; 4 
-      RTS           ; 6 20
+      STA   3,X     ; 4
+      STA   1,X     ; 4    
+      ROR   1,X     ; 4
+      ROR   0,X     ; 4
+      RTS
 
+ZTEST LDA   0,X  
+      ORA   1,X
+      RTS
+
+K     LDA   #7
+      BNE   JZ
+
+I     LDA   #3
+      BNE   JZ
+
+J     LDA   #5
+JZ    STX   PSP     ; !!!
+      TSX
+      STX   JA
+      CLC
+      ADC   JA
+      TAX
+      STX   RSP     ; !!!
+      LDY   $100,X
+      LDA   $101,X
+PSHZ  LDX   PSP     ; !!!
+      JMP   PUSHZ
+
+LDJA  STX   PSP     ; !!!
+      LDX   #JA
+LDWP  JSR   LDBP
+      TAY
+LDBP  LDA   (0,X)   ; 4
+INCR  INC   0,X
+      BNE   INCR1
+      INC   1,X
+INCR1 RTS
+
+STJA  STX   PSP     ; !!!
+      LDX   #JA
+STWP  PHA
+      TYA
+      JSR   STBP
+      PLA
+STBP  STA   (0,X)   ; 4
+      JMP   INCR
+
+
+RSTP  CLC
+RSTPZ PLA
+      STA   TMP     ; !!!
+      PLA
+      STA   TMP+1     ; !!!
+      PLA
+      STA   JA
+      PLA
+      STA   JA+1
+      BCS   RLDPZ
+      JSR   POPZ
+      JSR   STJA
+      LDX   PSP
+      JMP   STRTZ
+
+RLDP  SEC
+      BCS   RSTPZ
+RLDPZ STX   PSP     ;  !!!
+      JSR   LDJA    ;  
+      JSR   PSHZ    ;  
+STRTZ:LDA   JA+1    ;  4
+      PHA           ;  3
+      LDA   JA      ;  4
+      PHA           ;  3
+      LDA   TMP+1   ;  4
+      PHA           ;  3
+      LDA   TMP     ;  4
+      PHA           ;  3
+      RTS           ;  6  34
+      
+LDP:  JSR   STR     ; @+
 SWAP  INX           ; 2
       JSR SWAP1     ; 28
       DEX           ; 2
@@ -1372,4 +355,42 @@ SWAP1 LDA   0,X     ; 4
       STY   0,X     ; 4 
       RTS           ; 6 22 54
 
+STP:  JSR   NIP     ; !+
+      JMP   STWP
+
+STR:  JSR   LDWP    ; STR
+      JMP   PUSHZ
+
+CSTR: JSR   LDBP    ; CSTR    (COUNT)
+PUSHB:TAY
+      LDA   #0
+      JMP   PUSHZ
+
+CSTP: JSR   NIP     ; C!+
+      TYA
+      JMP   STBP 
+
 -------------------------------------------------------------
+
+DEEK  JSR   LDWP      ; @
+      JMP   SETOP 
+
+DOKE  JSR   NIP       ; !
+      JSR   STWP
+      INX
+      INX
+      RTS
+
+PEEK  JSR   LDBP      ; C@
+      TAY
+      LDA   #0
+      JMP   SETOP 
+
+POKE  JSR   NIP       ; C!
+      TYA
+      JSR   STBP
+      INX
+      INX
+      RTS
+
+
