@@ -362,18 +362,23 @@ Start   Label byte
 	pop ax
 	mov		cx,di
 	sub		cx,ax		; LENGTH OF THE WORD
-	SKIPA
-	
-  XT	MAKESTR,@_Bnip_
-	and Cx,127			; CUT LEN TO 127
-	mov		bx,@_dict
-	lea		BX,[BX-4]	;
-	mov		DI,BX
-	mov pb [DI],'`' 	;after str flag
-	mov	pw [DI+2],0	
-	DEc		BX
-	sub		bx,cx
-	mov [BX],CL                ; SET strlen
+  SKIPA
+
+  XT	MAKESTR,@_bnip_
+  mov   CH,0
+	mov		di,@_dict
+	DEc		di
+	mov   pb [di],'`' 	;after str flag
+  push  CX
+  call  @_CPUSHU
+  mov   BX,di
+  pop   AX
+  STOSB             ; STORE LENGTH OF THE NAME
+  RET
+
+  XT    CPUSHU,@_cnip_
+  mov   DI,bx
+  SUB   BX,CX
 @_CPUSHU:
 	ADD  AX,CX
 @_CMOVEU:
@@ -387,11 +392,6 @@ Start   Label byte
 	CLD
 @_troff: 
 	RET
-
-  XT    CPUSHU,@_cnip_
-	MOV DI,BX
-	sub	BX,CX
-	JMPS @_CPUSHU
 
   xt	CMOVEU,@_DROP_3
 	JMPS @_CMOVEU

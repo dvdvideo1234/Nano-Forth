@@ -23,6 +23,7 @@ R14L    EQU  $1C
 R14H    EQU  $1D
 R15L    EQU  $1E
 R15H    EQU  $1F
+VECT    equ  $22
 SAVE    EQU  $FF4A
 RESTORE EQU  $FF3F
 
@@ -95,7 +96,7 @@ INRZ    INC  R0L,X          ;  ZERO
 INR2    RTS
 
 
-; THIS TABLE MUST BE ON START OF THE PAGE
+; THIS TABLE MUST BE ON START OF THE PAGE  (xx00h)
                      
 BRTBL: 
       DW    RTN          ;0  
