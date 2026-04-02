@@ -69,11 +69,12 @@ Start   Label byte
 @_MAINLP DW INIT,EVAL,OK,BR,@_MAINLP
 
 OPERATION DW @_WARY    
-      ; INTERPRET   ; COMPILE
-        DW NUMBER	  , COMP_NUM	    
-        DW PERFORM  , ATCOMMA	  ; COMPILE 
+      ; INTERPRET   , COMPILE   ;
+        DW NUMBER	  , COMP_NUM  ; |
+      ;-------------------------;---------
+        DW PERFORM  , ATCOMMA   ; | COMPILE 
 
-  XT STP,@_NIP            ; (C!+
+  XT STP,@_NIP            ; (!+
   MOV   [TOP],CX
 @2p:
   inc   top
@@ -97,7 +98,7 @@ OPERATION DW @_WARY
 
 @_NIP:
   to_r  W
-  mov	CX,NR
+  mov	TR,NR
   JMPS @_NR_NIP  
   
 @__DROP:
@@ -154,37 +155,23 @@ OPERATION DW @_WARY
   ;-------------------  NUMBER  ------------
          ; adr count base  / num flag -> =0 ok
 
-; ip  = si        ; for interpretter
-; w   = di
-; dsp = ax
-; rsp = sp
-; top = Bx
-; AR  = BP
-; 
-; topL = BL
-; toph = Bh
-; NR   = DX
-; NRL  = DL
-; NRH  = DH
-; TR   = CX
-; TRH	 = CH
-; TRL  = cl
-; 
-; nbase = bx      ; for number utility
-; nacc  = di
 
 @NUM:
   CALL  @@numini
   CALL  @@END?
-  CMP   AL,'-'     ; SGN
-  JNE   @@nOSIGN
   CALL  @@SGN
 @@NUMZ:
   CALL  @@END?
-@@nOSIGN:
   CALL  @@N0
   JMPS  @@NUMZ
 
+@@SGN:
+  CMP   AL,'-'     ; SGN
+  JNE   @@n0
+  POP   dX
+  CALL  dX         ; return to caller
+  NEG   nacc
+  RET
 @@n0:
   JCXZ  @@N5
   cmp  al,'#'     ; BASE := nbase
@@ -244,11 +231,6 @@ OPERATION DW @_WARY
   INC   CX
 @@EXNUM:
   pop   dx    ; rdrop
-  RET
-@@SGN:
-  POP   dX
-  CALL  dX         ; return to caller
-  NEG   nacc
   RET
 @@END?:
   JCXZ  @@ERNUM
@@ -454,11 +436,11 @@ BYE: DW 0
         DW TOKEN?,DLDB,P1,DPUSH
 		DW DICTX,ZSWAP,STM,STM,EXIT
 
-  COL TOKEN?	; TOKEN? ( - TADR )
-        DW XTOK?       ; IS IT A TOKEN IN THE BUFFER ?
+  COL TOKEN?	; TOKEN? ( - TADR )  ; IS IT A TOKEN IN THE BUFFER ?
+        DW XTOK?       
   COL TOKEN	; TOKEN ( - TADR )
         DW LIT,32
-  COL WORD	;  ( CHAR - TADR )
+  COL WRD	;  ( CHAR - TADR )
         DW XSETSTR     ; SET TEXT TO BUF AFTER PARSING
   COL PARSE	; PARSE ( CHAR ADRBUF LENBUF - ATOK LTOK LENBUF1
         DW SOURCE,LTIB,PARS,to_+LTIB,EXIT  ; PARSE
@@ -671,11 +653,8 @@ BYE: DW 0
 
 ; CONTROL      COMMANDS
 
-  XT  PERFORM,@__DROP    ; @EXEC
-  jmps  @_DEFER
-
 @_DEFERO:
-  INC   PW [VL_+CNTC]
+  INC   PW VL_+CNTC
 @_DEFER:
   MOV   W,[W]
 @_EXEC:
@@ -683,6 +662,15 @@ BYE: DW 0
 ;  JZ    @_MAIN
   W2
   JMP   [W-2]
+
+  XT  EXECUTE,@__DROP      ; EXECUTE
+  JMPS  @_NESTZ
+
+  XT  EXEC,@__DROP       ; EXEC
+  jmps  @_EXEC
+
+  XT  PERFORM,@__DROP    ; @EXEC
+  jmps  @_DEFER
 
 @nest3:
   w2
@@ -692,12 +680,6 @@ BYE: DW 0
   SKIPB
   DB 1
   JMPS @_NESTZ  
-
-  XT  EXECUTE,@__DROP      ; EXECUTE
-  JMPS  @_NESTZ
-
-  XT  EXEC,@__DROP       ; EXEC
-  jmps  @_EXEC
 
 ; MAIN  LOOP
 
@@ -737,7 +719,11 @@ BYE: DW 0
   ADD   top,W
   JMPS  @_MAIN
 
-  PRIM  IFM
+XT  IFM,@_IFM
+
+PRIM  MIF
+  inc   TOP
+@_IFM:
   dec	TOP
   JNS    @_JUMP
 @_SKIP:
@@ -746,7 +732,7 @@ BYE: DW 0
   JMPS  @_MAIN
 
   XT  BR?,@__DROP      ; (IF
-	OR DI,DI
+	OR    W,W
   JNE   @_SKIP
 @_JUMP:    ; (JUMP
   MOV   IP,[IP]
@@ -762,15 +748,15 @@ BYE: DW 0
   r_to  TR
   JMPS  @_MAIN
 
-  XT  xorW,@NIP       ; xor
-  XOR  TOP,TR
-  JMPS  @_MAIN
-  
-  XT  NAND,@_NIP
-  AND  TOP,TR
-@NOT:
-  NOT   TOP
-  JMPS  @_MAIN
+;  XT  xorW,@NIP       ; xor
+;  XOR  TOP,TR
+;  JMPS  @_MAIN
+;  
+;  XT  NAND,@_NIP
+;  AND  TOP,TR
+;@NOT:
+;  NOT   TOP
+;  JMPS  @_MAIN
 
   PRIM ZEQ            ; 0=
   SUB   top,1
