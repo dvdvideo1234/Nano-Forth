@@ -1,0 +1,213 @@
+ MARKER -TARGET
+  PREVIOUS
+VOCABULARY TCOMP
+ASSEMBLER ALSO
+
+TCOMP ALSO   DEFINITIONS
+
+|   32768 CONSTANT MSB
+|  MSB 1-  CONSTANT -MSB
+
+  VARIABLE LX
+
+: CODE, HEADER , ;
+| : @LITERAL @ [',] LITERAL ;
+| : @, @ , ;
+\ 10 WARY ADR:  10 WARY VAL:
+: ALIGNED HERE SWAP ALIGN TO HERE ;
+\ | :  GET:   0 DO ' 2+ DUP  I ADR: ! @  I VAL: ! LOOP ;
+\  : RESET:   0 DO I VAL: @  I ADR: @ ! LOOP ;
+\  :   SET:   0 DO ' EXEC    I ADR: @ ! LOOP ;
+\   10 GET: AGAIN SKIP UNTIL IF -UNTIL -IF ;M DO: [LIT] OF
+: (( HEADER COMPILE [ ' DO: @, ] , , IMMEDIATE ;
+| : CONST CREATE LX LINK+ , , DOES> 2+ DUP 1+! 2+ @LITERAL ;
+| : <F> <% CONST IMMEDIATE %> ;   | : <00F> 0 0 <F> ;
+
+ <%
+  ' IOV @
+  1 NM: HERE 2+ SWAP! ;M
+  2 NM: @LITERAL ;M
+   HEADER JUSTIFY , , , 0 ,  IMMEDIATE
+ %>
+: RDROPS CO RDROP ;
+| : DUPE? RDROPS RESCAN 0>=
+    IF 2DROP ;THEN STR ROT - IF DROP ;THEN  RDROP
+   2+ STR 0< A" DUP! " MSB OVER 2- XOR!  HERE   ;
+| : ?REL HERE SWAP  IF OVER 2+ - THEN ;
+| : A?REL DUP 1- C@ 1 OR $ E9 XOR 0= ?REL ;
+: FW <00F> TO JUSTIFY
+       DOES> 2+ DUP 1+! STR 0<
+      IF @, ;THEN LINK+ ;
+
+: ?FW JUSTIFY DUPE?  N>C SWAP
+    BEGIN OVER TO >< ?DUP -UNTIL DROP ;
+
+: FL <00F> TO JUSTIFY
+       DOES> 2+ DUP 1+! STR 0<
+      IF @LITERAL ;THEN  ?E ' CASE
+       ['] JMP,  OF BCOMPILE [ $ E9 C, ]
+        LINK+ ENDOF
+       ['] CALL, OF BCOMPILE [ $ E8 C, ]
+        LINK+ ENDOF
+       [']   DW, OF LINK+ ENDOF
+       A" NO LBL OP!" ENDCASE ;
+| : ?FL JUSTIFY DUPE? BEGIN TO >< ?DUP
+      WHILE A?REL REPEAT
+  ( !!! BLWORD DROP ) BLWORD DROP RDROP ;
+
+
+  : C: MSB <F> ;   : L: ?FL HERE C: ;   : +C: 2+ DUP C: ;
+ | : ?TAB 52 OUTC < IF CR ;THEN 26 OUTC OVER MOD - SPACES  ;
+ | : VIEWER: : DOES> PUSH  CR LX @ SKIP BEGIN
+   STR SWAP DUP @ R@ EXECUTE THEN ?DUP -UNTIL RDROP ;
+ | : ?NODE. 0= IF  DUP STR .H @ .H 4 - ?ID. ?TAB ;THEN DROP ;
+ VIEWER:  TLIST.  DUP XOR ?NODE. ;
+ VIEWER:  UNDEF.  0< ?NODE. ;
+ VIEWER: UNUSED.  -MSB AND ?NODE. ;
+ \ PREVIOUS
+  VOCABULARY KERNEL   KERNEL ALSO F83 PRUNE
+
+
+FORTH'   DoVoc,dodef,dovar,lastw,0
+ABORT  A"  ?,   (" (". ".    (LIT")   (".   ".
+: >MARK  HERE COMPILE [ 0 , ] ;
+: ALIAS ENTRY COMPILE #ALI , ;
+: D+  PUSH SWAP PUSH + POP POP +? ;
+: S>D DUP 14 FOR 2/ NEXT ;
+: M+ S>D D+ ;
+
+
+
+
+
+
+
+
+
+\ QUERY'
+: ?LITERAL DBL 1+ IF SWAP DUP [',] LITERAL
+          THEN DROP [',] LITERAL ;
+: LITERAL STATE IF [',] [LIT] THEN ; IMMEDIATE
+: INTERPRET BEGIN BEGIN -FIND
+           ?DUP IF ?,  AGAIN THEN
+      NUM ?? ?LITERAL  AGAIN ;
+: ?SOURCE  1  -1  WITHIN IF BLK BLOCK 1K ;THEN TIB SPAN ;
+: ?DELIM OVER  +
+: WORD ?SOURCE >IN - DUP PUSH + A! POP
+   FOR C@A 0=
+BLWORD
+(word
+ -FIND
+FIND
+
+\   USE:  DO: [LIT]   ;M
+:  [ 0 TO STATE ; IMMEDIATE
+: ] -1 TO STATE ;
+:  BINARY    2  TO  BASE ;
+:  HEX      16  TO  BASE ;
+:  DECIMAL  10  TO  BASE ;
+:  NUMBER  PUSH PUSH BASE  0 R@ C@ C" - CASE
+    C"  - OF -1 OR   ENDOF  C" $ OF HEX     ENDOF
+    C"  # OF DECIMAL ENDOF  C" % OF BINARY  ENDOF
+  0 DUP     POP POP ROT IF 1- PUSH 1+ POP
+
+
+: CONVERT FOR C@A+ ?DIGIT INV -IF INV M+ NEXT ;THEN
+
+: NUMBER OVER C@ C" - = DUP TO DPL  \ SIGN
+     IF 1 /STRING  THEN  DPL -ROT -1 TO DPL  \ 1 STEP FORWARD
+   PUSH A! 0 0 POP  CONVERT
+
+
+
+: ENTRY  CURRENT @ BLWORD DUP CURRNT ! ", , ;
+: HEADER ?NONAME  ?DUP IF 1- TO ?NONAME HERE  TO CFA
+            TO VSWAP  CFA ALIAS  TO VSWAP ;THEN
+   ENTRY HERE TO CFA ;
+: CREATE HEADER COMPILE #VAR ;
+: ;        SMUDGE [',] ;M  ;     IMMEDIATE
+: : HEADER SMUDGE [',] DO: ;
+: ;CODE  COMPILE ;code [',] [  ASM ;  IMMEDIATE
+2: DOES> :3 :4 COMPILE ;code
+      #VAR  232 C, HERE 2+ - , ;      IMMEDIATE
+: ;code POP  CFA ! ;
+
+
+
+
+
+: LB> 255 AND ;
+: 256* 8 FOR 2* NEXT ;
+: HB> -256 AND ;
+: 256/ 8 FOR 2/ NEXT ;
+: C@W 1- @ 256/ ;
+: C@ @ LB> ;
+: >< DUP 256* PUSH 256/ LB> POP XOR ;
+: +!   A! @A   + !A ;
+: -!   A! @A   - !A ;
+: XOR! A! @A XOR !A ;
+: C! A! LB> @A HB> XOR !A ;
+
+0 VALUE ?NONAME
+0 VALUE CFA
+0 QUAN  HERE
+0 VALUE SCRH
+0 VALUE CURRENT
+0 VALUE CONTEXT
+0 VALUE FIRST      (  BUFFERS)
+0 VALUE LAST
+
+: ALLOT AT HERE +! ;
+: ", C@ 1+ ALLOT ;
+: C, HERE C! 1 ALLOT ;
+: , DUP C, 256/ C, ;
+: D, , , ;
+: BCOMPILE @R C, POP 1+ PUSH ;
+: COMPILE  @R DUP !R+ , ;
+: DCOMPILE  @R DUP !R+ , @R DUP !R+ , ;
+
+
+\ CHARS
+\ : CHARS 1+ SWAP DO I EMIT LOOP ;
+\ (")  ; (LP  (DO  (FOR
+\  (OF  (BR   BRANCH  0BRANCH  -BRANCH  EXIT  R4TH>
+
+\ IMMEDIATE  SMUDGE
+: >MARK HERE COMPILE [ 0 , ] ;
+
+
+
+
+
+
+
+
+
+\ ERRORS
+: ?? A" Not Found" ;
+: ?C STATE 0= A" COMPILING ?" ;
+: ?E EXECUTING ?" ;
+: ?= - A" UNPAIRED" ;
+: TO: CREATE C, IMMEDIATE DOES> C@ ?' PUSH + POP ?, ?;
+  2 TO: TO   4 TO: AT
+: ' ?' DROP ;
+: [TO:] TO: DOES> ' + , ; IMMEDIATE
+
+  0 [TO:] [',]    2 [TO:] [TO]    4 [TO:] [AT]
+
+: FIND PUSH -1 ORDER# @T+ FOR @T+ @ SWAP NEXT
+      DROP CONTEXT @   (FIND TO ?, ;
+
+\ DONE LIST
+
+\ TO DO LIST
+BLOCK  WORD  FIND   '     [']   ?'    ?,
+[      ]     W"     B"    BZ"   ",    B",  W",  ALLOT
+C@     1+    C@T+   C,    FOR   NEXT
+CREATE DOES> HEADER EXEC  ALIAS CFA   VSWAP
+
+
+
+
+
+

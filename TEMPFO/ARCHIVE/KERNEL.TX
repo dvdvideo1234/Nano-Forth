@@ -1,0 +1,350 @@
+\  FORWARD DEFINITIONS    LABELS & WORDS
+ F83  ' , 2+ ALIAS COMPILE
+
+ KERNEL  DEFINITIONS  -MAC
+FL ;#     FL JUMP#  FL OF#
+FL <JSR    FL IF#    FL EXEC#
+FL @IP#    FL NEXT#  FL -IF#
+FL _TOP    FL <VAR   FL <DOES
+FL <MAIN   FL <EX  \ FW COMPILE
+FL <WARY   FL <PUSH  FL <DROP
+FL <SWAP   FL <DBG   FW ;CODE
+FL <TRONX
+
+
+
+\  FORWARD DEFINITIONS CONTINUE ...
+\  USER VARIABLE'S OFFSETS  :=: CONSTANTS
+\  EASY  TO CHANGE OFFSETS
+
+0
++C: ->TASK     +C: -<TASK     +C: ->SP       +C: >S0
++C: >R0        +C: >FRAME     +C: >SELF      +C: >HDR
++C: >H         +C: >BASE      +C: >OUT       +C: >BLK
++C: >>IN       +C: >TIB       +C: >STATE     +C: >HOLD
++C: >SCR       +C: >CSP       +C: >DBL       +C: >SPTR
++C: >MPTR      +C: >MTOP      +C: >RPTR      +C: >VLINK
++C: >CURRENT   +C: >CONTEXT   +C: >AX_R      +C: >BX_R
++C: >CX_R      +C: >DX_R      +C: >ER_R      +C: >ER_A
++C: >?USER
+DROP
+
+
+
+ASM   256 ALIGNED \ KERNEL SOURCE IN ASSEMBLER
+
+L: START/   CLD, JMP,F 1
+L: _BOOT 0 DW,     L: _COLD 0 DW,
+L: _WARM 0 DW,     L: _USER 0 DW,
+L: _OF    OF# DW,  L: _JUMP JUMP# DW,  L: _IF     IF# DW,
+L: _-IF   -IF DW,  L: _JSR   <JSR DW,  L: _LIT   @IP# DW,
+L: _EXIT   ;# DW,  L: _NEXT NEXT# DW,  L: _EXEC EXEC# DW,
+L: _ARME 0 DW,    L: _DERR 0 DW,
+L: _PRSC 0 DW,
+L: _EMIT 0 DW,     L: _KEY  0 DW,  L: _?KEY 0 DW,  \ IO
+L: _VSEG 0 DW,     L: _VATR 0 DW,  L: _CRRY 0 DW,  \ VIDEO
+L: _DSTEP <TRONX DW,  0 DW,  _JUMP DW, _DSTEP DW,  \ DEBUG
+L: FSTAT  <VAR DW, L: _AX   0 DW,  L: _SI   _DSTEP 2+ DW,
+
+ FL! 1   NOP,     CALL,F 1      L: _ORIG <WARY DW,
+\ 6    >TASK <TASK        >SP    S0      R0
+0 DW, $ FE00 DW, $ FE00 DW, $ FA00 DW, $ FA00 DW,  $ F400 DW,
+\ FRAME  SELF HDR H BASE OUT BLK >IN
+ 0 DW,  0 DW, 0 DW,  _TOP DW, 10 DW, 0 DW,  0 DW,  0 DW,
+\ TIB STATE HOLD SCR CSP DBL
+ 0 DW,  0 DW, 0 DW,  0 DW,   0 DW,  0 DW,
+\ SPTR MPTR MTOP RPTR
+ 0 DW,  0 DW, 0 DW, 0 DW,
+\ AX_R   BX_R   CX_R   DX_R   ER_R   ER_A
+ 0 DW,  0 DW,  0 DW,   0 DW,   0 DW,   0 DW,
+
+\ +C: >VLINK  +C: >CURRENT     +C: >CONTEXT
+
+FL! 1
+      SI POP,       -2 /SI CX MOV,
+   2 /SI DI MOV,    DI _USER /// MOV,
+   REP, AL MOVS,    AX AX XOR,
+ $ 80 #, SI MOV,      -168 #, DI MOV,
+ AL LODS,    AX BX MOV,
+   AH 0 X/S MOV,        1 /BX CX LEA,
+  REP,  AL MOVS,    $ 1000 #, BX MOV,
+ $ 4A #, AH MOV,       33 INT,
+
+
+<%
+ : CRY@ _CRRY /// AX MOV, SAHF, ;  : DROP, BX POP, ;
+ : SCASW,2 SCASW, SCASW, ; : SCASW,3 SCASW,2 SCASW, ;
+ : DUP, BX PUSH, ; : CRY! LAHF, AH _CRRY 1+ /// MOV, ;
+ : <J>  CONSTANT DOES> @ JMP, ;    : H>J, HERE <% <J> %> ;
+%>
+
+\ Arithmetic
+L: +*# 1 #, DL TEST, 0=, NOT, IF, AX POP,    AX BX ADD,
+  AX PUSH, THEN, 1 #, BX RCR, 1 #, DX RCR, -?, IF,
+L: +?#  CRY@ AX POP, AX BX ADC,   -?, IF, ( 14  + )
+L: ;#    0 /BP SI MOV,
+L: <RDROP   BP INC,   BP INC,        -?, FB, 0   ( 0 ; )
+L: POP#     DUP, 0 /BP BX MOV,  <RDROP JMP,    ( 19  pop)
+L: JUMP# LODSW,         -?, FB, 2   ( 2 JUMP v)
+
+
+L: OF#        AX POP,  AX BX XCHG,
+      BX AX  XOR, JUMP# JNZ,  DROP,
+L: <SKIP    LODSW,         -?, FB, 62
+L: DUP#  DUP,        -?, FB,  18    ( 18  dup)
+L: 2*# 1 #, BX SHL,       -?, FB,  11    ( 11  2*)
+L: 2/# 1 #, BX SAR,       -?, FB,  12    ( 12  2/)
+L: INV#     BX COM,       -?, FB,  13    ( 13  - )
+L: IF#    LODSW,  BX BX OR,   0=, FB, 6  -?, FB, 36  ( 6 IF)
+L: -IF#   LODSW,  BX BX OR,   0<, FB, 7  -?, FB, 37 ( 7 -IF)
+L: NEXT#  LODSW,   -1 #, CX MOV, CX W/ 0 /BP ADD,
+       <RDROP JNB,   -?, FB, 5  ( 5 NEXT )
+L: AND# AX POP,  AX BX AND, -?, FB, 15   ( 15  AND)
+L: OR#  AX POP,  AX BX XOR, -?, FB, 16   ( 16  OR )
+
+
+L: +#   AX POP,   AX BX ADD,
+  THEN, THEN,  CRY!   -?, FB,  14    ( 14  + )
+L: RPUSH#   AX POP,   AX BX XCHG,   SKIP1,  ( 1d puSH)
+L: CALL#    LODSW,  L: <RPUSH   AX SI XCHG,  ( 3 CALL )
+L: <PCPUSH  BP  DEC,  BP DEC, SI 0 /BP MOV,
+     FB! 2  FB! 6  FB! 7  FB! 5  ( JUMP#  IF  -IF )
+L: <JUMP    AX SI XCHG, -?,  IF,
+H>J, >PUSH,   L: <PUSH    DUP,
+H>J, >SWAP,   L: <SWAP    AX BX XCHG, \  SKIP2,
+\ H>J, >2DROP, L: <2DROP   DX POP,
+   FB! 11 FB! 12  FB! 13  FB! 15 FB! 16  FB! 37   THEN,
+   FB! 14 FB! 0   FB! 62  FB! 18   FB! 36
+H>J, >NEXT,   L: <MAIN  AX LODS,
+
+
+L: <EX        AX DI XCHG, 0 /DI JMP,   <DBG  JMP,
+L: CALL>F    AX POP,    <PCPUSH JMP,
+L: SP@#   DUP,  SP BX MOV,   >NEXT,    (  SP@   )
+L: SWAP#  AX POP,       >PUSH,
+L: RP@#   BP AX MOV,       >PUSH,    (  RP@   )
+L: A@#    DX AX MOV,       >PUSH,    (   A@   )
+L: @IP#       LODSW,       >PUSH,    (   @P   )
+L: @P#   AX IN,       >PUSH,
+L: OVER#  AX POP,   AX PUSH, >PUSH,    ( 1a oveR)
+L: >FORTH    AX POP,    <JUMP   JMP,
+L: C@IP#     AL LODS,
+H>J, >BPUSH,  L: <BPUSH 0 #, AH MOV, >PUSH,
+
+
+L: C@P#   AL IN,       >BPUSH,
+L: !#      BX DX MOV,  DROP,         ( 1e b!)
+L: !A#      DX DI MOV,       -?, IF,   ( 0f ! )
+L: !A+#     DX DI MOV, 2 #, DX ADD,     -?, IF,   ( 0D !+)
+SCASW,3    THEN, THEN,
+L: <STORE   BX 0 /DI MOV,
+H>J, >DROP,   L: <DROP   DROP,  >NEXT,
+SCASW,3    L: <DOES AX POP,   DUP, DI BX MOV,  <PCPUSH JMP,
+
+SCASW,3   H>J, >VAR,   L: <VAR AX DI XCHG, >PUSH,
+SCASW,3  SCASW,        L: <JSR AX DI XCHG, <PCPUSH JMP,
+
+L: @R#   0 /BP DI MOV,     -?, IF,     ( 08 @R)
+L: @A+#  DX DI MOV,  DX INC, DX INC,   -?, IF,     ( 09 @+)
+L: @#   BX DX MOV,  DROP,         ( 1e b!)
+L: @A#   DX DI MOV,     -?, IF,     ( 0b @ )
+SCASW,3  THEN, THEN, THEN,
+L: <FETCH   DUP, 0 /DI BX MOV,  >NEXT,
+L: SP!#   BX SP MOV,       >DROP,
+L: RP!#   BX BP MOV,       >DROP,    ( 1F   A!)
+L: A!#    BX DX MOV,       >DROP,    ( 1F   A!)
+L: C!P#  BX AX MOV, AL OUT,  >DROP,
+L:  !P#  BX AX MOV, AX OUT,  >DROP,
+L: !R+#   0 /BP SI XCHG,  BX 0 /SI MOV, DROP, LODSW, ( 0C !R)
+L: ;:#    0 /BP SI XCHG,    >NEXT,        ( 1  ;:)
+L: <USER!   _USER DI MOV, <STORE JMP,
+L: C!A+# DX DI MOV,  BL 0 /DI MOV, DX INC,   >DROP,
+L: C@T+#    0 /BX AL MOV,  BX INC,   >BPUSH,
+L: @T+#    BX SI XCHG,  LODSW,  BX SI XCHG, >PUSH,
+
+L: <ALI  SKIP2,  SCASW,3
+L: <@EXEC  0 /DI AX MOV,  AX AX OR,  0=, IF,  >NEXT,
+L: <PERFORM   BX DI MOV,  DROP,       <@EXEC JMP,
+L: EXEC#     AX BX XCHG,  DROP,   THEN,  <EX JMP,
+SCASW,3
+L: <EXEC AX DI XCHG, <EX JMP,
+
+\ DOS INTERFACE
+L: <DOS  AX BX XCHG,  DROP,  CX POP,  DX POP, ( A!)
+ $ 21 INT,  AX PUSH,  DUP,   CX PUSH, DX PUSH,    U<, NOT,
+ IF,  AX AX XOR, THEN,   AX BX XCHG,  >NEXT,    H>J, >USER,
+
+L: XUSER   CX PUSH, 2 /DI DI MOV,  _USER /// DI ADD, RET,
+L: <USER   <VAR   #, CX MOV,  >USER,
+      SCASW,2
+L: <@USER  <FETCH #, CX MOV,  >USER,
+      SCASW,
+L: <!USER  <STORE #, CX MOV,  >USER,
+L: <TROFF LODSW, -?, FB, 63
+L: <TRONX LODSW,
+L: <DBG $ 2E #, <EX /// XOR,  FB! 63
+    _AX #,  DI  MOV,  AX 2 /DI XCHG,
+     SI 4  /DI XCHG,     AX DI XCHG, 0 /DI JMP,
+\  ARRAYS
+L: _TARY  1 #, BX SHL,
+L: _5ARY    BX DI ADD,
+L: _QARY  1 #, BX SHL,
+L: <WARY  1 #, BX SHL,
+L: _BARY    BX DI ADD,
+L: _2+      BX    INC,
+L: _1+      BX    INC,   >NEXT,
+
+ (  1 8 +THRU HERE START/ - . )   END-CODE
+
+     +*#  CODE, +*       +?#  CODE, +?
+    AND#  CODE, AND       +#  CODE, +
+     OR#  CODE, XOR   \  -?#  CODE, -?    -# CODE, -
+    DUP#  CODE, DUP
+     2*#  CODE, 2*
+     2/#  CODE, 2/
+    INV#  CODE, INV
+      ;#  CODE, EXIT
+  <RDROP  CODE, RDROP
+    POP#  CODE, POP
+  RPUSH#  CODE, PUSH
+   CALL#  CODE, CALL       ;:#   CODE, ;:
+   SWAP#  CODE, SWAP
+ \    FLIP#  CODE, FLIP
+   <MAIN  CODE, NOP       (B"#   CODE, (B"
+    @IP#  CODE, LIT        ("#   CODE, ("
+
+
+   OVER#  CODE, OVER
+    @A+#  CODE, @A+
+      @#  CODE, @       !#  CODE, !
+     A@#  CODE, A@      @A#  CODE, @A
+   C@T+#  CODE, C@+
+    @T+#  CODE, @+
+
+    SP!#  CODE, SP!       SP@#  CODE, SP@
+
+  <TROFF  CODE, TROFF
+    RP!#  CODE, RP!       RP@#  CODE, RP@
+  <TRONX  CODE, TRON
+     !A#  CODE, !A        A!#  CODE, A!
+    <DOS  CODE, DOS
+    C!P#  CODE, C!PORT        !P#  CODE, !PORT
+   <DROP  CODE, DROP
+     @P#  CODE, @PORT       C@P#  CODE, C@PORT
+     @R#  CODE, @R        !R+#  CODE, !R+
+    @R+#  CODE, @R+      C!R+#  CODE, C!R+
+    !A+#  CODE, !A+      C!A+#  CODE, C!A+
+<PERFORM  CODE, PERFORM
+
+
+\ GENERATE HI LEVEL WORDS  IN NEW KERNEL
+\  DECIMAL    89  LOAD
+\  DECIMAL   301  LOAD  \ LOW LEVEL DEFINITIONS IN ASSEMBLER
+\  DECIMAL   300  LOAD  \ HI LEVEL DEFINITIONS - PRIMITIVS
+\  DECIMAL   1 2 +THRU  \ DEFINITION WORDS   ALIAS, CONSTANT .
+
+
+
+
+<%   ALSO  TO TCOMP
+   : DOES> [',] ;CODE
+    [ <DOES1- ] LITERAL
+    [AT] DOES> ; IMMEDIATE
+   : ALIAS    HEADER COMPILE [ <ALI ,  ] , ;
+   : VECTOR   HEADER
+    COMPILE [ <@EXEC1- , ]
+    COMPILE [ <STORE1- , ] , ;
+   : VARIABLE HEADER
+    COMPILE [ <VAR1- , ] 2Z, ;
+   : CONSTANT HEADER
+    COMPILE [ <FETCH 1- , ] , ;
+   : USER     HEADER
+    COMPILE [ <USER  , ] , ;
+   : VUSER    HEADER
+    COMPILE [ <@USER  , ]
+    COMPILE [ <!USER  , ] , ;
+   : QUSER    HEADER
+    COMPILE [ <@USER 1- , ]
+    COMPILE [ <!USER 1- , ]
+    COMPILE [ <USER  , ] , ;
+   : VALUE    HEADER
+    COMPILE [ <FETCH 2- , ]
+    COMPILE [ <STORE 1- , ] , ;
+   : QUAN HEADER
+    COMPILE [ <FETCH 3 - , ]
+    COMPILE [ <STORE 2- , ]
+    COMPILE [ <VAR 1- , ] , ;
+   ' <MARK  ' PUSH ((  FOR
+   ' ,<MARK  _NEXT ((  NEXT
+
+   : : ?FW : ;
+
+%>  ;METHOD
+
+
+-MAC  \ WITHOUT MACROS
+ 10 SET: _JUMP _JUMP _IF _IF _-IF _-IF _EXIT _JSR _LIT _OF
+
+\ : (( HEADER COMPILE [ ' DO: @, ] , , IMMEDIATE ;
+
+->TASK VUSER >TASK  -<TASK VUSER <TASK ->SP VUSER >SP
+>S0    VUSER S0     >R0 VUSER R0      >FRAME VUSER FRAME
+>SELF VUSER SELF  >HDR VUSER HDR   >H QUSER HERE
+>BASE VUSER BASE  >OUT VUSER OUT> >>IN VUSER >IN
+>BLK  VUSER BLK   >TIB VUSER TIB     >STATE VUSER STATE
+
+>HOLD VUSER HOLD   >SCR VUSER SCR  >CSP VUSER CSP
+>SPTR QUSER SPTR  >MPTR VUSER MPTR >MTOP VUSER MTOP
+ >DBL VUSER DBL  >VLINK VUSER VLINK >CURRENT VUSER CURRENT
+>CONTEXT  VUSER CONTEXT
+>AX_R VUSER AX_R  >DX_R VUSER BX_R >CX_R VUSER CX_R
+>DX_R VUSER DX_R  >ER_R VUSER ER_R >ER_A VUSER ER_A
+>?USER VUSER ?USER
+
+\  TEST FOR NEXT : ALIAS DOES> CONSTANT VARIABLE USER ;
+ 0 CONSTANT 0 1 CONSTANT 1
+-1 CONSTANT -1 2 CONSTANT 2
+
+: MAX INV OVER + INV -IF DROP EXIT THEN + ;
+: 1+  1 + ;
+: MIN INV OVER + INV -IF + EXIT THEN DROP ;
+: 1- -1 + ;
+: NEGATE INV 1+ ;
+: ABS -IF NEGATE THEN ;
+: NIP OVER XOR XOR ;
+: OR OVER INV AND XOR ;
+: EMIT _EMIT PERFORM ;
+: ?2^ DUP 1- AND ;
+: ?EMIT OVER INV +   -IF DROP EMIT EXIT THEN DROP ;
+: TYPE FOR C@+ EMIT NEXT DROP ;
+
+: CLIP PUSH MAX POP MIN ;     \ : KEY DUP   _KEY PERFORM ;
+: ?KEY DUP  _?KEY PERFORM ;
+: SEARCH FOR @A+ OVER XOR
+    IF DROP
+  NEXT DROP 0 EXIT THEN
+  RDROP ;
+: * A!  15 FOR +* NEXT DROP A@ ;
+: *M A! 15 FOR +* NEXT PUSH DROP A@ POP ;
+: /MOD  FOR BEGIN OVER OVER + -IF DROP 2*   NEXT EXIT THEN
+     OVER XOR  XOR INV 2* INV   NEXT ;
+
+: D0 0 0 ;  \ IO KERNEL FUNCTIONS
+: DO_DOS A@ PUSH DOS TO AX_R  A@ TO DX_R  POP A! ;
+: DO_HANDLE PUSH HANDLES POP DO_DOS ;
+: HFSIZE D0 $ 4202 DO_HANDLE ;
+: HCLOSE D0 $ 3E00 DO_HANDLE ;
+: HREAD $ 3F00 DO_HANDLE ;
+: HWRITE $ 4000 DO_HANDLE ;
+: BLKPOS 1K M* $ 4200 DO_HANDLE ;
+: FOPEN  D0 $ 3D02 DO_DOS ;
+: RBLK BLKPOS 1K HREAD ;
+: WBLK BLKPOS 1K HWRITE ;
+: F_KEY 1 SP@ OVER HREAD ;
+: F_EMIT SP@ 1 HWRITE NIP ;
+: STD_KEY  0 D0 $ 100 DO_DOS ;
+: STD_EMIT  D0 $ 200 DO_DOS ;
+: STD_?KEY  D0 D0 DO_DOS ;
+
+
+

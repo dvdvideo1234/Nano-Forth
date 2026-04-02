@@ -1,0 +1,1121 @@
+\
+\
+\
+\    KERNEL.SCR                   CAN'T REMOVE CURRENT DIRECTORY
+\ INVALID FUNCTION NUMBER         NOT SAME DEVICE
+\ FILE NOT FOUND                  NO MORE MATCHING FILES
+\ PATH NOT FOUND                  WRITE-PROTECTED DISK
+\ TOO MANY OPEN FILES             UNIT ID UNKNOWN
+\ ACCESS DENIED                   DISK DRIVE NOT READY
+\ INVALID HANDLE                  UNKNOWN COMMAND
+\ MEM-CTRL-BLK DESTROYED          CRC ERROR
+\ INSUFFICIENT MEMORY             BAD LENGTH
+\ MEM-CTRL-BLK INVALID            DISK SEEK ERROR
+\ ENVIROMENT INVALID              UNKNOWN DISK MEDIA TYPE
+\ FORMAT INVALID                  DISK SECTOR NOT FOUND
+\ ACCESS CODE INVALID             PRINTER OUT OF PAPER
+\ DATA INVALID                    WRITE FAULT
+\ ( NOT USED )                    READ FAULT
+\ DRIVE SPECIFIED INVALID         GENERAL FAILURE
+
+
+
+
+
+\ 4 35 THRU
+
+\   L: _TOP
+
+
+ \  USER VARIABLE'S OFFSETS  :=: CONSTANTS
+ \  EASY  TO CHANGE OFFSETS
+
+MAC: >BR,  <BRANCH JMP,;
+MAC: >NEXT,  <MAIN JMP,;
+MAC: >PUSH,  <PUSH JMP,;
+MAC: >SWAP,  <SWAP JMP,;
+MAC: >DROP,  <DROP JMP,;
+
+ 0
+ +C: ->TASK     +C: -<TASK     +C: ->SP       +C: >S0
+ +C: >R0        +C: >FRAME     +C: >SELF      +C: >HDR
+ +C: >RPTR      +C: >TIB       +C: >BASE      +C: >HOLD
+ +C: >H         +C: >STATE     +C: >CURRENT   +C: >CONTEXT
+ +C: >VLINK     +C: >>IN       +C: >OUT       +C: >BLK
+ +C: >SCR       +C: >CSP       +C: >DBL       +C: >SPAN
+ +C: >SCRH       DROP
+
+ \  FORWARD DEFINITIONS CONTINUE ...
+ ASM   256 T-ALIGNED \ KERNEL SOURCE IN ASSEMBLER
+  L: START/
+
+-?, IF,
+
+L: _BOOT 0 DW,
+L: _COLD 0 DW,
+  L: _WARM 0 DW,
+L: _USER _ORIG1 DW,
+L: _CRRY 0 DW,
+  L: _DSTEP
+<TRONX DW,  0 DW,  _JUMP DW, _DSTEP DW,  \ DEBUG
+  L: FSTAT
+<VAR DW, L: _AX   0 DW,
+L: _SI   _DSTEP 2+ DW,
+
+  THEN,
+CLD,     CALL,F 1
+
+<%
+  T-: DROP, BX POP, T-;
+  T-: SCASW,2 SCASW, SCASW, T-;
+  T-: SCASW,3 SCASW,2 SCASW, T-;
+  T-: DUP, BX PUSH, T-;
+%>
+
+
+
+L: _ORIG  <WARY DW, ( USER VARS  128 BYTES   IN THIS BLOCK)
+L: _ORIG1 \ +C: ->TASK  +C: -<TASK  +C: ->SP   +C: >S0
+
+ 0 DW, $ FF00 DW, $ FF00 DW, $ FA00 DW, $ FA00 DW,
+\ +C: >R0        +C: >FRAME     +C: >SELF      +C: >HDR
+   $ FE00 DW,        0 DW,           0 DW,         0 DW,
+\ +C: >RPTR      +C: >TIB       +C: >BASE      +C: >HOLD
+     92 DW,     $ FE80  DW,     10 DW,         0 DW,
+\ +C: >H         +C: >STATE     +C: >CURRENT   +C: >CONTEXT
+    _TOP DW,         0 DW,           0 DW,         0 DW,
+\ +C: >VLINK     +C: >>IN       +C: >OUT       +C: >BLK
+       0 DW,         0 DW,           0 DW,         0 DW,
+\ +C: >SCR       +C: >CSP       +C: >DBL      \ +C: >SPAN
+ 29   [[  0 DW, ]]    1 DW, 2 DW, 3 DW, 4 DW, 5 DW,
+  9   [[  0 DW, ]]
+
+
+    FL! 1
+              SI POP,
+       -2 /SI CX MOV,
+        2 /SI DI MOV,
+           DI BX MOV,
+    DI _USER /// MOV,
+        REP, AL MOVS,
+           AX AX XOR,
+      $ 80 #, SI MOV,
+     >TIB /BX DI MOV,
+             AL LODS,
+           AX BX MOV,
+        AH 0 X/S MOV,
+        1 /BX CX LEA,
+       REP,  AL MOVS,
+    $ 1000 #, BX MOV,
+      $ 4A #, AH MOV,
+              33 INT,
+
+L: END_INIT
+
+ 256 T-ALIGNED
+
+\ L: OP_TABLE     128 [[  0 DW, ]]
+
+\  OP_TABLE END_INIT - CR . ( BYTES BEFORE OP_TABLE !)
+\  KERNEL SOURCE IN ASSEMBLER
+
+
+
+
+\ BRANCHING
+
+CODE EXIT    0 /BP SI MOV,    HERE TO ADR
+            BP INC,   BP INC, END-CODE
+ADR  CODE, RDROP
+CODE POP    DUP, 0 /BP BX MOV,  ADR JMP,  END-CODE
+
+CODE (NEXT  LODSW,   -1 #, CX MOV, CX W/ 0 /BP ADD,
+        ADR JNB,   >BR, END-CODE
+
+CODE (FOR  LODSW,   -1 #, CX MOV, CX W/ 0 /BP ADD,
+        U<,  IF, >NEXT, THEN, AX SI XCHG, ADR JMP, END-CODE
+
+CODE (JMP  HERE TO ADR   LODSW,
+L: >BRANCH  AX SI MOV, >NEXT,  END-CODE
+
+CODE (OF        AX POP,  AX BX XCHG,
+       BX AX  XOR, ADR JNZ,  DROP,
+L: >NOBR    LODSW, >NEXT,            END-CODE
+
+CODE (?BR BX BX OR, ADR 0=, NOT, UNTIL, >NOBR JMP, END-CODE
+
+CODE (-BR BX BX OR, ADR 0<, NOT, UNTIL, >NOBR JMP, END-CODE
+
+CODE PUSH   AX POP,     AX BX XCHG,   HERE TO ADR
+            AX SI XCHG,    BP  DEC,   BP DEC,
+            SI 0 /BP MOV,  AX SI XCHG, >NEXT, END-CODE
+
+CODE (CALL   LODSW,  ADR JMP, END-CODE
+
+
+\ Arithmetic
+
+CODE -/     AX POP,  1 #, BX SHL, 1 #, DX RCL,  AX BX CMP,
+            U<, NOT, IF,  AX BX SUB,   DX INC, THEN,
+            AX PUSH, >NEXT,     END-CODE
+
+CODE +*  1 #, DL TEST, 0=, NOT, IF,
+          AX POP,    AX BX ADD,   AX PUSH,    THEN,
+         1 #, BX RCR, 1 #, DX RCR,     >NEXT,
+
+\ ARRAYS
+  1 #, BX SHL,    BX DI ADD,  1 #, BX SHL,
+  1 #, BX SHL,    DI BX ADD,    BX    INC,  HERE TO ADR
+    BX    INC,   >NEXT,      END-CODE
+ADR CODE, 1+
+
+CODE +?   AX POP, AX BX ADC,  >NEXT, END-CODE
+
+CODE DUP  DUP,  >NEXT,  END-CODE
+
+CODE 2*    1 #, BX SHL,  >NEXT, END-CODE
+
+CODE 2/    1 #, BX SAR,  >NEXT, END-CODE
+
+CODE INV   BX COM,       >NEXT, END-CODE
+
+CODE AND  AX POP,  AX BX AND, >NEXT, END-CODE
+
+CODE XOR  AX POP,  AX BX XOR, >NEXT, END-CODE
+
+CODE OR   AX POP,  AX BX OR,  >NEXT, END-CODE
+
+CODE NIP  AX POP,             >NEXT, END-CODE
+
+CODE -   BX NEG,   HERE TO ADR
+         AX POP,   AX BX ADD, >NEXT, END-CODE
+ADR CODE, +
+
+ASM
+L: <STOR-3  SCASW,
+L: <STOR-2  SCASW,
+L: <STOR-1  SCASW,
+L: <STOR    BX 0 /DI MOV,
+
+ L: <DROP    DROP,   SKIP2,
+ L: <PUSH    DUP,
+ L: <SWAP    AX BX XCHG,        THEN,
+
+ L: <MAIN  AX LODS,
+
+ L: <EX     AX DI XCHG,
+             0 /DI JMP,
+             <DBG  JMP,
+
+ L: <DOES-3 SCASW,
+ L: <DOES-2 SCASW,
+ L: <DOES-1 SCASW,
+ L: <DOES AX POP,   DUP, DI BX MOV,  <PCPUSH JMP,
+
+ L: <VAR-3  SCASW,
+ L: <VAR-2  SCASW,
+ L: <VAR-1  SCASW,
+ L: <VAR    AX DI XCHG, >PUSH,
+
+ L: <JSR-5  SCASW,
+ L: <JSR-4  SCASW,
+ L: <JSR-3  SCASW,
+ L: <JSR-2  SCASW,
+ L: <JSR-1  2 /DI AX LEA, <PCPUSH JMP,
+
+ L: <CNST-3 SCASW,
+ L: <CNST-2 SCASW,
+ L: <CNST-1 SCASW,
+ L: <CNST   DUP, 0 /DI BX MOV,  >NEXT,
+
+L: EXEC#     AX BX XCHG,  DROP,   HERE TO ADR  <EX JMP,
+L: ?ALIAS?    AX  POP,   DI POP,   DI  PUSH,  SCASW,
+            0=, IF,  AX POP,  0 /DI PUSH,  -?, IF,
+L: ?ALIAS  BX BX  OR,  0=, NOT, IF,   ?ALIAS?  #, CALL,
+L: <ALI  SKIP2,
+L: <@EXEC-3  SCASW,
+L: <@EXEC-2  SCASW,
+L: <@EXEC-1  SCASW,
+L: <@EXEC  0 /DI AX MOV,  AX AX OR, ADR JNZ,
+                   THEN, THEN, THEN, >NEXT,
+
+\ DEBUGGER INTERFACE
+
+L: <DBG $ 2E #, <EX /// XOR,  FB! 63
+     _AX #,  DI  MOV,  AX 2 /DI XCHG,
+      SI 4  /DI XCHG,     AX DI XCHG, 0 /DI JMP,
+
+
+L: <REUSE CX POP,   0 /BP SI XCHG,   CX CALL,
+    HERE TO ADR
+    0 /BP SI XCHG,  >NEXT,  END-CODE
+
+ADR CODE, ;:
+
+
+CODE TROFF LODSW, <DBG  JMP, END-CODE
+
+CODE TRON LODSW, <DBG  JMP, END-CODE
+
+CODE @R   0 /BP DI MOV,  <CNST JMP, END-CODE
+
+CODE @A+  DX DI MOV,  DX INC, DX INC,
+          <CNST JMP, END-CODE
+
+CODE @   BX DX MOV,  DROP,    HERE TO ADR
+
+          DX DI MOV,  <CNST JMP, END-CODE
+
+ADR CODE, @A
+
+
+CODE SP!     BX SP MOV,       >DROP,  END-CODE
+
+CODE RP!     BX BP MOV,       >DROP,  END-CODE
+
+CODE A!      BX DX MOV,       >DROP,  END-CODE
+
+CODE C!PORT  BX AX MOV, AL OUT, >DROP,  END-CODE
+
+CODE !PORT   BX AX MOV, AX OUT, >DROP,  END-CODE
+
+CODE USER!   _USER DI MOV, <STOR JMP,  END-CODE
+
+CODE C!A+  DX DI MOV,  BL 0 /DI MOV,
+    DX INC, >DROP,      END-CODE
+
+CODE C@+   0 /BX AL MOV,  BX INC,
+           <BPUSH JMP,  END-CODE
+
+CODE @+   BX SI XCHG,     LODSW,
+          BX SI XCHG, >PUSH,        END-CODE
+
+CODE RCOD>F   AX POP,    <PCPUSH JMP,  END-CODE
+
+CODE CODE>F   AX POP,     <JUMP JMP,   END-CODE
+
+CODE SP@   DUP,  SP BX MOV,   >NEXT,   END-CODE
+
+CODE SWAP  AX POP,            >PUSH,   END-CODE
+
+CODE RP@   BP AX MOV,         >PUSH,   END-CODE
+
+CODE A@    DX AX MOV,         >PUSH,   END-CODE
+
+CODE LIT       LODSW,         >PUSH,   END-CODE
+
+CODE 2-    BX DEC,              HERE TO ADR
+           BX DEC,  >NEXT,   END-CODE
+
+ADR CODE,  1-
+
+CODE OVER  AX POP,   AX PUSH, >PUSH,   END-CODE
+
+CODE BLIT      AL LODS,
+
+ L: <BPUSH 0 #, AH MOV, >PUSH,   END-CODE
+
+CODE @PORT    AX IN,       >PUSH,   END-CODE
+
+CODE C@PORT   AL IN,  <BPUSH JMP,   END-CODE
+
+CODE !       BX DX MOV,  DROP,       HERE TO ADR
+
+             DX DI MOV, <STOR  JMP,  END-CODE
+
+ADR CODE, !A
+
+CODE !A+  DX DI MOV,  DX INC, DX INC,
+           <STOR  JMP,  END-CODE
+
+CODE C@A+ DX DI MOV,  DX INC,  0 /DI AL MOV,
+           <BPUSH JMP,       END-CODE
+
+
+CODE @R+   <REUSE #, CALL,    CX POP, LODSW,
+           DUP, AX BX XCHG, CX JMP,    END-CODE
+
+CODE !R+  <REUSE #, CALL,   BL BH XCHG,
+          BH 0 /SI MOV,   SI INC,     HERE TO ADR
+          CX POP,  BL 0 /SI MOV, DROP,
+          SI INC, CX JMP,             END-CODE
+CODE C!R+  <REUSE #, CALL,  ADR JMP,  END-CODE
+
+CODE (B"   <REUSE  #, CALL,
+           SI DI MOV, AL LODS,
+           AH AH XOR,            HERE TO ADR
+           CX POP, DUP, DI BX MOV,
+           AX SI ADD, CX JMP,          END-CODE
+
+CODE ("   <REUSE  #, CALL,
+          SI DI MOV, LODSW, ADR JMP,   END-CODE
+
+
+
+ L: <LBL-3 SCASW,
+ L: <LBL-2 SCASW,
+ L: <LBL-1 SCASW, AX DI XCHG, <JUMP JMP,
+
+ L: <USER   <VAR   #, CX MOV,
+ L: XUSER    2 /DI DI MOV,  _USER /// DI ADD,     CX JMP,
+
+ L: <@USER-2 SCASW,
+
+ L: <@USER-1 SCASW,
+
+ L: <@USER  <CNST  #, CX MOV,  XUSER JMP,
+
+ L: <!USER-1 SCASW,
+
+ L: <!USER  <STOR  #, CX MOV,  XUSER JMP,
+
+ L: <@REG  <CNST  #, CX MOV,   SCASW, -?, IF,
+
+ L: <!REG  <STOR  #, CX MOV,  THEN, 2 /DI AX MOV,
+   _USER /// DI MOV,  >RPTR /DI DI MOV, AX DI ADD,   CX JMP,
+
+ L: <@VAR  <CNST  #, CX MOV,    -?, IF,
+
+L: <!VAR  <STOR  #, CX MOV, -?, IF,
+L: <LVAR <VAR #, CX MOV,
+     THEN, THEN,  AX POP,  AX BX XCHG, AX COM, 1 #, AX SHL,
+   _USER /// DI MOV,  >FRAME /DI DI MOV, AX DI ADD, CX JMP,
+
+ \ DOS INTERFACE   ( A!)  PRESERVE AREG
+CODE  <DOS>
+        DX DI MOV,    AX BX XCHG,
+             DROP,        CX POP,
+           DX POP,       DI PUSH,
+         $ 21 INT,
+          DI  POP,       AX PUSH,
+              DUP,       CX PUSH,
+          DX PUSH,     DI DX MOV,
+            >DROP,     END-CODE
+
+CODE BKEY   0  #, AH  MOV,   22  INT,  >PUSH, END-CODE
+
+CODE ?BKEY   1  #, AH  MOV,   22  INT,  0=, NOT, IF,
+        0 #, AX MOV, T-RECOVER   THEN,
+        AX AX XOR, >PUSH,       END-CODE
+
+CODE BEMIT  14 #, AH MOV, BL AL MOV, 16 INT, >DROP,  END-CODE
+
+CODE ?DKEY   11 #, AH MOV,  33 INT, CBW,  >PUSH, END-CODE
+
+CODE DEMIT   2 #, AH MOV, DX PUSH, BL DL MOV,
+             33 INT, ADR JMP,   END-CODE
+
+CODE DKEY    8 #, AH MOV, 33 INT, AL AL OR,  0=, IF,
+              33 INT, AL AH MOV,
+             AL AL XOR, THEN,  >PUSH,  END-CODE
+
+CODE PERFORM   BX DI MOV,  DROP, <@EXEC JMP, END-CODE
+
+CODE BLKASE   BX INC,  0=, NOT,   IF,   SCASW,
+             BX DEC,  <@EXEC-2 JNZ,  THEN,
+             DROP,  <@EXEC-1 JMP,       END-CODE
+
+
+CODE IND   DUP, 0 /BP BX MOV, >NEXT,  END-CODE
+
+  (  1 8 +THRU HERE START/ - . )   END-CODE
+     TCOMP   TO KERNEL
+
+
+
+
+ 0 T-QUAN FHAND  32 T-ALLOT
+ 0 T-VECTOR ERROR
+
+
+: C@ C@+ NIP ;    : ;DROP ;: DROP ;
+: C! A! C!A+ ;    : 0; IF ;THEN DROP POP DROP ;
+
+
+\ <% T-: NEWTC LIT LIT LIT [ ' [LIT] 2+ T-, ] T-! T-; %>
+        '  LIT  [LIT] 2+ T-!    \ VERI SPECIAL
+
+
+ ->TASK  T-VUSER >TASK    -<TASK T-VUSER <TASK
+    >S0  T-VUSER S0         ->SP T-VUSER >SP
+    >R0  T-VUSER R0       >FRAME T-VUSER FRAME
+  >SELF  T-QUSER SELF       >HDR T-VUSER HDR
+  >RPTR  T-VUSER RPTR       >TIB T-VUSER TIB
+
+   >BASE T-VUSER BASE         >H T-QUSER HERE
+    >OUT T-QUSER OUT>       >>IN T-VUSER >IN
+    >BLK T-VUSER BLK       >SPAN T-VUSER SPAN
+  >STATE T-VUSER STATE     >HOLD T-QUSER HOLD
+    >SCR T-VUSER SCR        >CSP T-VUSER CSP
+
+      >DBL T-VUSER DPL          >VLINK T-VUSER VLINK
+ >CONTEXT  T-VUSER CONTEXT    >CURRENT T-VUSER CURRENT
+                            >SCRH T-VUSER SCRH
+
+  0 T-VALUE MPTR    0 T-VALUE MTOP   0 T-QUAN SPTR
+  0 T-VALUE CFA
+                      0 T-CONSTANT 0     1  T-CONSTANT 1
+ -1 T-CONSTANT -1    2  T-CONSTANT 2
+
+  0  T-RVALUE ER_R   2  T-RVALUE AX_R   4  T-RVALUE BX_R
+  6  T-RVALUE CX_R   8  T-RVALUE DX_R
+     _2+  CODE,  2+              _1+  CODE,  1+
+: 1+!@ @ 1+ DUP !A ;  : +!  @ + !A ;   : 1+! @ 1+ !A ;
+: @1-! @ DUP 1- !A ;  : [! 2* A + ! ; : >! 1+!@ [! ;
+: >BYTE 255 AND ;     : [@ 2* A + @ ; : C[! A + A! C!A+ ;
+: '+C 1+!@ >BYTE C[! ;  : "+C 1+! @A+ C[! ;
+: ^@  @ [@ ;  : @< @1-! [@ ;  : C[@ A + A! @A >BYTE ;
+: -1=  INV 0= ;  : = XOR 0= ;
+: 0< -IF DUP XOR INV ;THEN DUP XOR ;  : < - 0< ;
+
+  15 T-CONSTANT HMASK   16 T-CONSTANT 1H
+ : RESULT PUSH DROP  A POP ;
+ : *M  A! 0 HMASK FOR +* NEXT RESULT ;
+ : U?  DUP XOR DUP +? 1- ;   : U< - U? ;
+ : WITHIN OVER - PUSH - POP U< ;
+ : /MOD# PUSH SWAP A! POP HMASK FOR -/ NEXT RESULT ;
+ : /MOD 0 /MOD# ;  : MOD /MOD NIP ;  : / /MOD DROP ;
+ : D0 0 0 ;  \ IO KERNEL FUNCTIONS
+ : D_ERR  ER_R -IF 4  ERROR  THEN DROP ;
+ : DO_HANDLE PUSH  AT FHAND ^@ POP (DOS D_ERR ;
+ : HFSIZE D0 $ 4202 DO_HANDLE ; : HCLOSE D0 $ 3E00 DO_HANDLE ;
+ : HREAD $ 3F00 DO_HANDLE ;     : HWRITE $ 4000 DO_HANDLE ;
+ : FOPEN  D0 $ 3D02 (DOS D_ERR ;
+: (HANDLE   EXECUTE AT FHAND @< DROP ;
+: >HANDLE   AT FHAND >! @R+ (HANDLE ;
+
+  1024  T-CONSTANT 1K      <DOES T-CONSTANT #DOES
+  ' BIO-K       T-VECTOR  EMIT
+  ' BIO-K 2+    T-VECTOR  KEY
+: RESET-KEY [ ' BIO-K 2+ ] T-LITERAL TO KEY ;
+  ' BIO-K 2+ 2+ T-VECTOR  ?KEY
+: ?TYPE INV -IF INV IF 1- ;THEN THEN DROP DROP RDROP ;
+: TYPE ?TYPE FOR C@+ EMIT NEXT DROP ;  : ID. C@+ 31 AND TYPE ;
+: BLKPOS 1K *M $ 4200 DO_HANDLE ;
+: RBLK BLKPOS 1K HREAD ;  : WBLK BLKPOS 1K HWRITE ;
+: ;S ;DROP AT FHAND @ IF [ ' HCLOSE ] T-LITERAL (HANDLE
+    1- IF ;THEN RESET-KEY THEN ;
+: F_KEY ;DROP 0 SP 1 HREAD AX_R IF DROP DUP 32 U<
+     IF 32 SWAP ;THEN ;THEN  ;S 13 SWAP ;      \ CHK EOF !!!
+: F_EMIT SP 1 HWRITE DROP ;
+
+
+: CHARS ?TYPE FOR DUP EMIT NEXT DROP ; : SPACES 32 SWAP CHARS ;
+: BACK 8 EMIT ; : SPACE 1 SPACES ;
+: DO-K 32 - -IF 19 + ( -CR) IF 5 + ( -BS) IF ( 0<>)   ;THEN
+  ( BS) INV PUSH PUSH IF 1- BACK SPACE  BACK THEN POP POP ;THEN
+  ( CR)  ;THEN  32 + A! PUSH OVER OVER + PUSH 1+ A DUP EMIT
+     POP  A!  C!A+  POP OVER OVER U< ;
+: EXPECT ?TYPE 1+ PUSH 0 POP BEGIN KEY 255 AND DO-K
+       IF DROP AGAIN THEN   DROP DROP ;
+: DIG?  C" A  -  -IF  7 +  INV -IF  ;THEN INV THEN  10 + ;
+: -ROT SWAP PUSH SWAP POP ;
+: /STR DUP A! + PUSH A - POP ;
+: CONVERT IF BEGIN 1- PUSH C@+  SWAP PUSH  DIG? DUP BASE U<
+  -IF DROP -ROT BASE *M DROP PUSH BASE *M  A!
+            + A POP +? POP POP IF AGAIN THEN  ;THEN
+         DROP DROP POP POP 1 /STR THEN ;
+
+\              LIT"          (".             ".
+T-HEADER (" ] L: _"1 <JSR-3  L: _"2  <JSR-4  L: _"3 <JSR-4
+              (B" EXIT       (B"             C@+ TYPE  EXIT [
+: BSRCH DUP PUSH PUSH A! BEGIN C@A+ OVER XOR IF DROP  NEXT
+         RDROP DUP XOR INV  ;THEN DROP DROP POP POP SWAP - ;
+: HEX 16 TO BASE ; : DECIMAL 10 TO BASE ; : BINARY 2 TO BASE ;
+: D+  PUSH A! PUSH A + POP POP +? ;
+: ROT PUSH SWAP POP SWAP ;  : ;ROT ;: ROT ;  : D0 0 0 ;
+: DNEGATE A! INV 1 + A INV 0 +? ;  : 2SWAP PUSH -ROT POP -ROT ;
+: ?NEG OVER C@ C" - = IF /STR IF ;: DNEGATE THEN ;THEN DROP ;
+: ?HEX OVER C@ C" $ " !" = IF /STR IF POP  A! BASE PUSH A PUSH
+      16 TO BASE ;:      POP TO BASE THEN ;THEN DROP ;
+: ?NUMBER ;ROT ?NEG ?HEX 0 TO DPL  D0 2SWAP CONVERT
+   BEGIN IF OVER C@ DUP C" : = SWAP  C" ,  C" 0  WITHIN OR
+   WHILE DUP TO DPL /STR CONVERT REPEAT DROP THEN NIP -ROT ;
+
+: MOVE SWAP A! ?TYPE FOR C@+ C!A+ NEXT DROP ;
+: FILL SWAP A! ?TYPE FOR DUP C!A+  NEXT DROP ;
+: #V INV 2* FRAME + ;   \ LOCAL VARIABLE ADDRESS
+T-' #V  <@EXEC-1   0 NM: EXEC( ! ;M  1 NM: EXEC( @ ;M
+T-HEADER LV T-, T-, T-, T-,
+' LV T-HEADER ORIG @+ T-, @+ T-, @+ T-, _ORIG T-, DROP
+: LOCALS OVER OVER + 1+ A! POP FRAME PUSH RP TO FRAME A #V
+  DUP TO RP  A!  SWAP FOR !A+ 0 NEXT  SWAP  FOR !A+ NEXT ;:
+L: 'RETURN       FRAME TO RP  POP  TO FRAME ;
+: SRCH DUP PUSH PUSH A! BEGIN @A+ OVER XOR   IF DROP  NEXT
+         RDROP DUP XOR INV  ;THEN DROP DROP POP POP SWAP - ;
+
+MAC: SH 0 AT NBUFS 20 DUMP;
+
+
+
+' LV T-HEADER NBUFS @+ T-, @+ T-, DROP <WARY T-, 32 T-ALLOT
+3 T-VALUE #BUFS   #BUFS 1+ T-VALUE FBUFS    0 T-VALUE BUFP
+ #BUFS    T-VALUE USE  #BUFS T-VALUE PREV \ INDEX OF BUFFERS
+: SRCH-B 0 AT NBUFS #BUFS SRCH ; : -BUFS 0 AT NBUFS 32 -1 FILL ;
+  : +BUF #BUFS USE 1+ AND DUP TO USE ;
+: GETBUF +BUF PREV XOR IF USE EXIT THEN +BUF ; \ NOT LAST USED
+: FBUF PREV FBUFS + AT NBUFS ; : DISCARD -1 FBUF ! ;
+: ^BUF PREV 1K *M DROP BUFP + ;    : UPDATE 0 FBUF ! ;
+: ?SAVE TO PREV FBUF @ IF DROP ;THEN DROP
+               ^BUF PREV NBUFS SCRH >HANDLE WBLK DISCARD ;
+: BUFFER -1 SRCH-B  -IF DROP GETBUF ?SAVE DROP PREV THEN
+     DUP TO PREV TO NBUFS ^BUF ;   \ REGISTER BLKNUM
+: BLOCK DUP SRCH-B   -IF DROP BUFFER DUP PREV NBUFS SCRH
+     >HANDLE RBLK  ;THEN TO PREV DROP ^BUF ;
+: !BUFS #BUFS FOR AT RP ?SAVE NEXT ;  : FLUSH !BUFS -BUFS ;
+
+T-HEADER ?TIB <BLKASE T-, ] TIB TIB BLOCK [
+: WORD 1 HERE ! 255 AND A! HERE  SPAN >IN -
+   IF 1- PUSH A BLK ?TIB >IN + A!
+     BEGIN  C@A+ OVER XOR 0=
+       IF   DROP
+       NEXT   SPAN TO >IN DROP
+     ;THEN  DROP A 1- PUSH 0 HERE ! POP A!  \ INIT STRING
+     BEGIN  C@A+ OVER XOR                       \ INCRMENT
+       IF  OVER XOR  HERE A PUSH '+C  POP A!
+       NEXT  SPAN TO >IN  DROP
+     ;THEN DROP SPAN POP INV + TO >IN
+   THEN DROP ;
+: BLWORD 32 WORD C@+ TYPE ;
+
+
+
+: 0-DROP SKIP BEGIN DROP THEN UNTIL ;
+: #-1DROP SKIP BEGIN DROP THEN 1+ 0= UNTIL DROP ;
+: =DROP SKIP BEGIN DROP THEN OVER XOR UNTIL OVER XOR ;
+: FIND( PUSH   \ WHAT TO SEARCH  -  ADDRESS OF WORD
+    BEGIN 0-DROP  =DROP INV  WHILE  INV       \ -1  çÖ Ö ãà
+      BEGIN @ 128 AND -1 + DROP @A 32 AND     \ CARRY
+        C@A+ 31 AND SWAP 0=
+        IF DROP AT RP SWAP PUSH C@+ AT RP BEGIN
+           XOR 1- -IF DROP C@+ C@A+ NEXT  C@A+ POP     \ FOUND
+           #-1DROP A 0 DUP +? 2* 1-  ;THEN DROP POP SWAP
+        THEN DROP A + @
+      WHILE REPEAT DROP
+    REPEAT DROP POP 0 ;  \ NOT FOUND
+: FIND PUSH -1  CONTEXT @ POP FIND( ;
+
+
+
+KERNEL
+
+-BUFS
+        PAD  60 - TO HERE
+        PAD  1K + TO BUFP
+        AT KERNEL TO CONTEXT
+        1K        TO SPAN
+        0         TO >IN
+=" TEMP.SCR"
+PAD  C!
+PAD  C@+ MOVE
+0 PAD  '+C
+PAD 1+ FOPEN  AX_R TO SCRH
+    0 BLOCK TO TIB
+
+
+
+
+
+
+
+
+
+: FIND( PUSH   \ WHAT TO SEARCH  -  ADDRESS OF WORD
+    BEGIN 0-DROP  =DROP INV        \ -1  çÖ Ö ãà
+    WHILE  INV
+      BEGIN @ 128 AND -1 + DROP @A 32 AND      \ CARRY
+        IF DROP C@A+ 31 AND ELSE DROP
+           AT RP C@+ C@A 31 AND DUP                 \ FOUND
+           FOR XOR 1- -IF DROP C@+ C@A+ NEXT
+                    @A+ POP 1-DROP AR 0 DUP +? 2* 1-
+                 ;THEN DROP POP
+        THEN AR + @
+      WHILE REPEAT DROP
+    REPEAT DROP POP 0 ;  \ NOT FOUND
+
+: FIND PUSH -1 ORDER# @+ IF 1- FOR @+ @ SWAP NEXT THEN
+        DROP CONTEXT @ POP  FIND( TO ?, ;
+
+\ : PROBA  0 LOCALS  5 FOR AT RP #V @ . NEXT ;
+\ : PROBA2 0 LOCALS 0 LV . 1 LV . 2 LV . 3 LV . 4 LV . 5 LV . ;
+\ T-VARIABLE PROBA  : #. AR PUSH 1 PROBA +!
+\        S. R. PROBA @ . KEY DROP POP TO AR ;
+\ <% T-: S. S. BLK . KEY DROP T-; %>
+: NPSH #. DUP TO AR  POP #. RP AR 2* -  #.
+              DUP TO RP  TO AR    #.  PUSH
+    1- #.  FOR !A+ #. NEXT #. ;
+: NPOP  2+ DUP PUSH FOR RP AT RP 2* + @ NEXT  DROP ( 0)
+           RP 2* + TO RP PUSH ;
+: ZPSH TO AR  POP RP AR 2* - DUP TO RP AR 1- PUSH TO AR
+      BEGIN 0 !A+ NEXT PUSH ;
+: WCOMP  PUSH TO AR   BEGIN  @+ @A+ XOR
+          IF DROP DUP XOR RDROP ;THEN DROP NEXT DUP XOR INV ;
+: COMP  PUSH TO AR   BEGIN  C@+ C@A+ XOR
+          IF DROP DUP XOR RDROP ;THEN DROP NEXT DUP XOR INV ;
+ : USING FLUSH -USE FOPEN TO SCRH ;
+ : LIST DUP TO SCR  BLOCK .BLOCK ;
+ | : ?LD BLK 0= A" LOADING?" ;
+ : --> ?LD 0 TO >IN BLK 1+ TO BLK ; IMMEDIATE
+ : COPY  SWAP BLOCK SWAP BLOCK 1K CMOVE UPDATE FLUSH ;
+ : THRU  1+ SWAP  DO I LOAD LOOP ;
+ : +THRU BLK DUP D+ THRU ;
+ : -USE SCRH 1+ IF SCRH CLOSE DROP -1 TO SCRH THEN ;
+
+\ : D1+ TO AR 1+ IF AR ;THEN AR 1+ ;
+\ : NUMBER ?NUMBER ROT ABORT" ?" ;
+T-VARIABLE PROBA
+: #. CR 1 PROBA +!  DUP . PROBA @ . ;
+        : FIND          : ABORT : ERROR
+: COMP PUSH TO AR BEGIN  OVER AT RP + C@ OVER AT RP + C@ =
+   IF DROP NEXT DROP DROP 0 ;THEN DROP DROP DROP POP INV ;
+\ 10 [[ 9 R@ - 10 * DUP 4 .R
+\      9 [[ 9 R@ - OVER + 4 .R ]] CR ]]
+\ MAC: TEN # 10 ;
+CR TEN [[ TEN R@ - TEN  [[ DUP TEN R@ - * 4 .R ]] DROP CR ]]
+MAC: POP R> ;  MAC: PUSH >R ;
+TO MAC: ! ;THEN EXIT THEN !
+MAC: RDROP  AT DROP ;
+: [[ POP >IN PUSH SWAP DUP IF 1- THEN PUSH PUSH ;
+: ]] POP POP ?DUP IF 1- R@ TO >IN PUSH PUSH ;THEN RDROP PUSH ;
+: ?CR -IF CR THEN ;
+\ 256 [[ 255 R@ - 15 AND ?CR 255 R@ -  4 .R ]]
+ 10 [[ 9 R@ - 10 * DUP 4 .R
+      9 [[ 8 R@ - OVER + 4 .R ]] CR ]]
+
+
+
+: M+ S>D D+ ;
+: B_ADR 2DUP 1K UM/MOD DROP BLOCK + PUSH 1 M+ POP ;
+: BPEEK B_ADR C@ ;  : BPOKE PUSH B_ADR POP SWAP C! UPDATE ;
+FUNC: BLKREAD ( NBYTEL NBYTEH ADDRS BYTES / NBLOCK REMAIN )
+   1K NBYTEL 1K 1- AND - BYTES MIN TO REMAIN
+   NBYTEL NBYTEH 1K UM/MOD DROP NIP TO NBLOCK
+  BEGIN BYTES WHILE
+   NBLOCK BLOCK NBYTEL 1K 1- AND + ADDRS REMAIN CMOVE
+   REMAIN  AT ADDRS +!      NBLOCK 1+ TO NBLOCK
+   NBYTEL NBYTEH REMAIN M+ TO NBYTEH TO NBYTEL
+   BYTES REMAIN - DUP TO BYTES 1K MIN TO REMAIN
+  REPEAT  ;
+: HV ( BYTE POSITION IN SCR FILE ) M+ 2DUP  PAD 256
+   BLKREAD   PAD   256    DUMP ;  : SV 0 HV ;
+: PV -256 HV ;   : NV 256 HV ;
+
+
+Gods equ 28000h*4 ; 0A0000h
+Godd equ Gods-750*4
+mains equ Godd-1500*4
+maind equ mains-750*4
+ALIGN 4
+    me dd offset God
+screen dd 0 ; logo
+
+
+show0: call show
+    ret
+
+show: pop  screen
+    DUP_
+    xor  EAX, EAX
+    call ACT
+@@:     call graphic
+        call [screen]
+        call SWITCH
+        inc  EAX
+        jmp  @b
+
+c_:  mov  ESI, Godd+4
+    ret
+
+mark: mov  ECX, macros
+    mov  mk, ECX
+    mov  ECX, forths
+    mov  mk+4, ECX
+    mov  ECX, H
+    mov  mk+2*4, ECX
+    ret
+
+empty: mov  ECX, mk+2*4
+    mov  H, ECX
+    mov  ECX, mk+4
+    mov  forths, ECX
+    mov  ECX, mk
+    mov  macros, ECX
+    mov  class, 0
+    ret
+
+mFIND: mov  ECX, macros
+    push EDI
+    lea  EDI, [macro0-4+ECX*4]
+    jmp  @f
+
+FIND: mov  ECX, forths
+    push EDI
+    lea  EDI, [forth0-4+ECX*4]
+@@: std
+    repne scasd
+    cld
+    pop  EDI
+    ret
+
+EX1: dec  words ; from keyboard
+    jz   @f
+        DROP
+        jmp  EX1
+@@: call FIND
+    jnz  ABORT1
+        DROP
+        jmp  [forth2+ECX*4]
+
+execute: mov  lit, offset alit
+    DUP_
+    mov  EAX, [-4+EDI*4]
+ex2: and  EAX, -20o
+    call FIND
+    jnz  ABORT
+        DROP
+        jmp  [forth2+ECX*4]
+
+ABORT: mov  curs, EDI
+    shr  EDI, 10-2
+    mov  blk, EDI
+ABORT1: mov  ESP, Gods
+    mov  spaces+3*4, offset forthd
+    mov  spaces+4*4, offset qcompile
+    mov  spaces+5*4, offset cnum
+    mov  spaces+6*4, offset cshort
+    mov  EAX, 57o ; ?
+    call ECHO_
+    jmp  ACCEPT
+
+sDEFINE: pop  aDEFINE
+    ret
+MACRO_: call sDEFINE
+macrod: mov  ECX, macros
+    inc  macros
+    lea  ECX, [macro0+ECX*4]
+    jmp  @f
+
+FORTH: call sDEFINE
+forthd: mov  ECX, forths
+    inc  forths
+    lea  ECX, [forth0+ECX*4]
+@@: mov  EDX, [-4+EDI*4]
+    and  EDX, -20o
+    mov  [ECX], EDX
+    mov  EDX, h
+    mov  [forth2-forth0+ECX], EDX
+    lea  EDX, [forth2-forth0+ECX]
+    shr  EDX, 2
+    mov  last, EDX
+    mov  list, ESP
+    mov  lit, offset adup
+    test class, -1
+    jz   @f
+        jmp  [class]
+@@: ret
+
+cdrop: mov  EDX, h
+    mov  list, EDX
+    mov  byte ptr [EDX], 0adh ; lodsd
+    inc  h
+    ret
+
+qdup: mov  EDX, h
+    dec  EDX
+    cmp  list, EDX
+    jnz  cdup
+    cmp  byte ptr [EDX], 0adh
+    jnz  cdup
+        mov  h, EDX
+        ret
+cdup: mov  EDX, h
+    mov  dword ptr [EDX], 89fc768dh
+    mov  byte ptr [4+EDX], 06
+    add  h, 5
+    ret
+
+adup: DUP_
+    ret
+
+var1: DUP_
+    mov  EAX, [4+forth0+ECX*4]
+    ret
+variable: call forthd
+    mov  [forth2-forth0+ECX], offset var1
+    inc  forths ; dummy entry for source address
+    mov  [4+ECX], EDI
+    call macrod
+    mov  [forth2-forth0+ECX], offset @f
+    inc  macros
+    mov  [4+ECX], EDI
+    inc  EDI
+    ret
+@@: call [lit]
+    mov  EAX, [4+macro0+ECX*4]
+    jmp  @f
+
+cNUM: call [lit]
+    mov  EAX, [EDI*4]
+    inc  EDI
+    jmp  @f
+
+cSHORT: call [lit]
+    mov  EAX, [-4+EDI*4]
+    sar  EAX, 5
+@@: call literal
+    DROP
+    ret
+
+alit: mov lit, offset adup
+literal: call qDUP
+    mov  EDX, list
+    mov  list+4, EDX
+    mov  EDX, h
+    mov  list, EDX
+    mov  byte ptr [EDX], 0b8h
+    mov  [1+EDX], EAX
+    add  h, 5
+    ret
+
+qCOMPILE: call [lit]
+    mov  EAX, [-4+EDI*4]
+    and  EAX, -20o
+    call mFIND
+    jnz  @f
+        DROP
+        jmp  [macro2+ECX*4]
+@@: call FIND
+    mov  EAX, [forth2+ECX*4]
+@@: jnz  ABORT
+call_: mov  EDX, h
+    mov  list, EDX
+    mov  byte ptr [EDX], 0e8h
+    add  EDX, 5
+    sub  EAX, EDX
+    mov  [-4+EDX], EAX
+    mov  h, EDX
+    DROP
+    ret
+
+COMPILE: call [lit]
+    mov  EAX, [-4+EDI*4]
+    and  EAX, -20o
+    call mFIND
+    mov  EAX, [macro2+ECX*4]
+    jmp  @b
+
+SHORT_: mov lit, offset alit
+    DUP_
+    mov  EAX, [-4+EDI*4]
+    sar  EAX, 5
+    ret
+
+NUM: mov lit, offset alit
+    DUP_
+    mov  EAX, [EDI*4]
+    inc  EDI
+    ret
+
+comma: mov  ECX, 4
+@@: mov  EDX, h
+    mov  [EDX], EAX
+    mov  EAX, [ESI] ; drop
+    lea  EDX, [EDX+ECX]
+    lea  ESI, [ESI+4]
+    mov  h, EDX
+;    DROP
+    ret
+
+comma1: mov  ECX, 1
+    jmp  @b
+
+comma2: mov  ECX, 2
+    jmp  @b
+
+comma3: mov  ECX, 3
+    jmp  @b
+
+semi: mov  EDX, h
+    sub  EDX, 5
+    cmp  list, EDX
+    jnz  @f
+    cmp  byte ptr [EDX], 0e8h
+    jnz  @f
+        inc  byte ptr [EDX] ; jmp
+        ret
+@@: mov  byte ptr [5+EDX], 0c3h ; ret
+    inc  h
+    ret
+
+then: mov  list, ESP
+    mov  EDX, h
+    sub  EDX, EAX
+    mov  [-1+EAX], DL
+    DROP
+    ret
+
+begin: mov  list, ESP
+here: DUP_
+    mov  EAX, h
+    ret
+
+qlit: mov  EDX, h
+    lea  EDX, [EDX-5]
+    cmp  list, EDX
+    jnz  @f
+    cmp  byte ptr [EDX], 0b8h
+    jnz  @f
+        DUP_
+        mov  EAX, list+4
+        mov  list, EAX
+        mov  EAX, [1+EDX]
+        cmp  dword ptr [EDX-5], 89fc768dh ; dup
+        jz   q1
+            mov  h, EDX
+            jmp  cdrop
+q1:     add  h, -10 ; flag nz
+        ret
+@@: xor  EDX, EDX ; flag z
+    ret
+
+less: cmp  [ESI], EAX
+    js   @f ; flag nz
+        xor  ECX, ECX ; flag z
+@@: ret
+
+qIGNORE: test dword ptr [-4+EDI*4], -20o
+    jnz  nul
+        pop  EDI
+        pop  EDI
+nul: ret
+
+ALIGN 4
+ spaces dd offset qIGNORE, offset execute, offset NUM
+aDEFINE dd 5+offset MACRO_ ; offset macrod ?
+        dd offset qCOMPILE, offset cNUM, offset cSHORT, offset COMPILE
+        dd offset SHORT_, offset nul, offset nul, offset nul
+        dd offset variable, offset nul, offset nul, offset nul
+
+;macro0 dd (3 shl 4+1)shl 24 ; or
+;       dd ((5 shl 4+6)shl 7+140o)shl 17 ; and
+;       dd 173o shl 25 ; +
+macro0 dd 170o shl 25 ; ;
+       dd ((140o shl 7+146o)shl 7+142o)shl 11 ; dup
+       dd (((177o shl 7+140o)shl 7+146o)shl 7+142o)shl 4 ; ?dup
+       dd (((140o shl 4+1)shl 4+3)shl 7+142o)shl 10 ; drop
+;       dd ((6 shl 4+7)shl 7+142o)shl 17 ; nip
+       dd (((2 shl 7+144o)shl 4+4)shl 4+6)shl 13 ; then
+       dd ((((143o shl 4+4)shl 5+25o)shl 4+7)shl 4+6)shl 8 ; begin
+macro1 dd 128 dup (0)
+forth0 dd (((143o shl 4+3)shl 4+3)shl 4+2)shl 13 ; boot
+forth1 dd 512 dup (0)
+macro2 dd offset semi
+       dd offset cdup
+       dd offset qdup
+       dd offset cdrop
+       dd offset then
+       dd offset begin
+       dd 128 dup (0)
+forth2 dd offset boot
+       dd offset warm
+       dd offset PAUSE
+       dd offset MACRO_
+       dd offset FORTH
+       dd offset c_
+       dd offset stop
+       dd offset ACT
+       dd offset SHOW
+       dd offset LOAD
+       dd offset here
+       dd offset qlit
+       dd offset COMMA3
+       dd offset COMMA2
+       dd offset COMMA1
+       dd offset COMMA
+       dd offset less
+       dd offset jump
+       dd offset ACCEPT
+       dd offset pad
+       dd offset erase
+       dd offset copy
+       dd offset mark
+       dd offset empty
+       dd offset emit
+       dd offset eDIG
+       dd offset hdot
+       dd offset hdotn
+       dd offset CR
+       dd offset space
+       dd offset DOWN
+       dd offset edit
+       dd offset E
+       dd offset text1
+       dd offset keyboard
+       dd offset debug
+
+
+ALIGN 4
+    me dd offset God
+screen dd 0 ; logo
+
+ROUND: call unPAUSE
+God     dw 0 ; Gods-3*2
+       call unPAUSE
+main    dw 0 ; mains-3*2
+  jmp  ROUND
+
+
+: INTER  BEGIN   IDATA @ A! @A+ A IDATA !
+         15 AND  2*  SPACES @ + @ EXECUTE   AGAIN ;
+
+: LOAD  10 SHIFT  IDATA @ PUSH  IDATA !  INTER ;
+
+: UNPAUSE  POP @ RP!   POP ME!   POP SP!  DROP  ;
+
+: PAUSE   SP@ PUSH    RP@ ME !+   PUSH   ;
+
+: ROUND BEGIN UNPAUSE  NOP  UNPAUSE NOP  AGAIN ;
+
+: JUMP   2*  POP  +  @  PUSH  ;
+
+: KEY BEGIN PAUSE '?KEY UNTIL DROP 'KEY ;
+
+: DEBUG    DUP  GOD @ DUP @  PUSH  .
+           DUP  POP  .  DUP
+           MAIN @  .  DUP  SP@ .  ;
+
+\ : COPY  DUP 12 U<  ABORT1  DUP
+\        10 LSHIFT  BLK @  10 LSHIFT  512
+\        MOVE  BLK !  ;
+
+: COPY DUP 12 U< ABORT1 DUP
+       BLOCK  SCR @ BLOCK  512 MOVE SCR ! ;
+
+: FILL -ROT  ?FOR OVER !+ NEXT DROP DROP ;
+
+: MOVE ?FOR PUSH @+ !R+ POP NEXT DROP DROP ;
+
+: ERASE 10 LSHIFT 512 0 FILL ;
+
+
+' ADUP  VECTOR  lit
+        CREATE  mk      0 , 0 , 0 ,
+      VARIABLE  H       40000h 4*  H  !
+      VARIABLE  last
+    0   VECTOR  class
+        CREATE  list    0 , 0 ,
+      VARIABLE  macros
+      VARIABLE  forths
+
+
+ACT: mov  EDX, maind-4   ;
+    mov  [EDX], EAX      ;
+    mov  EAX, mains-4    ;
+    pop  [EAX]           ;
+    sub  EAX, 4          ;
+    mov  [EAX], EDX      ;
+    mov  main, EAX       ;
+    DROP                 ;
+    ret                  ;
+
+

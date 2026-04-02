@@ -1,0 +1,15 @@
+{ WORDS}    8 VALUE `LINECOUNT
+
+: `;CNTC  DPTR C@  CNTC + 73 U<      IF
+      EX  CNTC 64 U< IF  1H 1- CNTC NOT AND SPACES
+      EX bs          ;THEN           THEN
+          `LINECOUNT 1- TO `LINECOUNT
+      EX  `LINECOUNT
+        0= IF (BK  27 <> bs TO `LINECOUNT SKIP THEN bs
+        CR ;
+
+: `W1 `;CNTC  DNEXT TO ADR ADR H. DPTR ID. EX ;
+
+: WORDS CR DICT AHEAD BEGIN `W1 0;
+        NPTR THEN END? 0= UNTIL ;
+

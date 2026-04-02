@@ -1,0 +1,239 @@
+
+( DEBUF LW LAST WORD  LA - LAST ADR  FA - FIRST ADR   )
+
+MARKER -HACK
+
+0 QUAN ADR    -HEADERS
+
+<%   \ COMPILING TIME ONLY
+
+: VALUES FOR 0 VALUE NEXT ;
+: 1-, HERE 2- @ 1- , ;
+: '@,  ' @ , ;
+%>
+
+: BADR AT ADR @1+! C@ ;
+
+            \ TEMP VARIABLES
+0 VALUE LW  \ LAST WORD
+0 VALUE EF  \ END FLAG
+0 VALUE IX  \ INDEX OF WORD IN LAST TABLE
+0 VALUE 1A  \ FIRST ADDRESS
+0 VALUE NA  \ NEXT ADDRESS
+0 VALUE LA  \ LAST ADDRESS
+0 VALUE PS  \ PASS NUMBER
+0 VALUE HW  \ HELP WORD
+0 VALUE TAB \ TABULATION POS
+0 QUAN  SCP \ SCAN POINTER
+            \ STACK OF FORWARD ADDRESSES
+0 <STACK FSTK 0 ,
+            \ STACK OF BACKWORD ADDRESSES
+0 <STACK BSTK 0 ,
+
+: /1PAS PS -IF RDROP THEN ;  \ ON FIRST PASS -  EXIT WORD
+
+: WADR AT ADR @2+! @ ;       \ READ WORD AT ADR & ADR++
+
+: SADR AT SCP @2+! @ ADR = ; \ ONE STEP SCAN FOR ADR
+
+\ SAVE AN ADDRESS TO ONE OF TWO STACKS
+: !ADR ADR 1- OVER U< IF TO FSTK ;THEN TO BSTK ;
+
+\ CHECK IF NAME IS 'OK'   0 IF OK   ELSE NOT OK
+: ?ID 0 -ROT CNTDO DO I C@
+        33 127 WITHIN -IF 1+ THEN LOOP ;
+
+FUNC: ID.OK ( ADDR / ID FLG )
+  ADDR C>N TO ID     \ ID - TYPE OF ADDR
+  ID IF COUNT #LEN   \ IF ID<>0  THEN
+     AND DUP TO ID   \   LEN OF WORD -> ID
+     ?ID TO FLG THEN \ CORRECTNESS CHECK OF NAME
+  ID -IF 1 TO FLG THEN
+  ADDR FLG           \ IF FLAG THEN BAD NAME
+  IF C" : EMIT H. RETURN THEN  ?ID. ;
+
+\ GET ADDRESS TO BRANCH TO
+: @BRAN  WADR TO NA  LA NA U< IF NA TO LA THEN ;
+
+\ MAIN SCAN UTILITY CREATOR
+: XSC CREATE C,   \ NUMBER OF ITEMS
+      DOES> COUNT \ N TABLE COUNT
+      2DUP 2* +   \ N TABLE COUNT ENDTABLE
+      TO NA       \ ! IF IN TABLE THEN JUMP AFTER TABLE
+      LW TO SCAN 1+ ?DUP        \ ELSE CONTINUE
+      IF 1- TO IX RDROP NA PUSH THEN ;
+
+: #. BASE PUSH DECIMAL . POP TO BASE ;  \ PRINT NUM IN DECIMAL
+( DEBUF LW LAST WORD  LA - LAST ADR  1A - FIRST ADR    )
+
+: NEWLN CR TAB SPACES ;  \ NEWLINE WITH TAB SPACES
+
+: NEWLN? 1L SWAP - OUTC -
+      0< IF NEWLN THEN  ;
+
+: #NAME CREATE DOES> PS         \ IN SECOND PASS TYPE A NAME
+    IF DUP IX SCIND DUP C@      \
+  NEWLN? ". SPACE THEN DROP ;
+
+: TAB+ TAB + TO TAB ;           \
+
+: BWADR IX -IF BADR ;THEN WADR ;
+
+: WDADR IX 2- -IF WADR ;THEN S>D ;
+
+\ LOOP NAMES
+#NAME LUP. ," DO ," ?DO ," LOOP ," +LOOP ," FOR
+5 XSC LOOPS  ] (DO TO (DO (LP TO (LP (FOR
+         @BRAN LUP. ;M
+
+\ STRINGS COMPILE ?
+#NAME STRG. ," " ," ."  ," A"
+: DOES? DUP C@ 232 = IF 1+ STR +
+   [ ' STRG. @ 1+ STR + ]  LITERAL - THEN ;
+
+: /END LA ADR U< IF 1 TO EF THEN ;
+
+\ STRING OPERATION STRING LITERAL, TYPE STRING,
+\   OR ERROR MESSAGE
+3 XSC STRG ] (" (". TO ABORT
+        ADR TO HW  \ CURRENT ADDR TO HW  PREPARED FOR TYPE
+     BADR ADR +    \ ADDRESS AFTER STRING
+     TO ADR /1PAS  \ ON 1 PASS ENOUGHT
+     HW C@ NEWLN?  \ SHOW STRING ON 2 PASS
+     STRG. HW ". 34 EMIT SPACE ;M
+
+\ SCAN ROUTINE
+: IX? BEGIN SCP HW - WHILE SADR IF 1 ;THEN  REPEAT 0 ;
+
+\ FORWARD NAMES
+#NAME FWD. ," SKIP  ," IF  ," -IF  ," OF
+
+\ BACKWARD NAMES
+#NAME BWD. ," AGAIN ," UNTIL ," -UNTIL
+           ," REPEAT ," ELSE ," BEGIN ," THEN
+
+4 XSC BRANC  ] (BR TO (BR AT (BR  (OF
+  @BRAN  PS -IF NA  !ADR
+  ;THEN  LW LIT (BR -
+  0;   ADR 1- NA U< IF NEWLN FWD. 2 TAB+
+  ;THEN  -2 TAB+ BWD. NEWLN
+;M
+
+: TBS! 2@ TO SCP TO HW ;
+
+: TBS? TO IX 0
+     BEGIN TO CSP IX?
+     WHILE  BWD. CSP 2+ REPEAT ;
+
+: THENS.  /1PAS      \ WORKS ON SECOND PASS
+    AT FSTK TBS! IX? 0;
+    6 -2  LW LIT (BR =   IF 2DROP
+    3 -4 ADR 1- NA    U< IF 2DROP
+    4  0 THEN THEN
+    TAB+ NEWLN TO IX BWD.
+    6 TBS? CSP NEGATE TAB+ ;
+
+: BEGINS.  /1PAS
+       AT BSTK TBS!  5 TBS? CSP TAB+ ;
+
+
+
+: BEG?  ADR 2- 1A - ;    \ AT THE BEGINING ?
+
+: BEG. 1A ID.OK ;        \ NAME OF WORD  - IF EXIST
+
+: SPEC
+   LIT ;code LW =
+     IF ADR DOES?
+       -IF 3 AT ADR +! /1PAS ." DOES> "
+       ;THEN  /END
+     THEN
+     LIT [ '@, QUIT ]
+     LW @ = IF /END THEN
+     PS 0;
+     LW ID.OK
+     7  NEWLN? ;
+
+#NAME OTHER.
+ ," NEXT   ," ".   ," 2DUP ," 2DROP ," CNTDO
+ ," 1+!    ," 2+!  ," 1-!  ," 2-!   ," 1-!@
+ ," 2-!@   ," @1+! ," @2+! ," -ROT  ," RDROP
+ ," +!     ," COMPILE  ," 0MAX ," PUSH ," POP
+ ," XOR! ," STR
+
+22 XSC OTHER ]
+  TO (FOR   AT ("   TO DUP   TO DROP   AT (DO    \  5
+  TO 1+     TO 2+   TO 1-    TO 2-     AT 1-     \ 10
+  AT 2-     AT 1+   AT 2+    TO ROT    AT DROP   \ 15
+  AT +      TO ,    TO MAX   >R        R>        \ 20
+  TO XOR    TO COUNT
+      OTHER. ;M
+
+
+#NAME COMP. ," BCOMPILE
+1 XSC COMP ] BCOMPILE  \ COMPILE        \ WORD COMPILE ?
+  BWADR TO NA  /1PAS COMP.
+  IX IF NA ID.OK EXIT THEN ." [ " NA #. ."  C, ] "  ;M
+\ #NAME NLIT. ," BLIT ," LIT ," DLIT
+
+3 XSC NLIT ]  BLIT LIT DLIT      \ BYTE COMPILE ?
+  BWADR  WDADR TO HW TO NA  /1PAS
+  NA HW D. IX 1- 0= 256 NA U< AND IF
+           ." ( " NA ID.OK ." ) "  THEN ;M
+#NAME STARTS.
+    ," FUNC:  ," ->:   ," :TR-  ," :   ," :1
+    ," :2     ," :3    ," :4
+
+8 XSC STARTS
+   '@, ID.OK    '@, QUIT    '@, ??    '@, XSC    1-,
+   1-,          1-,         1-,
+ ]  BEG? 5 U< -IF /END THEN
+    /1PAS  STARTS.  BEG? -IF BEG. THEN ;M  -->
+
+( PROBA ID.OK     )
+#NAME /END. ," EXIT ," RETURN ," ?TR;
+
+3 XSC ENDS ] EXIT  RETURN  AT NOOP   \  EXIT ?
+    /END  /1PAS  EF IF ." ; " ;THEN /END. ;M
+
+: 1I             \ DECOMPOSE 1 INSTRUNCTION
+    THENS.       \ IF, -IF, OF, ELSE, WHILE,  ENDS?
+    BEGINS.      \ START OF LOOP  ? ON THIS ADDRESS
+    WADR TO LW   \ GET WORD  -> LAST WORD
+    STARTS       \ IS IT STARTING WORD ?
+    OTHER        \
+    COMP         \
+    STRG         \ IS IT STRING WORD ?
+    NLIT         \
+    LOOPS        \
+    ENDS         \
+    BRANC        \
+    SPEC ;       \
+
+ |  ( -HEADERS OFF )
+: PAS TO PS    \ PASS NUMBER 0\1
+   1A TO ADR   \ START ADR -> OPERATION ADR
+    0 TO EF    \ 0 -> END FLAG
+   -1 TO LW    \ -1 -> LAST WORD - NO SUCH WORD
+   BEGIN 1I EF UNTIL ;
+
+: @HACK DECIMAL CR TO 1A    \ FIRST ADDRESS
+  0 TO TAB                  \ NO TABULATION
+  0 TO LA                   \ LAST ADDRES NOT FOUND YET
+  PAD 1K 2* +  DUP 1K + DUP \ EMPTY  FORWORD'S STACK
+  AT BSTK 2! DUP AT FSTK 2! \ EMPTY BACKWORD'S STACK
+  1A @ DOES?                \ IS IT A DOES> ? CHILD
+  -IF 1A ID.OK ;THEN        \   YES
+  0 PAS 1 PAS ;             \ NO -> LET'S  HACK IT
+
+| : @@@ CREATE C, DOES> C@ ' + @HACK ;   \ FLAT HACK 0CFA
+  0 @@@ HACK   2 @@@ 'HACK   4 @@@ "HACK \ 1CFA 2CFA
+
+: >ADR  ADR @HACK ;    \ CONTINUE HACKING ON ADR
+
+| : @@ CREATE C, DOES> C@ ' + STR   \ 0CFA  DOES>
+       PUSH 1H DUMP POP 3+ @HACK ;  \ 1CFA 2CFA
+  0 @@ >>   2 @@ TO>  4 @@ AT>
+
+PRUNE
+

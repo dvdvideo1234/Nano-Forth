@@ -1,0 +1,35 @@
+
+MAC: FOUND HERE OVER AT -TEXT 0= ;
+| : WORD. DUP H. ID. ;
+| : VOC. 2- C>N DROP WORD. ." :" ;
+
+: VOCS. VOCLINK
+   BEGIN ?DUP
+   WHILE DUP 2-  VOC.
+       @
+   REPEAT
+;
+
+| : WORDS.  DUP
+    BEGIN @ ?DUP
+    WHILE FOUND IF 2DUP WORD. VOC. THEN
+      N>C 2-
+    REPEAT
+    DROP
+;
+
+\ : ALL-WORDS. VOCLINK
+\    BEGIN ?DUP
+\    WHILE DUP  2- WORDS.
+\          @
+\    REPEAT
+\ ;
+
+: WHERE BLWORD DROP
+   VOCLINK
+   BEGIN ?DUP
+   WHILE DUP  2- WORDS.
+         @
+   REPEAT
+;
+

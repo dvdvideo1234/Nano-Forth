@@ -1,0 +1,26 @@
+        PushR
+        SWAPR
+        DROPR
+        TOnext
+        next
+        X
+
+DAT = 5
+
+      _nam      'msg'
+      _ln       'token'
+      _XALIGN  HLBL
+      _colon   Clbl
+      _VAR      VLBL
+      _XT       XLBL,_NOP
+      _value    lblU,dat
+      _DEFERO   lblO,dat
+      _DEFER    lblD,dat
+      _vector   lblR,dat
+      _point    lblP,dat
+      _QUAN     LBLQ,DAT
+      _const    lblC,dat
+      _MCONS    lblM,dat
+      _entry    'nam',dat
+
+

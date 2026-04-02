@@ -1,0 +1,95 @@
+Updated 2001 July 12
+Pentium colorForth
+
+Boots into 32-bit mode with a flat address space. 
+Segment registers are based at zero; essentially unused. 
+
+Interrupts off. 
+Protections off.
+
+Data are addressed as 32-bit words, not bytes. 
+But ESP and ESI hold byte addresses, for optimization. 
+Instructions are optimized if agruments are literals.
+
+Registers are assigned:
+
+0 EAX: stack (1st number on Data stack)
+1 ECX: string counter, scratch
+2 EDX: address register A, I/O port, scratch
+3 EBX: unused
+4 ESP: byte pointer to top of Return stack
+5 EBP: unused
+6 ESI: byte pointer to 2nd number on Data stack
+7 EDI: dword pointer to next word to be interpreted
+27 chip primitives
+
+Op	Word	Pentium	Action
+
+0	word ;	jmp	Jump to word; tail recursion
+1	if	jz	Jump to 'then' if zero
+2	word	call	Call word
+3	-if	jns	Jump to 'then' if not negative
+6	;	ret	Return to calling word
+8	@	mov EAX, [EAX*4]	Fetch from address on stack
+                dup; mov EAX, a
+
+9	@+	dup; mov EAX, [EDX*4]
+                 inc EDX	Fetch from address in A; increment A
+
+a	n	dup; mov EAX, n	Fetch number
+b	@r		Fetch from address in R
+c	!	a!; mov [EDX*4], EAX; drop	Store to address on stack
+                mov a*4, EAX; drop
+                mov a*4, n
+
+d
+e	!+	mov [EDX*4], EAX; inc EDX	Store to address in A; increment A
+f	!r		Store to address in R; increment R
+10	2*	shl EAX, 1	Shift stack left
+11	2/	sar EAX, 1	Shift stack right, propagate sign
+12	-	not EAX	Ones complement stack
+14	and	and EAX, [ESI]; nip	And to stack
+and EAX, n
+
+15	or	xor EAX, [ESI]; nip	Exclusive-or to stack
+xor EAX, n
+
+16	+	add EAX, [ESI]; nip	Add to stack
+add EAX, n
+
+17	*+		Multiply step
+18	push	push EAX; drop	Push stack onto Return
+19	a		Load A register onto stack
+1a	dup	lea ESI, ESI-4; mov [ESI], EAX	Duplicate stack
+1b	over	dup; mov EAX, [ESI+4]	Load 2nd datum onto stack
+1c	pop	dup; pop EAX	Pop Return onto stack
+1d	a!	mov EDX, EAX; drop	Store stack into A register
+1e	drop	lodsd	Discard stack
+1f	nop	nop	Do nothing
+
+Other Pentium macros:
+Word	Pentium	Action
+
+nip	lea ESI, ESI+4	Discard 2nd stack item; preserve flags
+
+swap	mov EDX, EAX; 
+
+mov EAX, [ESI]; mov [ESI], EDX	Exchange stack with 2nd number
+
++!	a!; add [EDX], EAX; drop	Add to address on stack
+
+add a*4, EAX; drop
+add a*4, n
+
+*	imul EAX, [ESI]; nip	Multiply with stack
+imul EAX, n
+
+*/	mov ECX, EAX; drop
+imul [ESI]; idiv [ECX]; nip	Multiply 2 numbers, divide by stack
+The word - is the unary ones-complement, not the binary subtract. 
+      Its result is 1 less than negate, and much faster in hardware.
+The word or is exclusive-or. Inclusive-or is rarely needed.
+
+The word */ 
+      multiplies by a ratio, with a double-length intermediate product. 
+      It eliminates the need for floating-point.
