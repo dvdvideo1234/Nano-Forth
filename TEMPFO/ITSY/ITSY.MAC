@@ -142,10 +142,14 @@ value macro anam,data
   endm
   
 WATCH macro anam,data
-  xat 	anam,@_dovar-2
   xto 	anam,@_setwatch
   xt  	anam,@_getwatch
   dat 	anam,data
+  endm
+  
+QWATCH macro anam,data
+  xat 	anam,@_dovar-2
+  WATCH anam,data
   endm
   
 vector macro anam,data
@@ -189,3 +193,7 @@ col macro anam
 
 DSP = SP
 RSP = BP
+
+X MACRO
+  XCHG  RSP,DSP
+ENDM

@@ -27,21 +27,26 @@ Start   Label byte
 @_CICLE	dw _init,_eval,_nop,_BRAN,@_CICLE
 
 PRIM accpt
-  POP DI
-	mov [di],bx
-	mov ah,10
-	CALL @DOS
-	lea bx,[di+1]
+  POP   AX
+  mov   DX,AX
+  XCHG  BX,AX
+	mov   [BX],AX
+	mov   ah,10
+	CALL  @DOS
+	INC   bx
+
+;===========================================================
+
 @_count:
-	inc bx
-	push bx
-	dec bx
+	inc   bx
+	push  bx
+	dec   bx
 @_c@:		
-	mov bH,[bx]
+	mov   bH,[bx]
 @_HIbyte:
-	mov BL,bh
+	mov   BL,bh
 @_lobyte:
-	mov bh,0
+	mov   bh,0
 	jmps @_DONE
 
 @_STP:	
@@ -50,9 +55,7 @@ PRIM accpt
 @_P:
 	INc bx
 @_DONE:
-	jmp @_DONEXT
-
-;===========================================================
+	jmp @_DONEXT      ; =================  !!!
 
 @_STM:	
 	POP	  [bx-2]
@@ -64,7 +67,50 @@ PRIM accpt
 @_dc@:
 	push  bx
 	jmps  @_c@
+
+;------------------------------
+; FLAGS & REGISTERS
 	
+@_xr:
+	xchg  bx,[bp]         ;XR
+  jmps  @_DONE
+	
+@_XA:
+  xchg  DX,[BP]         ;XA
+  jmps  @_DONE
+	
+@_Uless:
+  pop   ax
+  SUB   Ax,Bx
+	skipr cx
+@_zless:
+	SHL	  bx,1
+@_cf_bx:
+	sbb   bx,bx
+	jmps  @_DONE		
+@_zeq:		
+	sub   bx,1
+  jmps  @_cf_bx
+				
+  XT  RSP,@_DUSWA_
+  MOV   AX,RSP
+  RET
+
+  XT  DSP,@_DUSWA_
+  MOV   AX,DSP
+  RET
+
+  XT  RSPST,@_DROP_
+  MOV   RSP,BX
+  RET
+
+PRIM DSPST
+  mov   DSP,bx
+  NEXT
+
+;==============================================
+; PEAK & POKE PRIMITIVES
+
 @_DCONST:
   push  bx
   mov   BX,DI
@@ -72,7 +118,7 @@ PRIM accpt
 	PUSH  [bx+2]
 @_fetch:
 	mov   bx,[bx]
-	jmps  @_DONEXT	
+	jmp   @_DONEXT	
 
 @_getwatch:
 	mov	  di,[di]
@@ -88,23 +134,6 @@ PRIM accpt
 	mov   [di],bx
 	jmp   @_drop
 	
-@_XA:
-  xchg  DX,[BP]                 ;XA
-  jmps  @_DONEXT
-	
-@_RSLD_:
-	push  BX
-	XOR		ah,ah
-	SKIPR Cx
-@_RSST_:
-	POP	  AX
-	xchg  AX,bx
-	xchg  SI,[BP]
-	call  DI
-@_EX:
-  xchg    SI,[BP]
-  jmps  @_DONEXT
-
 @_lary:
 	shl   bx,1
 @_wary:
@@ -112,6 +141,12 @@ PRIM accpt
 @_bary:
 	add   bx,di
 	jmps  @_DONEXT
+;------------------------------------------------
+
+
+;------------------------------------------------
+; Inner Interpreter
+
 
 @_COL_EVAL:
 	pop  ax
@@ -126,20 +161,6 @@ lbl nop
 	xchg ax,di
 	jmps @_pcpush
 	
-@_xr:
-	xchg bx,[bp]
-    jmps @_DONEXT
-	
-@_j:
-	mov	ax,[bp+2]
-	jmps @_ph
-	
-@_pop:
-	mov	ax,[bp]
-	inc bp
-	inc bp
-	jmps @_ph
-
 	scasw
 	scasw
 @_does:
@@ -148,126 +169,23 @@ lbl nop
 	mov	 bx,di
 @_pcpush:		
 	xchg ax,si
-@_rpush:		
-	dec bp
-	dec bp
-	mov [bp],ax
+@_rpush:	
+  X
+  push  AX
+  X
 	jmps @_DONEXT
 	
-@_cLnip_:  
-	POP   cX
-  mov   CH,0
-  SKIPA
-@_bnip_:  
-	push   bX
-@_cnip_:  
-	POP   cX
-@_nip_:   
-	POP   AX
-@_nop_:   
-	CALL  DI
-	jmps @_DONEXT
-
-@_SOURCE_:
-	mov		AX,@_Etib
-	mov		cx,@_ltib
-	SUB   AX,CX
-@_dup_:
-  push bx
-	jmps @_nop_
-
-@_swapc_:
-	pop cx
-@_swap_:
-	pop ax
-@_DUSWA_:
-	call di
-
-; -------------------
-; Inner Interpreter
-; vvvvvvvvvvvvvvvvv
-
-@_ph:
-  push bx
-@_sw:
-  xchg ax,bx
-@_DONEXT:   
-  mov di,[si]
-  cmpsw
-@_DONEXT1:		
-  jmp [di-2]
-
-; ^^^^^^^^^^^^^^^^^^
-; Inner Interpreter
-; -------------------
-
-@_TODBG: JMP @_TROFF		; POINTS TO DEBUGGER IF ANY
-
-@_DROPDUP:
-	POP BX
-@_dup:
-	push bx
-	jmps @_DONEXT
-	
-@_Uless:
-  pop ax
-  SUB Ax,Bx
-	skipr cx
-@_zless:
-	SHL	bx,1
-@_cf_bx:
-	sbb bx,bx
-	jmps @_DONEXT		
-		
-@_DROP_3: 
-	POP   CX        ;DRP3
-@_DROP_2: 
-	POP   AX        ;DRP2
-@_DROP_:  
-	xchg	DI,BX
-@_CALDR_:  
-	CALL  BX        ;DRP
-@_drop:		
-    pop bx
-    jmps @_DONEXT
-
-@_setpoint:
-	mov [di+2],si
-	jmps @_rts
-	
-@_nipx:
-	pop ax
-	jmps @_rts
-
-@_0ex:	
-	or bx,bx
-	jNe @_drop
-	
-;@_SWAPX:
-;	pop ax
-;	XCHG BX,AX
-;	PUSH AX
-;	skipr cl
-@_dropx:
-	pop bx
-@_rts:
-	mov si,[bp]
-@_rdrop:		
-	inc bp
-	inc bp
-	jmps @_DONEXT
-	
-@_BINU_:  
-	PUSH BX
 @_DINU_:  
-	POP	 CX
+	POP	  DX
+@_CINU_:  
+	POP	  CX
 @_NINU_:  
-	POP  AX
+	POP   AX
 @_NUP_:   
-	CALL DI
+	CALL  DI
 @_phax:	
-	PUSH AX
-	jmps @_DONEXT
+	PUSH  AX
+	jmps  @_DONEXT
 		
 	scasw
 	scasw
@@ -289,13 +207,120 @@ lbl nop
 	mov ax,[di]
 	jmps @_pcpush
 	
-@_for:
-	mov	si,[si]
-@_push:
-	pop ax
-	xchg ax,bx
-	jmps @_rpush
+@_RSLD_:
+	push  BX
+	XOR		ah,ah
+	SKIPR Cx
+@_RSST_:
+	POP	  AX
+	xchg  AX,bx
+	xchg  SI,[BP]
+	call  DI
+@_EX:
+  xchg    SI,[BP]
+  jmps  @_DONEXT
 
+@_DROP_3: 
+	POP   CX        ;DRP3
+@_DROP_2: 
+	POP   AX        ;DRP2
+@_DROP_:  
+	xchg	DI,BX
+@_CALDR_:  
+	CALL  BX        ;DRP
+@_drop:		
+  pop bx
+  jmps @_DONEXT   ; GETS 1,2,3 RETURNS 0
+
+@_cLnip_:  
+	POP   cX
+  mov   CH,0
+  SKIPA
+@_bnip_:  
+	push   bX
+@_cnip_:  
+	POP   cX
+@_nip_:   
+	POP   AX
+@_nop_:   
+	CALL  DI
+	jmps @_DONEXT     ; GETS 1,2,3 RETURNS 1
+
+@_SOURCE_:
+	mov		AX,@_Etib
+	mov		cx,@_ltib
+	SUB   AX,CX
+@_dup_:
+  push bx
+	jmps @_nop_
+
+@_swapc_:
+	pop   cx
+@_swap_:
+	pop   ax
+@_DUSWA_:
+	call  di      ; GETS 1,2,3 RETURNS 2
+
+; -------------------
+; Inner Interpreter
+; vvvvvvvvvvvvvvvvv
+
+@_ph:
+  push bx
+@_sw:
+  xchg ax,bx
+@_DONEXT:   
+  mov di,[si]
+  cmpsw
+@_DONEXT1:		
+  jmp [di-2]
+
+@_TODBG: JMP @_TROFF		; POINTS TO DEBUGGER IF ANY
+
+; ^^^^^^^^^^^^^^^^^^
+; Inner Interpreter
+
+
+; -------------------
+; STACK
+
+@_j:
+	mov	ax,[bp+2]
+	jmps @_ph
+	
+@_pop:
+	mov	ax,[bp]
+	inc bp
+	inc bp
+	jmps @_ph
+
+@_DROPDUP:
+	POP BX
+@_dup:
+	push bx
+	jmps @_DONEXT
+	
+@_setpoint:
+	mov [di+2],si
+	jmps @_rts
+	
+@_nipx:
+	pop ax
+	jmps @_rts
+
+@_0ex:	
+	or bx,bx
+	jNe @_drop
+	
+@_dropx:
+	pop bx
+@_rts:
+	mov si,[bp]
+@_rdrop:		
+	inc bp
+	inc bp
+	jmps @_DONEXT
+	
 	scasw
 	scasw
 @_dovar:  
@@ -315,20 +340,24 @@ lbl nop
     pop bx
 	jmps @_DONEXT1
 
-@_zeq:		
-	sub bx,1
-    jmps @_cf_bx
-		
+;--------------------------------------
+; Control
+
+@_for:
+	mov	  si,[si]
+@_push:
+	pop   ax
+	xchg  ax,bx
+	jmp   @_rpush
 @_zSKIP:
 	test bx,bx
-	jNe @_NONE
+	jNe @_NONEQ
 @_DRskip:		
 	pop bx
 @_skip:		
 	lodsw
-@_NONE:	
+@_NONEQ:	
 	jmps @_DONEXT
-
 @_zero_branch:
 	test bx,bx
 	jNe @_DrSKIP
@@ -337,11 +366,13 @@ lbl nop
 @_br:
 	mov si,[si]
 @_DONEXT2:
-	jmp @_DONEXT
-	
+	jmp @_DONEXT	
 @_NEXT:
-	DEC pw [bp]
-	SKIPR CX
+  DEC   PW [BP]
+  JNS   @_br
+@_RDROPskip:
+  LODSW
+	jMPs @_RDROP
 @_mif:
 	inc bx
 @_ifm:	
@@ -349,6 +380,8 @@ lbl nop
 	JNS @_br
 	jMPs @_skip
 		
+;-----------------------------------------
+; MEMORY
 
   XT PARSE,@_SOURCE_
   XCHG  AX,DI
@@ -424,65 +457,47 @@ lbl nop
 	REP STOSB
 	RET
 	
-;  xt FILLW,@_DROP_3
-;	XCHG AX,DI
-;	REP STOSW
-;	RET
+  xt FILLW,@_DROP_3
+	XCHG AX,DI
+	REP STOSW
+	RET
 	
-  XT  RSP,@_DUSWA_
-  MOV   AX,RSP
-  RET
-
-  XT  DSP,@_DUSWA_
-  MOV   AX,DSP
-  RET
-
-  XT  RSPST,@_DROP_
-  MOV   RSP,BX
-  RET
-
-PRIM DSPST
-  mov   DSP,bx
-  NEXT
-
 
 ; -------------------
 ; Variables
 ; -------------------
 
+  value erra,0
+  defer errv,0
+
   point found,0
   point init,_initadr
-  defer errv,0
+
   defer key,_dk
+	value CNTC,0
   XT emit,@_deferI
 			DW _de
 	defer accept,_accpt
-	defer source,_etib
+
   value ltib,0
   value etib,0
-  value erra,0
-  value SCRH,0
+	defer source,_etib
   value dp,@_freemem
 	value ofst,0
-	value CNTC,0
-	value AX,0
-	value BX,0
-	value CX,0
-	value DX,0
-	value DOSERR,0
   value dict,0f000h-270
   vector cdict,_dict
+col dictx
+	dw _dict,_ex,to_dict,_exit
+col DPx
+	dw _DP,_ex,to_DP,_exit
+
+	value DOSERR,0
+
   cnst  zero,0
   cnst  tib,080h
   cnst  inl,80			; max char in line
   cnst  tbuf,0f000h-260	; str evaluation
   cnst  LASTOK,0	; LAST TOKEN ADDRESS
-
-  col dictx
-	dw _dict,_ex,to_dict,_exit
-
-  col DPx
-	dw _DP,_ex,to_DP,_exit
 
 		
 ; -------------------
@@ -612,10 +627,10 @@ PRIM DSPST
 @_mi1:
 	RET
 
-  COL UDIV
+COL UDIV
 	DW _XDROP
-  COL UMDIVMOD
-    DW _ASTZ,_TWICE,_TWICE,_midiv,_midiv,_midiv,_midiv,_EXIT
+COL UMDIVMOD
+  DW _ASTZ,_TWICE,_TWICE,_midiv,_midiv,_midiv,_midiv,_EXIT
 
 ; -------------------
 ; Peek and Poke
@@ -636,18 +651,18 @@ PRIM DSPST
 	stosw
 	RET
 	
-  XT STM,@_stm          ; !-
+XT STM,@_stm          ; !-
 
-  XT STP,@_stP          ; !+
+XT STP,@_stP          ; !+
 
-  XT  STR,@_DUSWA_        ; STR
-    MOV   AX,[BX]
+XT STR,@_DUSWA_        ; STR
+  MOV   AX,[BX]
 	INC   BX
 	INC   BX
 	RET
 
   
-  xt STRSKIP,@_RSLD_	  ; string skip
+xt STRSKIP,@_RSLD_	  ; string skip
 	MOV     BX,si
 	lodsb
 	add		si,AX
@@ -677,17 +692,18 @@ PRIM DSPST
 ; Colon Definition
 ; -----------------------
 
-  lbl col
-  xt colI,@_defcomm
-  dw @_DOCOLON,_rpar
+COL COMPILE
+  DW _RLDP,_comma,_EXIT
   		
-  xt semicolon,@_commaer
-	dw _exit,_lpar
-  
-  col lpar							; interpretter is on
+COL semicolon
+  DW _COMPILE,_exit
+col lpar							; interpretter is on
 	dw to_found,_dict,_find,_exit
   
-  col rpar							; compiler is on
+lbl col
+COL colI
+  DW _HEAD,_COMPILE,@_DOCOLON
+col rpar							; compiler is on
 	dw to_found,_cdict,_findc,_exit
 		
 ; -------------------
@@ -733,14 +749,15 @@ PRIM DSPST
  COL TYPE
        DW _XDROP,_xTIMES,_COUNT,_EMIT,_EXIT
 
-XT  to_number,@_BINU_
-  push 	SI dx
+XT  to_number,@_NINU_
+  push 	SI 
+  mov   CX,BX
   xchg 	ax,SI  	; START ADR
   mov		AL,10	; NUM BASE
   call  @NUM
   xchg  AX,Di   ; RESULT
   mov   BX,CX   ; REMAINDER BYTES <> 0 ERROR
-  POP   DX SI
+  POP   SI
   RET
 
 @NUM:
@@ -862,6 +879,7 @@ XT  to_number,@_BINU_
 xUNpack:XOR   ax,AX
         xchg  Al,bh
         PUSHREG
+
 xpack:  pop   ax
         xchg  bl,bh
         mov   bl,al
@@ -874,11 +892,17 @@ xpack:  pop   ax
     dw _source,_parsE,_exit
 	
 ;---------------------------------------
+; IO
 
-XT SCRN_,@_DOVAR-2
-XT WBLK, XWBLK
-XT RBLK, XRBLK
+XT SCRN,@_DOVAR-2
+XT WBLK,XWBLK
+XT RBLK,XRBLK
   DW -1 
+
+	value AX,0
+	value BX,0
+	value CX,0
+	value DX,0
 
 XWBLK:  
   MOV   CH,40H
@@ -1031,6 +1055,9 @@ xt find,@_NINU_
 
   xt constant,@_defcomm
 	dw @_doconst,_comma
+	
+  xt CREATE,@_defcomm
+	dw @_doVAR,_NOP
 	
   XT GETWATCH,@_GETWATCH
   XT SETWATCH,@_SETWATCH
