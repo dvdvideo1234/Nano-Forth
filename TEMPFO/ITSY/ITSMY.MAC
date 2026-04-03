@@ -35,6 +35,10 @@ NEXT MACRO
   JMP @MAIN
   ENDM
 
+goforth MACRO
+  call  @to4th
+  endm
+
 SKIPR   MACRO reg	; does not change the carry
   local diff
 diff = $
