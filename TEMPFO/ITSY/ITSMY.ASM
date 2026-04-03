@@ -8,7 +8,7 @@ MYCSEG  SEGMENT PARA  USE16
 		
 START   LABEL BYTE
 
-        JMP restart
+        JMP @COLD
 
 ; -------------------
 ; VARIABLES
@@ -28,44 +28,125 @@ START   LABEL BYTE
 
         CONSTANT 'TIB',T_I_B,32768
 
+        CONSTANT '0',ZERO,0
+@BYE = $-2
+
+        CONSTANT 'BL',SPC,32
+
 ; -------------------
 ; INITIALISATION
 ; -------------------
 
-        ;PRIMITIVE 'ABORT',ABORT
         xtname 'ABORT',ABORT,restart
 
 ; -------------------
 ; COMPILATION
 ; -------------------
 
-        ;PRIMITIVE ',',COMMA
         xtname ',',COMMA,@USEBX_
         MOV DI,PW [VAL_DP]
-        ;XCHG AX,BX
         STOSW
         MOV PW [VAL_DP],DI
         RET
-        ;POP BX
-        ;NEXT
 
         PRIMITIVE 'LIT',LIT
         LODSW
-        JMPS  @PUSHBX
-        ;PUSH BX
-        ;XCHG AX,BX
-        ;NEXT
+        JMP  @_Ph
+
+; -------------------
+; MATHS / LOGIC
+; -------------------
+
+        xtname '+',PLUS,@NIP_
+        ADD BX,AX
+        RET
+
+        xtname '-',MINUS,@NIP_
+        SUB AX,BX
+        XCHG BX,AX
+        RET
+
+        xtname '=',EQUALS,@NIP_
+        SUB BX,AX
+        JMPS  @ZEQ
+
+        xtname '0=',ZEQ,@NOP_
+@ZEQ:   SUB BX,1
+        SBB BX,BX
+        RET
+
+; -------------------
+; PEEK AND POKE
+; -------------------
+
+        xtname 'C@',CFETCH,@peek
+
+        xtname 'C!',CSTORE,@DROP2_
+        STOSB
+        RET
+
+        PRIMITIVE 'D@',FETCH2
+        PUSH  PW [BX+2]
+@FETCH:
+        MOV BX,PW [BX]
+        NEXT
+
+        xtname '@',FETCH,@FETCH
+
+        xtname '!',STORE,@DROP2_
+        STOSW
+        RET
+
+        xtname '+!',PSTORE,@DROP2_
+        ADD   PW [DI],AX
+        RET
+
+; -------------------
+; INNER INTERPRETER
+; -------------------
+
+@to4th: 
+  pop  si
+@MAIN:  
+  MOV DI,[SI]
+  CMPSW
+  JMP PW [DI-2]
+
+@NIP_:
+  POP   AX
+@NOP_:
+  CALL  DI
+  NEXT
+
+; -----------------------
+; COLON DEFINITION
+; -----------------------
+
+        COLON ':',COLON
+        DW _LIT,-1,_STATE,_STORE,_CREATE
+        DW _DO_SEMI_CODE
+DOCOLON:DEC BP
+        DEC BP
+        MOV PW [BP],SI
+        MOV  SI,DI
+        NEXT
+
+        COLONI ';',SEMICOLON                ;,IMMEDIATE
+        DW _LIT,_EXIT,_COMMA,_ZERO,_STATE
+        DW _STORE,_EXIT
 
 ; -------------------
 ; STACK
 ; -------------------
 
+
         PRIMITIVE 'ROT',ROTE
         POP DX
         POP AX
         PUSH DX
-@PUSHBX:
+@_Ph:
         PUSH BX
+@_sw:
         XCHG AX,BX
         NEXT
 
@@ -80,7 +161,7 @@ START   LABEL BYTE
 @DROP:
         POP BX
         NEXT
-        ;PRIMITIVE 'DROP',DROP
+
         xtname 'DROP',DROP,@DROP
 
         PRIMITIVE 'DUP',DUPE
@@ -89,120 +170,32 @@ START   LABEL BYTE
 
         PRIMITIVE 'SWAP',SWAP
         POP AX
-        JMPS @PUSHBX
-        ;PUSH BX
-        ;XCHG AX,BX
-        ;NEXT
-
-; -------------------
-; MATHS / LOGIC
-; -------------------
-
-@NIP_:
-  POP   AX
-@NOP_:
-  CALL  DI
-  NEXT
-
-        ;PRIMITIVE '+',PLUS
-        xtname '+',PLUS,@NIP_
-        ;POP AX
-        ADD BX,AX
-        RET
-        ;NEXT
-
-        xtname '-',MINUS,@NIP_
-        SUB AX,BX
-        XCHG BX,AX
-        RET
-
-        ;PRIMITIVE '=',EQUALS
-        xtname '=',EQUALS,@NIP_
-        ;POP AX
-        SUB BX,AX
-        JMPS  @ZEQ
-        ;SUB BX,1
-        ;SBB BX,BX
-        ;NEXT
-
-        xtname '0=',ZEQ,@NOP_
-@ZEQ:
-        SUB BX,1
-        SBB BX,BX
-        RET
-
-; -------------------
-; PEEK AND POKE
-; -------------------
-
-        xtname 'C@',CFETCH,@peek
-
-        xtname 'C!',CSTORE,@DROP2_
-        STOSB
-        RET
-
-        PRIMITIVE '@',FETCH
-        MOV BX,PW [BX]
-        NEXT
-
-        ;PRIMITIVE '!',STORE 447
-
-        xtname '!',STORE,@DROP2_
-        STOSW
-        RET
-        ;POP PW [BX]
-        ;POP BX
-        ;NEXT
-
-        xtname '+!',PSTORE,@DROP2_
-        ADD   PW [DI],AX
-        RET
-
-; -------------------
-; INNER INTERPRETER
-; -------------------
-
-@to4th: pop  si
-@MAIN:  ;LODSW
-        MOV DI,[SI]
-        ;XCHG DI,AX
-        CMPSW
-        JMP PW [DI-2]
+        JMPS @_Ph
 
 ; -------------------
 ; FLOW CONTROL
 ; -------------------
 
-        ;PRIMITIVE '0BRANCH',ZERO_BRANCH
         xtname '0BRANCH',ZERO_BRANCH,@DROP1_
         LODSW
         TEST DI,DI
         JNE ZEROB_Z
         XCHG AX,SI
 ZEROB_Z:RET 
-        ;POP BX
-        ;NEXT
 
         PRIMITIVE 'BRANCH',BRANCH
         MOV SI,PW [SI]
         NEXT
 
-        PRIMITIVE 'EXEC',EXECUTE
+        PRIMITIVE 'EXEC',EXEC
         MOV DI,BX
         SCASW
         POP BX
         JMP PW [DI-2]
 
-        ;PRIMITIVE 'EXIT',EXIT
         xtname 'EXIT',EXIT,@exit
-        ;MOV SI,PW [BP]
-        ;INC BP
-        ;INC BP
-        ;NEXT
 
-        PRIMITIVE 'BYE',BYE
-        XOR AX,AX
-        JMP AX
+        xtname 'BYE',BYE,0
 
 ; -------------------
 ; STRING
@@ -212,8 +205,7 @@ ZEROB_Z:RET
         INC BX
         PUSH BX
         DEC bx
-@peek:
-        MOV BL,PB[BX]
+@peek:  MOV BL,PB[BX]
         MOV BH,0
         NEXT
 
@@ -287,10 +279,6 @@ ACCEPTS: STOSB
         CALL OUTCHAR
         JMP ACCEPTL
 ACCEPTZ: JCXZ ACCEPTB
-        MOV AL,13
-        CALL OUTCHAR
-        MOV AL,10
-        CALL OUTCHAR
         MOV BX,CX
         NEXT
 
@@ -302,13 +290,13 @@ ACCEPTZ: JCXZ ACCEPTB
         MOV CX,BX
         ADD BX,PW [VAL_TO_IN]
         ADD CX,PW [VAL_NUMBER_T_I_B]
-WORDF:   CMP CX,BX
+WORDF:  CMP CX,BX
         JE WORDZ
         MOV AL,PB[BX]
         INC BX
         CMP AL,DL
         JE WORDF
-WORDC:   INC DI
+WORDC:  INC DI
         MOV PB[DI],AL
         CMP CX,BX
         JE WORDZ
@@ -316,7 +304,7 @@ WORDC:   INC DI
         INC BX
         CMP AL,DL
         JNE WORDC
-WORDZ:   MOV PB [DI+1],32
+WORDZ:  MOV PB [DI+1],32
         MOV AX,PW [VAL_DP]
         XCHG AX,DI
         SUB AX,DI
@@ -326,17 +314,17 @@ WORDZ:   MOV PB [DI+1],32
         POP BX
         NEXT
 
-        ;PRIMITIVE 'EMIT',EMIT
         xtname 'EMIT',EMIT,@USEBX_
-OUTCHAR: XCHG AX,DX
+OUTCHAR:XCHG AX,DX
         MOV AH,2
         INT 021H
         RET
 
-        ;XCHG AX,BX
-        ;CALL OUTCHAR
-        ;POP BX
-        ;NEXT
+        xtname 'CR',CR,@NOP_
+        MOV AL,13
+        CALL OUTCHAR
+        MOV AL,10
+        JMPS OUTCHAR
 
 GETCHAR: MOV AH,7
         INT 021H
@@ -349,12 +337,12 @@ GETCHAR: MOV AH,7
 
         PRIMITIVE 'FIND',FIND
         MOV DI,VAL_LAST
-FINDL:   PUSH DI
+FINDL:  PUSH DI
         PUSH BX
         MOV CL,PB[BX]
         MOV CH,0
         INC CX
-FINDC:   MOV AL,PB[DI+2]
+FINDC:  MOV AL,PB[DI+2]
         AND AL,07FH
         CMP AL,PB[BX]
         JE FINDM
@@ -363,10 +351,10 @@ FINDC:   MOV AL,PB[DI+2]
         MOV DI,PW [DI]
         TEST DI,DI
         JNE FINDL
-FINDNF:  PUSH BX
+FINDNF: PUSH BX
         XOR BX,BX
         NEXT
-FINDM:   INC DI
+FINDM:  INC DI
         INC BX
         LOOP FINDC
         POP BX
@@ -378,41 +366,22 @@ FINDM:   INC DI
         TEST AL,080H
         JNE FINDI
         NEG BX
-FINDI:   AND AX,31
+FINDI:  AND AX,31
         ADD DI,AX
         INC DI
-        PUSH DI
+        PUSH DI     ; CFA
         NEXT
-
-; -----------------------
-; COLON DEFINITION
-; -----------------------
-
-        COLON ':',COLON
-        DW XT_LIT,-1,XT_STATE,XT_STORE,XT_CREATE
-        DW XT_DO_SEMI_CODE
-DOCOLON: DEC BP
-        DEC BP
-        MOV PW [BP],SI
-        ;LEA SI,[DI+2]
-        MOV  SI,DI
-        NEXT
-
-        COLON ';',SEMICOLON,IMMEDIATE
-        DW XT_LIT,XT_EXIT,XT_COMMA,XT_LIT,0,XT_STATE
-        DW XT_STORE,XT_EXIT
 
 ; -----------------------
 ; HEADERS
 ; -----------------------
 
         COLON 'CREATE',CREATE
-        DW XT_DP,XT_FETCH,XT_LAST,XT_FETCH,XT_COMMA
-        DW XT_LAST,XT_STORE,XT_LIT,32,XT_WORD,XT_COUNT
-        DW XT_PLUS,XT_DP,XT_STORE,XT_LIT,0,XT_COMMA
-        DW XT_DO_SEMI_CODE
+        DW _DP,_FETCH,_LAST,_FETCH,_COMMA
+        DW _LAST,_STORE,_SPC,_WORD,_COUNT
+        DW _PLUS,_DP,_STORE,_ZERO,_COMMA
+        DW _DO_SEMI_CODE
 DOVAR:  PUSH BX
-        ;LEA BX,[DI+2]
         MOV  BX,DI
         NEXT
 
@@ -422,10 +391,8 @@ DOVAR:  PUSH BX
         AND AX,31
         ADD DI,AX
         MOV PW [DI+3],SI
-@exit:
-        MOV SI,PW [BP]
-@RDROP:
-        INC BP
+@exit:  MOV SI,PW [BP]
+@RDROP: INC BP
         INC BP
         NEXT
 
@@ -435,44 +402,46 @@ DOVAR:  PUSH BX
 
 FINAL:
         COLON 'CONSTANT',CONSTANT
-        DW XT_CREATE,XT_COMMA,XT_DO_SEMI_CODE
+        DW _CREATE,_COMMA,_DO_SEMI_CODE
 DOCONST:PUSH BX
-        ;MOV BX,PW [DI+2]
-        MOV BX, [DI]
+        MOV BX,[DI]
         NEXT
 
 ; -----------------------
 ; OUTER INTERPRETER
 ; -----------------------
 
+@COLD:
+  mov   bx,1000h     ; only 64k allocate
+  mov   ah,4ah
+  int   21h
 restart:
-        MOV AX,PW [VAL_NUMBER_T_I_B]
-        MOV PW [VAL_TO_IN],AX
-        XOR BP,BP
-        MOV PW [VAL_STATE],BP
-        MOV SP,-256
-;        MOV SI,OFFSET XT_INTERPRET+2
-        Goforth
+  CLD
+  MOV AX,PW [VAL_NUMBER_T_I_B]
+  MOV PW [VAL_TO_IN],AX
+  XOR BP,BP
+  MOV PW [VAL_STATE],BP
+  MOV SP,-256
+  Goforth
 
-        ;COLON 'INTERPRET',INTERPRET							          ; 
-INTERPT DW XT_NUMBER_T_I_B,XT_FETCH,XT_TO_IN,XT_FETCH		  ; BEGIN   #TIB @ >IN @ 
-        DW XT_EQUALS,XT_ZERO_BRANCH,INTPAR,XT_T_I_B			  ;   = IF TIB		          \ IF EMPTY
-        DW XT_LIT,50,XT_ACCEPT,XT_NUMBER_T_I_B,XT_STORE		;     50 ACCEPT #TIB !  
-        DW XT_LIT,0,XT_TO_IN,XT_STORE						          ;     0 >IN !  THEN       \ FULL BUF
-INTPAR  DW XT_LIT,32,XT_WORD,XT_FIND,XT_DUPE				      ;   BL WORD FIND DUP      \ FOUND ?
-        DW XT_ZERO_BRANCH,INTNF,XT_STATE,XT_FETCH			    ;   IF STATE @            \ COMPILATION ?
-        DW XT_EQUALS,XT_ZERO_BRANCH,INTEXC,XT_COMMA			  ;	    = IF , 	            \ YES
-        DW XT_BRANCH,INTDONE                              ;     ELSE 
-INTEXC  DW XT_EXECUTE,XT_BRANCH,INTDONE						        ;     EXECUTE ELSE
-INTNF   DW XT_DUPE,XT_ROTE,XT_COUNT,XT_TO_NUMBER			    ;     DUP ROT COUNT >NUM  \ NUMBER
-        DW XT_ZERO_BRANCH,INTSKIP,XT_STATE,XT_FETCH			  ;     IF STATE @  
-        DW XT_ZERO_BRANCH,INTNC,XT_LAST,XT_FETCH,XT_DUPE	;       IF LAST @ DUP
-        DW XT_FETCH,XT_LAST,XT_STORE,XT_DP,XT_STORE			  ;          @ LAST ! DP !
-INTNC   DW XT_ABORT											                  ;       THEN ABORT  THEN  
-INTSKIP DW XT_DROP, XT_DROP, XT_STATE, XT_FETCH				    ;     DROP DROP STATE @
-        DW XT_ZERO_BRANCH,INTDONE,XT_LIT,XT_LIT,XT_COMMA	;     IF LIT LIT , ,
-        DW XT_COMMA                                       ;   THEN  THEN THEN
-INTDONE DW XT_BRANCH,INTERPT								              ; AGAIN
+INTERPT DW _NUMBER_T_I_B,_FETCH,_TO_IN,_FETCH	    ; BEGIN  CR  #TIB @ >IN @ 
+        DW _EQUALS,_ZERO_BRANCH,INTPAR,_CR,_T_I_B	;   = IF CR TIB		          \ IF EMPTY
+        DW _LIT,50,_ACCEPT,_NUMBER_T_I_B,_STORE		;     50 ACCEPT #TIB !  
+        DW _ZERO,_TO_IN,_STORE,_SPC,_EMIT	        ;     0 >IN ! CR  THEN    \ FULL BUF
+INTPAR  DW _SPC,_WORD,_FIND,_DUPE				          ;   BL WORD FIND DUP      \ FOUND ?
+        DW _ZERO_BRANCH,INTNF,_STATE,_FETCH			  ;   IF STATE @            \ COMPILATION ?
+        DW _EQUALS,_ZERO_BRANCH,INTEXC;,_FETCH		;	    = IF    	            \ YES
+        DW _COMMA,_BRANCH,INTDONE                 ;       ,  ELSE 
+INTEXC  DW _EXEC,_BRANCH,INTDONE						      ;     EXEC ELSE
+INTNF   DW _DUPE,_ROTE,_COUNT,_TO_NUMBER			    ;     DUP ROT COUNT >NUM  \ NUMBER
+        DW _ZERO_BRANCH,INTSKIP,_STATE,_FETCH			;     IF STATE @  
+        DW _ZERO_BRANCH,INTNC,_LAST,_FETCH,_DUPE	;       IF LAST @ DUP
+        DW _FETCH,_LAST,_STORE,_DP,_STORE			    ;          @ LAST ! DP !
+INTNC   DW _ABORT											            ;       THEN ABORT  THEN  
+INTSKIP DW _DROP, _DROP, _STATE, _FETCH				    ;     DROP DROP STATE @
+        DW _ZERO_BRANCH,INTDONE,_LIT,_LIT,_COMMA	;     IF LIT LIT , ,
+        DW _COMMA                                 ;   THEN  THEN THEN
+INTDONE DW _BRANCH,INTERPT								        ; AGAIN
 
 FREEMEM:
 

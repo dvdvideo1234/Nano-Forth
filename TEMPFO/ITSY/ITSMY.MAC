@@ -63,7 +63,7 @@ qqq = $
   dw ppp
 ppp = qqq
   aname cnam,0
-XT_&anam:
+_&anam:
   endm
 
 headerI macro cnam,anam
@@ -71,7 +71,7 @@ qqq = $
   dw ppp
 ppp = qqq
   aname cnam,IMMEDIATE
-XT_&anam:
+_&anam:
   endm
 
 variable macro cnam,anam,data
