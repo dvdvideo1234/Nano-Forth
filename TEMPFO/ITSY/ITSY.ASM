@@ -269,6 +269,7 @@ lbl nop
   push bx
 @_sw:
   xchg ax,bx
+
 @_DONEXT:   
   mov di,[si]
   cmpsw

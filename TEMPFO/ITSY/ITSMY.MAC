@@ -197,7 +197,7 @@ prim macro anam
   endm
 		
 col macro anam
-  xt anam,@_DOCOLON
+  xt anam,DOCOLON
   endm
 
 DSP = SP
