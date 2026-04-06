@@ -168,6 +168,10 @@ PRIMITIVE 'LIT',LIT
 ; MATHS / LOGIC
 ; -------------------
 
+xtname 'AND',AND,@NIP_
+  AND BX,AX
+  RET
+
 xtname '+',PLUS,@NIP_
   ADD BX,AX
   RET
@@ -190,6 +194,10 @@ xtname '0=',ZEQ,@NOP_
 
 xtname '0<',ZLESS,@NOP_
   shl   BX,1
+  JMPS  @CARRY
+
+xtname 'U<',ULESS,@NIP_
+  SUB AX,BX
   JMPS  @CARRY
 
 ; -------------------
@@ -682,7 +690,7 @@ XT SMTHG, @_WARY
 
 XTNAME 'EVAL',EVAL,@EVAL
 INTPAR  DW _BLWORD    ;
-        DW _DUMPSTR
+;        DW _DUMPSTR
         DW _DUPE,_CFETCH,_ZERO_BRANCH,@DROPX
   DW _SEARCH,_SMTHG,_FETCH,_EXEC,_BRANCH,INTPAR	
 
@@ -719,6 +727,15 @@ XT DIVMOD,@NUP1_
   mov   BX,DX
   RET
 
+XT TC,@NOP_
+  mov AX,9
+  SUB AX,BX
+  SBB AX,AX
+  AND AX,7
+  ADD AX,48
+  ADD BX,AX
+  RET
+
 XT DIVMOD2,@NUP2_
   XCHG  AX,DX
   XCHG  AX,CX
@@ -733,11 +750,14 @@ XT ZSKIP,$+2
 
 XT NUMDOT,DOCOLON
   DW _BASE,_FETCH,_DIVMOD,_ZSKIP,_NUMDOT
-XT NUMCHAR,DOCOLON
-  DW _LIT,48,_PLUS,_EMIT,_EXIT
+XT TOCHAR,DOCOLON
+;  DW _DUPE,_LIT,9,_SWAP,_ULESS,_LIT,7,_AND,_PLUS
+  DW _LIT,48,_PLUS,_EMIT
+  DW _TC,_EXIT
 
 ; : >CHAR ( n -- c ) 
 ;   DUP 10 < IF 48 + ELSE 55 + THEN ;
+; DUP 9 SWAP U< 7 AND 48 + ;
 FINAL:
 
 COLON '.',NUMD
