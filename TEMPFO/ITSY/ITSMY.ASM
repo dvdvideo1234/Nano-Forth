@@ -28,14 +28,17 @@ PRIMITIVE 'ACCDOS',ACCDOS
 	inc   bx
 	push  bx
 	dec   bx
+  JMPS  @_C@
+
+@_DC@:
+  push  BX
 @_c@:	
-@peek:	
 	mov   bH,[bx]
 @_HIbyte:
 	mov   BL,bh
 @_lobyte:
 	mov   bh,0
-  NEXT
+  JMPS  @MAIN1
 
 @_RSLD_:
 	push  BX
@@ -50,9 +53,6 @@ PRIMITIVE 'ACCDOS',ACCDOS
   xchg    SI,[BP]
   NEXT
 
-@DUP_:
-  push  BX
-  SKIPA
 @NIP2_:
   POP   CX
 @NIP_:
@@ -66,8 +66,8 @@ PRIMITIVE 'ACCDOS',ACCDOS
 ; VARIABLES
 ; -------------------
 
-xtname 'SEARCH',SEARCH,@DEFER
-VAL_SEARCH  DW 0
+VARIABLE 'SEARCH',SEARCH,0
+@SEARCH:  JMP [VAL_SEARCH]
 
 VARIABLE 'ETIB',ETIB,0
 VARIABLE 'LTIB',LTIB,0
@@ -96,56 +96,50 @@ CONSTANT 'BL',BL_,32
 ; COMPILATION
 ; -------------------
 
-@SETLAST:
-  mov   VAL_LAST,DI
-  NEXT
-xtname 'FORTH',FORTH,@SETLAST
-  DW FINAL,0
-@FORTH:
-
-xtname 'COMPILER',COMPILER,@SETLAST
-  DW COMPILER,@FORTH
-@COMPILER:
+XT FOUND,@SEARCH
 
 @SETMODE:
-  mov   VAL_SEARCH,DI
-  NEXT
+  call  @DOES-3
+  DW _SEARCH,_STORE,_EXIT
+@SETLAST:
+  call  @DOES-2
+  DW _LAST,_STORE,_EXIT
+
+xtname 'FORTH',FORTH,@SETLAST   ; COMPILING TO FORTH
 XT INTMODE,@SETMODE
-  DW  $+2
-  XCHG  AX,BX
-  LEA   BX,@FORTH-4
-  CALL  @FIND
-  JMP   @phax    ; TO EXECUTE  OR NUMBER
+XT ATFORTH,DOVAR
+  DW FINAL
+@FORTH:
+  DW 0
+  call  @SUB4TH
+  DW _ATFORTH,_FIND,_EXIT    ; TO EXECUTE  OR NUMBER
 
+xtname 'COMP',COMP,@SETLAST
 XT COMPMODE,@SETMODE
-  DW  $+2
-  XCHG  AX,BX
-  LEA   BX,@COMPILER-4
-  CALL  @FIND
-  JCXZ  @COMPI
-  JMP   @phax   ;  TO EXECUTE
-@COMPI:
-  LEA   BX,@FORTH-4
-  CALL  @FIND
-  INC   BX
-  INC   BX
-  JMP   @phax
-  
-XT @NUM,DOCOLON
-  DW _ZERO,_ZERO,_ROTE,_COUNT,_TO_NUMBER,_NIP2
-@EXNUM DW _EXIT
-COLON 'NUM',NUM
-  DW _@NUM,_ZERO_BRANCH,@EXNUM,_ERRDOT,_ABORT
+XT ATCOMP,DOVAR
+  DW COMPILER
+@COMP:
+  DW @FORTH
+    call  @SUB4TH      ;  TO EXECUTE       ; TO COMPILE
+  DW _ATCOMP,_FIND,_ZSKIP,_EXIT,_DOINTER,_LITPLUS,2,_EXIT
 
-XT ERRDOT,DOCOLON
-  DW _CR,_DP,_FETCH,_STYPE,_LIT,'?',_EMIT,_EXIT
+COLON 'NUM',NUM
+  DW _ZSWAP,_ZSWAP,_COUNT,_TO_NUMBER,_NIP2,_ZERO_BRANCH,@EXNUM,_ERR?,_EXIT
+@EXNUM DW _EXIT
+
+
+XT NULSTR?,DOCOLON
+  DW _BLWORD
+XT Z@ADR?,DOCOLON
+  DW _DC@
+XT ZERR?,DOCOLON
+  DW _ZEQ
+XT ERR?,DOCOLON
+  DW _ZERO_BRANCH,@EXNUM
+  DW _CR,_DP,_FETCH,_STYPE,_LIT,'?',_EMIT,_ABORT
 
 COLON 'NUMC',NUMC
-  DW _@NUM,_ZERO_BRANCH,@COMPNUM
-  DW _ERRDOT,_LAST,_FETCH,_DUPE	;       IF LAST @ DUP
-  DW _FETCH,_LAST,_STORE,_DP,_STORE,_ABORT		    ;          @ LAST ! DP !
-@COMPNUM:
-  DW _COMPILE,_LIT,_COMMA,_EXIT
+  DW _NUM,_COMPILE,_LIT,_COMMA,_EXIT
 
 xtname ',',COMMA,@USEBX_
   MOV DI,PW [VAL_DP]
@@ -168,8 +162,15 @@ PRIMITIVE 'LIT',LIT
 ; MATHS / LOGIC
 ; -------------------
 
+COLON 'LIT+',LITPLUS                
+  DW _RLDP,_PLUS,_EXIT
+
 xtname 'AND',AND,@NIP_
   AND BX,AX
+  RET
+
+xtname 'XOR',XOR,@NIP_
+  XOR BX,AX
   RET
 
 xtname '+',PLUS,@NIP_
@@ -204,7 +205,9 @@ xtname 'U<',ULESS,@NIP_
 ; PEEK AND POKE
 ; -------------------
 
-xtname 'C@',CFETCH,@peek
+xtname 'DC@',DC@,@_DC@
+
+xtname 'C@',CFETCH,@_C@
 
 xtname 'C!',CSTORE,@DROP2_
   STOSB
@@ -238,12 +241,12 @@ xtname '+!',PSTORE,@DROP2_
   ADD   PW [DI],AX
   RET
 
-COLON 'OFF',OFF                
-  DW _ZERO,_SWPSTORE,_EXIT
-
-COLON 'ON',ON                
-  DW _MONE,_SWPSTORE,_EXIT
-
+;COLON 'OFF',OFF                
+;  DW _ZERO,_SWPSTORE,_EXIT
+;
+;COLON 'ON',ON                
+;  DW _MONE,_SWPSTORE,_EXIT
+;
 
 xtname '("+', SKIPSTR,@_RSLD_	  ; string skip
 	MOV     BX,si
@@ -278,6 +281,9 @@ xtname '@R+',	RLDP,@_RSLD_       ; @R+
 
 @DEFERI:
   INC   PW [VAL_CNTC]
+  SKIPA
+  SCASW
+  SCASW
 @defer: 
   push bx
   mov	bx,di
@@ -289,10 +295,12 @@ xtname '@R+',	RLDP,@_RSLD_       ; @R+
   pop bx
 	jmps @MAINZ
 
+XTNAME '@EXEC',PERFORM,@EXEC@
 
   SCASW
   SCASW
-DODOES:
+  SCASW
+@DOES:
   POP   AX
   XCHG  AX,DI
   RPUSH  SI
@@ -317,6 +325,8 @@ DODOES:
 @FROM4TH:
   JMP   SI
 
+  SCASW
+  SCASW
 DOCONST:
   MOV   AX,[DI]
   PUSHREG
@@ -351,6 +361,17 @@ PRIM FOR
 ; -------------------
 ; STACK
 ; -------------------
+
+XTNAME 'PUSH',PUSH,@PUSH    
+
+XTNAME 'POP',POP,$+2
+  push  BX
+  RPOP BX
+  NEXT
+
+@TESTJMP:
+  OR  BX,BX
+  JMP di
 
 @NUP3_:  
 	POP	  DX
@@ -396,20 +417,30 @@ PRIMITIVE '-ROT',MROT  ; DX AX BX  - BX DX AX  ; BX DX AX
   PUSH BX DX
   JMPS  @_sw
 
+PRIMITIVE 'OVER',OVER  ;
+  POP AX 
+  PUSH AX 
+  SWAPREG
+
 PRIMITIVE 'ROT',ROTE    ; AX DX BX  - DX BX AX
   POP DX AX
   PUSH DX
-  JMPS  @_Ph
+  PUSHREG
 
 xtname 'DROP',DROP,@DROP
 
-xtname 'DUP',DUPE,@DUP_
-  RET
+xtname 'DUP',DUPE,$+2
+  MOV   AX,BX
+  JMPS  @phax
 
 xtname 'SWAP',SWAP,@SWAP_
   RET
 
 xtname '2NIP',NIP2,@NIP2_
+  RET
+
+xtname '0SWAP',ZSWAP,@NUP_
+  XOR   AX,AX
   RET
 
 ; -----------------------
@@ -434,19 +465,26 @@ PRIM NEXT
   LODSW
   JMP   @RDROP
 
-xtname '0BR',ZERO_BRANCH,@DROP1_
-  LODSW
-  TEST DI,DI
-  JNE ZEROB_Z
-  XCHG AX,SI
-ZEROB_Z:
-  RET 
-
-PRIMITIVE 'BR',BRANCH
+xtname '0BR',ZERO_BRANCH,@TESTJMP
+  POP   BX
+  JNE   @SKIP
 @BR:
   MOV SI,PW [SI]
   NEXT
+
+xtname '-IF',MIF,@TESTJMP
+  JS   @SKIP
+  JMPS  @BR
+
+xtname 'BR',BRANCH,@BR
   
+XT ZSKIP,@TESTJMP
+  JNE @ZSKIP
+  POP   BX
+@SKIP:
+  LODSW
+@ZSKIP:  NEXT  
+
 xtname 'EXEC',EXEC,@EXEC
 
 xtname 'EXIT',EXIT,@exit
@@ -563,14 +601,15 @@ GETCHAR:
   MOV AH,0
   RET
 
-PRIMITIVE 'ACCEPT',ACCEPT
-  POP   DI
-  PUSH  DI
+xtname 'ACCEPT',ACCEPT,@NUP1_
+  PUSH  AX
+  XCHG  AX,DI
   XOR   CX,CX
 ACCEPTL: 
   CALL  GETCHAR
   CALL  DOKEY
   JMPS  ACCEPTL
+
 DOKEY:
   CMP   AL,8
   JNE   ACCEPTN
@@ -598,8 +637,9 @@ ACCEPTS:
   JNE   ACCEPTB
 ACCEPTZ: 
   MOV   BX,CX
-  POP   AX
-  NEXT
+  POP   AX  ; DROP RETURN
+  POP   AX  ; POP ADDRESS
+  RET       ; EXIT TO MAIN
 
 ; -----------------------
 ; DICTIONARY SEARCH
@@ -631,11 +671,14 @@ xtname 'FIND',FIND,@NUP1_
 ; -----------------------
 
 COLON 'HEAD',HEAD
-  DW _DP,_FETCH,_LAST,_FETCH,_COMMA,_LAST,_STORE,_BLWORD,_COUNT
-  DW _PLUS,_DP,_STORE,_EXIT
+  DW _DP,_FETCH,_LAST,_FETCH,_FETCH,_COMMA,_LAST,_FETCH,_STORE
+  DW _BLWORD,_COUNT,_PLUS,_DP,_STORE,_EXIT
 
 COLON 'CREATE',CREATE
-  DW _HEAD,_ZERO,_COMMA,_DO_SEMI_CODE
+  DW _HEAD,_COMPILE,DOVAR,_EXIT
+
+  SCASW
+  SCASW
 DOVAR:
   PUSH BX
   MOV  BX,DI
@@ -677,7 +720,7 @@ restart:
   DW _INTMODE
 INTERPT DW  _GETLINE,_EVAL,_CR,_BRANCH,INTERPT
 
-XT SMTHG, @_WARY
+XT OPERATIONS, @_WARY
   DW _NUM,_EXEC,_NUMC,_COMMA
 
 @_lary:
@@ -689,10 +732,8 @@ XT SMTHG, @_WARY
 	NEXT
 
 XTNAME 'EVAL',EVAL,@EVAL
-INTPAR  DW _BLWORD    ;
-;        DW _DUMPSTR
-        DW _DUPE,_CFETCH,_ZERO_BRANCH,@DROPX
-  DW _SEARCH,_SMTHG,_FETCH,_EXEC,_BRANCH,INTPAR	
+@_EVAL  DW _BLWORD,_DC@,_ZERO_BRANCH,@DROPX
+  DW _FOUND,_OPERATIONS,_PERFORM,_BRANCH,@_EVAL	
 
 ;-----------------------------------------
 ; PRINTING ROUTINES
@@ -728,12 +769,13 @@ XT DIVMOD,@NUP1_
   RET
 
 XT TC,@NOP_
-  mov AX,9
-  SUB AX,BX
-  SBB AX,AX
-  AND AX,7
-  ADD AX,48
-  ADD BX,AX
+  XCHG BX,AX
+  CMP AL,10
+  JB  @LESS10
+  ADD AL,7
+@LESS10:
+  ADD AL,48
+  XCHG BX,AX
   RET
 
 XT DIVMOD2,@NUP2_
@@ -741,23 +783,12 @@ XT DIVMOD2,@NUP2_
   XCHG  AX,CX
   JMPS  @DM2
 
-XT ZSKIP,$+2
-  OR  BX,BX
-  JNE @ZSKIP
-  POP   BX
-  LODSW
-@ZSKIP:  NEXT  
-
 XT NUMDOT,DOCOLON
-  DW _BASE,_FETCH,_DIVMOD,_ZSKIP,_NUMDOT
-XT TOCHAR,DOCOLON
-;  DW _DUPE,_LIT,9,_SWAP,_ULESS,_LIT,7,_AND,_PLUS
-  DW _LIT,48,_PLUS,_EMIT
-  DW _TC,_EXIT
-
+  DW _BASE,_FETCH,_DIVMOD,_ZSKIP,_NUMDOT,_TC,_EMIT,_EXIT
 ; : >CHAR ( n -- c ) 
 ;   DUP 10 < IF 48 + ELSE 55 + THEN ;
 ; DUP 9 SWAP U< 7 AND 48 + ;
+
 FINAL:
 
 COLON '.',NUMD
