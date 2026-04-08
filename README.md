@@ -9,9 +9,23 @@ It's a cross-platform forth-based envirionment
 2. Truely minimalistic
 3. Only 16 primitives
 
-### Virtual forth mashine with minimal instructions 
+### Virtual forth mashine inner interpreter 
 ```
-CALL : (EVEN address): Pushes the current instruction pointer onto a return stack, then sets it to the new address.
+CALL : (even cell): Pushes the current instruction pointer onto a return stack, then sets it to the new address.
+     : (odd cell) four nibbles (primitives)
+
+@_nesting:
+  push_rstack(pc);
+  pc := wreg;
+@_inner_interpreter:
+  wreg  := memory[pc]; 
+  pc    := pc + Sizeof(cell);
+  if NOT odd(wreg) then goto @_nesting
+  execute_nibbles(wreg-1);
+
+```
+### Primitives
+```  
 PUSH : moves the top element from the data stack TO the return stack
 POP  : moves the top element from the return stack TO the data stack
 DUP  : Duplicates the top element of the data stack.
@@ -31,12 +45,12 @@ NAND : Pops two bitwise values, performs a bitwise NAND, and pushes the result.
 
 ```
 
-### Forth language main loop
+### Forth language outer interpreter main loop
 
 ```asm
   GoForth
   DW _INTMODE
-@mainloop  _GETLINE,_EVAL,_CR,_BR,@mainloop
+@_mainloop  _GETLINE,_EVAL,_CR,_BR,@_mainloop
 
 XT OPERATION, @_WARY
   DW _NUM,_EXEC,_NUMC,_COMMA
