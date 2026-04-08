@@ -58,6 +58,10 @@ len:
 end:
   endm
   
+MSG MACRO CNAM
+  ANAME CNAM,0
+ENDM
+
 header macro cnam,anam
 qqq = $
   dw ppp
@@ -100,11 +104,23 @@ colon macro cnam,anam
   dw DOCOLON
   endm
 
-colonI macro cnam,anam
-  headerI cnam,anam
-  dw DOCOLON
-  endm
+;colonI macro cnam,anam
+;  headerI cnam,anam
+;  dw DOCOLON
+;  endm
 
+defern macro cnam, anam,data
+  header cnam,anam
+  xt 	anam,@_defer
+  dat 	anam,data
+  endm
+  
+deferni macro cnam, anam,data
+  header cnam,anam
+  xt 	anam,@_deferi
+  dat 	anam,data
+  endm
+  
 jmps macro adr
   jmp short adr
   endm
