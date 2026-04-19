@@ -710,7 +710,7 @@ $134 =: vINIT   $13A =: H       $140 =: ETIB    $146 =: LTIB
 $14C =: T       $152 =: CNTC    $158 =: STATE   $194 =: ((A"
 $1A8 =: ;DROP   $1AC =: DROP;   $1C4 =: >DICT   $1D7 =: @R+
 $1DD =: (?S     $1E5 =: XCHG    $1EA =: DUP     $1F2 =: (LIT
-$1F8 =: @       $1FD =: ,<`     $1FF =: 3.+     $201 =: SWAP
+$1F8 =: @       $1FD =: ,<`     $1FF =: 3+      $201 =: SWAP
 $203 =: DROP    $205 =: OVER    $207 =: -       $209 =: +
 $20B =: STR     $212 =: .C@     $215 =: C@      $219 =: CSTR
 $241 =: J       $245 =: (NEXT   $247 =: RDROP   $249 =: (JUMP
