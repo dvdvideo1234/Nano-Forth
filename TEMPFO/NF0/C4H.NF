@@ -672,8 +672,10 @@ A" ALREADY DEFINED!" ;
 
 : `T =H >, EX ,<` , ;  : `2ARY 2* : `ARY =H >, EX ,<` CLARY ;
 : CREATE UNW :; : VARIABLE 0 : VAR `T `(VAR ;
-: QUAN `T : `Q `(CON3 `(SET2 `(VAR ; : VQUAN `T `(DEF3 `Q ;
-: VALUE `T `(CON2 : `S `(SET ; : VECTOR `T `(DEF2 `S ;
+: QUAN `T `(CON3 : `Q `(SET2 `(VAR ;
+: VQUAN `T `(DEF3 `Q ;
+: VALUE `T `(CON2 : `S `(SET ;
+: VECTOR `T `(DEF2 `S ;
 : DEFER `T `(DEF ; : CONST `T  `(CON ;
 : 0#> HERE >, : DZ# `DZ#0 @H- : CALL, $E8 : ,R C, HERE 2+ - , ;
 : TDOES> `CODE DZ# ;
@@ -681,8 +683,6 @@ A" ALREADY DEFINED!" ;
 : CALL! ;HERE XEP HERE SWAP HERE!  CALL, ;
 : TINIT CALL `NUM `EXE `NUM, `COM THEN OPER! ;
 : BARY `ARY `BARY ;  : WARY `2ARY `WARY ;
-
-
 
 
 
@@ -710,7 +710,7 @@ $134 =: vINIT   $13A =: H       $140 =: ETIB    $146 =: LTIB
 $14C =: T       $152 =: CNTC    $158 =: STATE   $194 =: ((A"
 $1A8 =: ;DROP   $1AC =: DROP;   $1C4 =: >DICT   $1D7 =: @R+
 $1DD =: (?S     $1E5 =: XCHG    $1EA =: DUP     $1F2 =: (LIT
-$1F8 =: @       $1FD =: ,<`     $1FF =: 3+      $201 =: SWAP
+$1F8 =: @       $1FD =: ,<`     $1FF =: 3.+     $201 =: SWAP
 $203 =: DROP    $205 =: OVER    $207 =: -       $209 =: +
 $20B =: STR     $212 =: .C@     $215 =: C@      $219 =: CSTR
 $241 =: J       $245 =: (NEXT   $247 =: RDROP   $249 =: (JUMP
@@ -882,17 +882,17 @@ LOOPS CR 1H  J - : .LINE 4 .UR SPACE 1L ;[] ?TYPE ;
  TL 2 C, DUP =, TH 4 C, =, TD 6 C, : ;TD TD @ EX TD ! ; : <D> T
 TD @ TO T TD ! ; : FX @R+ @R+ ! ; : ?SKIP DUP IF @R+ THEN DROP
 ; : !TD- ;TD !- ; : `EG T EDICT OVER- >HERE EX H STR HDICT
-(MPUSH TO T ; : HIPUSH `EG PUSH HDICT DUP ?SKIP FIRST 10 I+ -
-DUP TO HDICT !+ XCHG 0 !R+ TD 2+ DUP !R+ + DUP POP ! OFF ;
-: HIDROP HDICT 0; `EG HDICT @ TO HDICT ; : `TRG - DUP 0<>; :
-;<D> <D> EX <D> ; : TARGET,! FX `TRG `- ;; : <H> TL D@ H HOFS
-TL D! TO HOFS TO H ; : INITO FX SAME? AT vTOK? FX (LIT TO (LIT,
-FX (; TO ESC FX - `- CALL NUM? EXEC N>#, , : OPER! THEN POP 0
-OPER[] 8 CMOVE ; : MARK@ @HD PUSH @R+ TO HOFS @R+ TO H POP @ TO
-T ; $221 =: FOUND? : MARK! @HD PUSH HOFS !R+ H !R+ T POP ! ;
-ESC HIDE ESC ESQ  : ESC (;  <H> <D> ;  ESC HIDE ;` ESQ
-$235 =: ;` $22F =: : HERE 'AT H T!  TSAVE PROBA.COM
- FFFFFFFFFFFFFFFFF
+ ?SKIP FIRST (MPUSH TO T ; : HIPUSH `EG PUSH HDICT DUP ?SKIP
+FIRST 10 I+ - DUP TO HDICT !+ XCHG 0 !R+ TD 2+ DUP !R+ + DUP
+POP ! OFF ; : HIDROP HDICT 0; `EG HDICT @ TO HDICT ; : `TRG -
+DUP 0<>; : ;<D> <D> EX <D> ; : TARGET,! FX `TRG `- ;; : <H> TL
+D@ H HOFS TL D! TO HOFS TO H ; : INITO FX SAME? AT vTOK? FX
+(LIT TO (LIT, FX (; TO ESC FX - `- CALL NUM? EXEC N>#, , :
+OPER! THEN POP 0 OPER[] 8 CMOVE ; : MARK@ @HD PUSH @R+ TO HOFS
+@R+ TO H POP @ TO T ; $221 =: FOUND? : MARK! @HD PUSH HOFS !R+
+H !R+ T POP ! ; ESC HIDE ESC ESQ : ESC (; <H> <D> ; ESC HIDE ;`
+ESQ $235 =: ;` $22F =: : HERE 'AT H T! TSAVE PROBA.COM
+FFFFFFFFFFFFFFFFF
 
 $40E 1#> DUP @+ ;STK !+ ;
 2#> DUP STR 2- SWAP ;STK @- ; 3MKR STACK+ STK+,
