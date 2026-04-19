@@ -49,8 +49,8 @@ $44B =, ?BL. $FB80 , $7320 , $B302 , $C32E , : !- 2-DXEP ! ;
 $444 =: PUSH    $215 =: C@      $4B1 =: (FOR    $241 =: J
 $245 =: (NEXT   $247 =: RDROP   16 CONST 1H     $4C8 =: (IF
 : WITHIN OVER- U- U< ; : ZST DUP 2+ @ : SWAP! SWAP ! ; : @BNDS?
-@+ @ : BOUNDS? WITHIN 0= A" BOUNDS!" ; : TOP @ @- DROP; ,< :
-;STK @BNDS? : ;@! @+ XCHG EXECUTE POP !- DROP; ,< 0 VALUE HOFS
+@+ @ : BOUNDS? WITHIN 0= A" BOUNDS!" ; : TOP @ @- DROP; ,<
+: ;STK @BNDS? : ;@! @+ XCHG EXECUTE POP !- DROP; ,<
 : ITEMS@ DUP 2+ @ SWAP : ITEMS? @+ @ - 2/ ; : <MRK` HERE ;
 : <RLS` , ; : MRK>` HERE : Z, 0 , ; : RLS>` HERE SWAP! ;
 : >NUM TOKEN? NUM? ; : 0<; 0< : 0<>; (IF TO NOP : EXIT RDROP ;
@@ -96,7 +96,7 @@ $7C CONST NPAD  $E000 CONST FIRST  : VARIABLE 0 VAR ;
 
 : `AT@ ' TO `DO POP ; : #DO `AT@ >NUM `DO ; : DO `AT@ `DO ;
 : +DO `AT@ DUP `DO : OVER+ OVER + ; : ZDO `AT@ 0 `DO ;
-: 'DO `AT@ ' `DO ; : D! !+ ! ; : D@ 2+ @+ 2- : 2-@ 2- @ ;
+: 'DO `AT@ ' `DO ; : D! !+ ! ; : D@ @+ @ SWAP ;
 #DO []: 3 TIMES  $4AB WARY $4AD BARY  $4A9 LARY
 $5C NPAD STACK HANDLES     20 STACK+ CSTK> 20 STACK+ <CSTK
 : `;STK> CSTK> EX TO CSTK> ;    : `;<STK <CSTK EX TO <CSTK ;
@@ -195,6 +195,9 @@ $4B8 =: 0?SKIP  $134 =: vINIT   $212 =: .C@     $1FF =: 3+
 : PRUNE EDICT HERE DUP OFF [ DUP STR + OFF DUP INC SWAP TO DICT
 STR >DICT ] ;DROP ;FND J N>C SWAP U< 0; J 1+ C@ '` - 0;
    J  D>NAME OVER-  HERE S+! DROP ;
+{ : PRUNE HERE  0 HERE ! [ HERE STR >DICT TO HERE ] ;DROP
+ ;FND J >NAME TO DICT J N>C SWAP U< 0; J 1+ C@ '` - 0;
+   J  D>NAME OVER-  HERE S+! DROP ; }
 
 : C!- 1-DXEP : C! C!+ DROP; ,< : TWICE  PUSH J XCHG ;
 : ;[] '[ EMIT EX '] EMIT ; : [ID] ;SPC ;[] ". ;
@@ -202,9 +205,6 @@ STR >DICT ] ;DROP ;FND J N>C SWAP U< 0; J 1+ C@ '` - 0;
 : WORDSUP 2DUP `UPPER? >NAME DICT -ROT
 : ONPLACE ;GO DXEP TWICE NUP THEN ;2DROP BEGIN 1- 2DUP U< 0;
      PUSH PUSH  J C@  I C@  J C!    POP  C!+ POP  AGAIN ,<
-
-
-
 
  34 ALLOT HERE CONST `BUF#   10 VALUE `BASE  0 VALUE `HLD
 : ` DUP 0< 0; NEG EX '- : HOLD `HLD C!- TO `HLD ;
@@ -289,17 +289,17 @@ PK: "PACK ;DROP BEGIN L 0; `SRC DUP C, `Ctbl `tbl @EXEC AGAIN ;
 : !R+ XCHG POP POP !+ PUSH PUSH ; VARIABLE @HD Z, Z, $227 =: `-
 0 VALUE HDICT : >HERE DUP HERE !+ SWAP CMOVE ; 0#> C@ HDICT + ;
 DUP =, TL 2 C, DUP =, TH 4 C, =, TD 6 C, : ;TD TD @ EX TD ! ;
-: <D> DICT TD @ TO DICT TD ! ; : FX @R+ @R+ ! ; : ?SKIP DUP IF
-@R+ THEN DROP ; : !TD- ;TD !- ; : `EG DICT EDICT OVER- >HERE EX
-HERE STR HDICT (MPUSH TO DICT ; : HIPUSH `EG PUSH HDICT ?SKIP
-FIRST DUP 10 I+ - DUP TO HDICT !+ XCHG !R+ TD 2+ !R+ HDICT @
-!R+ RDROP 0 !TD- ;; 0 HIPUSH : HIDROP HDICT 0; `EG HDICT @ TO
-HDICT ; : `TRG - DUP 0<>; : ;<D> <D> EX <D> ; : TARGET,! FX
-`TRG `- ;; : <H> TL D@ HERE HOFS TL D! TO HOFS TO HERE ; : ESC
- C: ; <H> <D> ; : INITO FX SAME? AT vTOK? FX LIT TO ,#` FX C: ;
-TO ESC FX - `- [ NUM? EXEC C: ,# , ;; ] : OPER! POP 0 OPER[] 8
-CMOVE ; : MARK@ @HD : MK@ 2+ D@ TO HERE TO DICT ; $221 =:
-FOUND? : MARK! @HD : MK! 2+ DICT HERE ROT D! ;
+: <D> DICT TD @ TO DICT TD ! ; : <H> HERE TH @ TO HERE TH ! ;
+: FX @R+ @R+ ! ; : ?SKIP DUP IF @R+ THEN DROP ; : !TD- ;TD !- ;
+: `EG DICT EDICT OVER- >HERE EX HERE STR HDICT (MPUSH TO DICT ;
+: HIPUSH `EG PUSH HDICT ?SKIP FIRST DUP 10 I+ - DUP TO HDICT
+!+ XCHG !R+ TD 2+ !R+ HDICT @ !R+ RDROP 0 !TD- ;; 0 HIPUSH
+: ESC C: ; <H> <D> ;  : HIDROP HDICT 0; `EG HDICT @ TO HDICT ;
+: `TRG - DUP 0<>; : ;<D> <D> EX <D> ; : TARGET,! FX `TRG `- ;;
+: INITO FX SAME? AT vTOK? FX LIT TO ,#` FX C: ; TO ESC FX - `-
+ [ NUM? EXEC C: ,# , DROP; ] : OPER! POP 0 OPER[] 8   CMOVE ;
+: MARK@ @HD : MK@ 2+ D@ TO HERE TO DICT ; $221 =: FOUND?
+: MARK! @HD : MK! 2+ DICT HERE ROT D! ;
 
 
 \ : B>N? ;FND J  N>C 2+ @ - 0<>;   J (TYP #TARGET - `C ;
@@ -542,17 +542,33 @@ $FD00 CONST SBUF
 \ ?~^@^B^K~V~^W~M~!^W~    \ CODE: (IO vv!! @' 2DROP; $E9 ,R
 \ ^H~^^ HERE 12 + , V^T~[Y"_^T~^W~^R~WM~^P"_^W~^T~RQSW^\~^T~
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 FORGET T CREATE T  0 VALUE ENDH : S0 48 TO SCR 0 TO XY S ;
 : @I J @ ; {        : ;<H> <H> EX <H> ; : ;TH TH @ EX TH ! ;
 : N3 ;<D>}: ` PUSH  PUSH !TD- POP !TD- POP .C@ 1+ ;TD (MPUSH ;
 : TWORDS  ;<D> WORDS ; : % 0 ' >NF< ` ;; : %2 0 ' TOKEN? ` ;;
 ' ' =: 'O  ' =H =: =HO   ' =: =: =:O  ' =, =: =,O
 : TT? TOKEN? TD @ Dfnd ;
-37 42 THRU
+40 45 THRU
 : STOP LIT TO ESC @  LIT C: ; - 0; MARK@ HIDROP INITO ;
 : START STOP : EGG PAGE 18000
- HIPUSH  36 LOAD MARK! FX C: NOP TO ESC <H>
- TINIT TARGET,! 43 44 THRU ;; ' : =:O :O : ' ;?# TT? ;
+ HIPUSH  37 LOAD MARK! FX C: NOP TO ESC <H>
+ TINIT TARGET,! 47 49 THRU ;; ' : =:O :O : ' ;?# TT? ;
 : T: `(SKIP  =H `(NEST TWICE DICT : USED+ NAME> 2+ INC ;
 : =! 0 =: TD @ USED+ ;
 : : ZCSTK =H >, `(NEST ;;  \    PRUNE
@@ -570,6 +586,38 @@ FORGET T CREATE T  0 VALUE ENDH : S0 48 TO SCR 0 TO XY S ;
 %2 T<NEXT <NEXT`        %2 TREPEAT REPEAT`     %2 TAGAIN AGAIN`
 %2 TUNTIL UNTIL`        %2 TBEGIN BEGIN`
 \ %2 TTWICE TWICE`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -598,8 +646,8 @@ M: `((." ((.";       M: `(LIT (LIT;     M: `(CON (CON;
 M: `(CON2 (CON2;     M: `(CON3 (CON3;   M: `(DEF3 (DEF3;
 M: `(VAR (VAR;       M: `(SET (SET;     M: `(SET2 (SET2;
 M: `(DEF (DEF;       M: `(DEF2 (DEF2;   M: `(NEST (NEST;
-M: `(SKIP (SKIP;     M: `(-IF  (-IF;    M: `TWICE CALL THEN;
-
+M: `(SKIP (SKIP;
+M: `TWICE CALL THEN;
 
 \ (OF OVER XOR  @R+ SWAP (IF MRK> XCHG SKIP RLS> DROP DROP ;
 \  BEGIN @R+ 2DROP; ,< : (OF OVER XOR UNTIL @R+ XCHG 2DROP; ,<
@@ -615,8 +663,8 @@ M: `(SKIP (SKIP;     M: `(-IF  (-IF;    M: `TWICE CALL THEN;
 : TCASE 0 TO CSTK> ;            : TREPEAT `(JUMP `<RLS> ;
 : TFOR> `(PUSH `<MARK ;         : TOF `(OF `MARK> ;
 : T<NEXT `(NEXT `<RLS ;         : T;; `(RET STK? 0<>; EX ,<` ;
-: TTWICE `TWICE ;               : T-IF `(-IF `MARK> ;
-: `NUM?, NUM? : `LIT `(LIT , ;  : T-UNTIL `(-IF `<RLS ;
+: TTWICE `TWICE ;
+: `NUM?, NUM? : `LIT `(LIT , ;
 : ;CSTR EX CSTR, ;              : TB-ABRT ;CSTR `(ABRT ;
 : TB" ;CSTR `((" ;              : TB." ;CSTR `((." ;
 
@@ -644,7 +692,7 @@ M: `(SKIP (SKIP;     M: `(-IF  (-IF;    M: `TWICE CALL THEN;
 A" ALREADY DEFINED!" ;
 
 : `T =H >, EX ,<` , ;
-: CREATE UNW :; : VARIABLE 0 : VAR `T `(VAR ;
+: VAR `T `(VAR ; : CREATE UNW :; : VARIABLE 0 VAR ;
 : QUAN `T : `Q `(CON3 `(SET2 `(VAR ; : VQUAN `T `(DEF3 `Q ;
 : VALUE `T `(CON2 : `S `(SET ; : VECTOR `T `(DEF2 `S ;
 : DEFER `T `(DEF ;
@@ -667,6 +715,22 @@ A" ALREADY DEFINED!" ;
  RDROP EXEC ; : `COM >NF< NAME> PUSH 2 I+@ ODD IF DROP
  HERE @I , POP ! ;THEN RDROP , ;
 : TINIT [ `NUM `EXE `NUM, `COM DROP; ] OPER! ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -698,70 +762,6 @@ $4B1 (FOR    255 CONST 1B&  0 VALUE REGA   HERE 2- =: `REG
 ; : 2+ TWICE : 1+ NOT : NEG 1- NOT ; : 2DUP TWICE : OVER PUSH
  DUP XCHG POP ; : OVER- OVER : - NEG + ;
 : FILL -ROT ;2DROP LOOPS NUP !+ ; SDFGSDFGSDFGSDFG
-
-
-
-
-FORGET T CREATE T  0 VALUE ENDH : S0 48 TO SCR 0 TO XY S ;
-: @I J @ ; : ` PUSH  PUSH !TD- POP !TD- POP .C@ 1+ ;TD (MPUSH ;
-: TWORDS  ;<D> WORDS ; : % 0 ' >NF< ` ;; : %2 0 ' TOKEN? ` ;;
-' ' =: 'O  ' =H =: =HO   ' =: =: =:O  ' =, =: =,O
-: TT? TOKEN? TD @ Dfnd ;
-37 42 THRU
-: STOP LIT TO ESC @  LIT C: ; - 0; MARK@ HIDROP INITO ;
-: START STOP : EGG PAGE 18000
- HIPUSH  36 LOAD MARK! FX C: NOP TO ESC <H>
- TINIT TARGET,! 43 44 THRU ;; ' : =:O :O : ' ;?# TT? ;
-: T: `(SKIP  =H `(NEST TWICE DICT : USED+ NAME> 2+ INC ;
-: =! 0 =: TD @ USED+ ;
-: : ZCSTK =H >, `(NEST ;;  \    PRUNE
-
-
-
-% FOUND % DEF   % =USED % >USED % ESC   % DBG   % WORDS % STOP
-% HACK  % @HACK % HL    % SEE   % @SEE  % DUMP  % START % .
-% SL    % NAND  % {`    % \`
-%2 [D]` [D]`
-%2 TTHEN THEN`  %2 T;GO ;GO`    %2 TIF IF`      %2 TCALL CALL`
-%2 TFOR FOR`    %2 TNEXT NEXT`  %2 TCASE CASE`  %2 TFOR> FOR>`
-%2 TOF OF`      %2 T;; ;;`      %2 T:; :;`      %2 T: :`
-%2 T; ;`        %2 T?; ?;`      %2 TIF WHILE`
-%2 T;THEN ;THEN`        %2 T;CASE ;CASE`       %2 TAHEAD AHEAD`
-%2 T<NEXT <NEXT`        %2 TREPEAT REPEAT`     %2 TAGAIN AGAIN`
-%2 TUNTIL UNTIL`        %2 TBEGIN BEGIN`
-\ %2 TTWICE TWICE`
-
-
-
-
-  __XT  _MSTR,@_PARAM3        ; (S!
-  to_r  di
-  MOV   [DI],CL
-  INC   DI
-  REP   MOVSB   ; NAME  MOVE
-  MOV   PB [DI],'`'
-  r_to  cx
-@push_DC:
-  DUP2  DI,CX
-  RET
-$37A =: (S!
-57 F3 A4 ' (S! 11 + E9 ,R
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

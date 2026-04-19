@@ -14,7 +14,7 @@
 ,"W^Z~;^A-^R^Z~m~^D"~^\#~v~3i~>~^B^K~^F~v~|~1R~^A^F~l~|~^Q^V~"
 ,"n~|~^K~^F~v~|~1R~^A^F)^E^Q^V+^E^C~>~n~|~^@^O}^Ci~r~^A^C~>~"
 ,"l~|~^@w^Ci~h~^A^M~>~d~t~^VW?~D~"^^NW.~"~~^@p~Fp^O~i~^@p~^G~r"
-,"&^@z(^O~^Fd^F^L~^Ev^C^O~^Fv^C^O~^F^Q^Fz~?9^@*^En~^AX~^Dk~^C"
+,"*^@z(^O~^Fd^F^L~^Ev^C^O~^Fv^C^O~^F^Q^Fz~?9^@*^En~^AX~^Dk~^C"
 ,"^B~^D^@^@k~\+~^Di^B^C~^Da^BY^Bh^D^]~^Cp^D@^Ap^D^K~^Cp^D^@^@p"
 ,"^D^@^@^L^D^@~^@^L^D^@"~~^L^D^@~^L^D^@^@^L^D_^@_~^D%~^D.~^A"
 ,"^K^D^[^Dx~^D^K^D^[^D^@^@^K^D^[^D^@^@^K^D^[^D^@`~^K^D^[^D^@^@"
