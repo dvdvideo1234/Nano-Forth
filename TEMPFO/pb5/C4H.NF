@@ -17,13 +17,13 @@ $462 =, 2DROP $461 =, 2DROP; $4E3 =, 1+ $3EC =, ROT $235 =: ;`
 $41B (,X `V! , $23B =: ,#` $1C4 =: >DICT 8 CONST bs 13 CONST cr
 $40B ,X: VALUE `V!   $46F ,X: VECTOR `V!   $40E ,X: VAR ,
 : `Q $41A , $40E : D, , , ; $40A ,X: QUAN `Q $46E ,X: VQUAN `Q
-64 CONST 1L     1024 CONST 1K   0 VALUE BLK     0 VECTOR vLOAD
-0 VALUE >LT<    0 VALUE SCR     0 VQUAN KEY     0 VALUE XY
+64 CONST 1L 1024 CONST 1K 0 VALUE BLK 0 VECTOR vLOAD 0 VALUE
+>LT< 0 VALUE SCR 0 VQUAN KEY 0 VALUE XY   0 VECTOR v",
 $29D =: WORD    $219 =: CSTR    $273 =: ;HERE   $37A =: (S!
 $1AC =: DROP;   $152 =: CNTC    $1F2 =: LIT     $102 =: OPER[]
 $253 =: POP     $3E2 =: !       $424 =: C!+     $207 =: -
 $1E5 =: XCHG    $47F =: EXECUTE $483 =: EXEC    $4EF =: 0= : ,"
-'" : ?, WORD : CSTR, CSTR : STR, ;HERE (S! DROP; ,< : NAME>
+'" : ?, WORD : CSTR, CSTR : STR, v", ;HERE (S! DROP; ,< : NAME>
 CSTR + ; : D>NAME DUP : >NAME NAME> 2+ NOP ; : 'VAL 'AT 2+ ;
 : RECURSE` ;, : LATEST DICT : N>C NAME> @ ; : ;code POP
 : TOBE LATEST ! ; : 2-DXEP 1- : 1-DXEP 1- : DXEP DUP : XEP XCHG
@@ -812,15 +812,15 @@ BLK XY? : >XY 1K 1- AND TO XY ; META (OK vOK. META (ERR vERR
      bs OF  2DUP - IF 1- bs EMIT SPACE bs EMIT THEN  ENDOF
      DUP BL 1B WITHIN  IF DUP EMIT SWAP C!+ DUP THEN
   ;CASE DUP I =  UNTIL RDROP SPACE OVER- ; : TOP @ @- DROP; ,<
-' (BK 'TO KEY 4 + T!     META (AC ACCEPT
+' (BK 'TO KEY 4 + T!     META (AC ACCEPT    0 VECTOR v",
 
 : T>R HOFS - ; : HERE H : R>T HOFS + ; : C, ;H C!+ ; : HP HERE
  2+ ; : DU+ DUP : U+ XEP + ; : LATEST T : N>C NAME> @ ; : ;code
 POP : TOBE LATEST ! ; : D# >, EX @H- HERE SWAP : CALL, $E8 : ,R
- C, HP - , ; : " HERE : ," '" : ?, WORD : CSTR, CSTR : STR, ;H
-(S! DROP; ,< $441 =, ;?# >, ??# ; : TOKEN? LTIB TO >LT< TOKN? ;
-: =0, 0 : =, ;, : =H HERE : =: v=: ; : ,X: $2DF : `X =, , : ,'
- ;, : ' ;?# : T? TOKEN? : FND T : FND2 H SWAP (FND ;
+ C, HP - , ; : " HERE : ," '" : ?, WORD : CSTR, CSTR : STR,
+ v", ;H (S! DROP; ,< $441 =, ;?# >, ??# ; : TOKEN? LTIB TO >LT<
+TOKN? ; : =0, 0 : =, ;, : =H HERE : =: v=: ; : ,X: $2DF : `X =,
+, : ,' ;, : ' ;?# : T? TOKEN? : FND T : FND2 H SWAP (FND ;
 : >SEVAL >LT< XEP : SEVAL CSTR : MEVAL DU+ ;0TI EVLP ;
 : M: '; : ?M: =0, ?, DOES> SEVAL ; : (M: (?S SEVAL ; : 'TO '
   2+ ; : 'AT 'TO 2+ ; : (,X $2DA `X ; $281 ' v=: 4 + T>R !

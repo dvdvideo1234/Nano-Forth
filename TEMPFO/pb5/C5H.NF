@@ -542,12 +542,12 @@ $FD00 CONST SBUF
 \  $194 (,X A"` ,"     ' (." (,X ."` ,"   ' (" (,X "` ,"
 
 
-{ CE5 C5H  C5 PB5 PRB  }
+{ CE5 C5H.COM  C5 PB5 PRB  }
 FORGET T CREATE T  44 LOAD      37 43 THRU
 
 : STOP LIT TO ESQ @  LIT C: ; - 0; MARK@ HIDROP INITO ;
 : START STOP : EGG PAGE 18000 HIPUSH   TL  OFF 36 LOAD MARK!
- FX C: NOP TO ESQ <H> TINIT TARGET,! 45 62 THRU ;; ' : =:O :O
+ FX C: NOP TO ESQ <H> TINIT TARGET,! 45 62 THRU ;;
 : `I' `;>INT< : ' TT? ??# ; : `ITO `;>INT< : 'TO ' 2+ ;
 : META ' 'TO : T! T>R ! ;
 : THACK ' T?ID! @HACK ; : TSEE ' T?ID! @SEE ;
@@ -689,7 +689,8 @@ M: `DZ#0 (DZ#0;      M: `DZ#1 (DZ#1;    M: `DZ#2 (DZ#2;
                    0 VALUE ENDH : S0 48 TO SCR 0 TO XY S ;
 : @I J @ ; : ` PUSH  PUSH !TD- POP !TD- POP .C@ 1+ ;TD (MPUSH ;
 : TWORDS  ;<D> WORDS ; : % 0 ' >NF< ` ;; : %2 0 ' TOKEN? ` ;;
-' ' =: 'O  ' =H =: =HO   ' =: =: =:O  ' =, =: =,O
+' ' =: T'  ' =H =: T=H   ' =: =: T=:  ' =, =: T=,  ' : =: T:
+
 : TT? TOKEN? : TFND TD @ Dfnd ;
 0 VALUE FOUND  : `;RESULT TO XK HERE OFF EX HERE @ TO FOUND ;
 : `DEF: C: : DOES> `;RESULT ;2DROP ;FND J NAME> 2+ @ XK PUSH ;
@@ -701,67 +702,66 @@ M: `DZ#0 (DZ#0;      M: `DZ#1 (DZ#1;    M: `DZ#2 (DZ#2;
 
 
 
-
 $100 ORG!  0 BLOCK H 1K CMOVE 1K 8 - ALLOT  251 =: --END--
 
-$134 =: _vINIT  $13A =: _H      $14C =: _T      $1F8 =: _@
-$1D7 =: _@R+    $42A =: _!+     $1E5 =: _XCHG   $241 =: _J
-$249 =: _(JMP   $4C8 =: _(IF    $24B =: _(SKIP  $24F =: _(;
-$444 =: _PUSH   $253 =: _POP    $1EA =: _DUP    $203 =: _DROP
-$497 =: _(:     $39D =: _(DE    $20B =: _STR    $201 =: _SWAP
+            T' 0 2+ =: `BYE     $24D =: `ABORT
 
-$4E2 =, _2+     $3FE =, _AND    $4EB =, _NOT    $4EA =, _NEG
-$401 =, _XOR HERE $4B4B , $F0EB , DUP =, _2-    1 +  =, _1-
-$1CE =, _U< $DF2B , $E4EB ,  HERE 2+ =, _0< $E3D1 , $DEEB ,
+$134 =: `vINIT  $13A =: `H      $14C =: `T      $1F8 =: `@
+$1D7 =: `@R+    $42A =: `!+     $1E5 =: `XCHG   $241 =: `J
+$249 =: `(JMP   $4C8 =: `(IF    $24B =: `(SKIP  $24F =: `(;
+$444 =: `PUSH   $253 =: `POP    $1EA =: `DUP    $203 =: `DROP
+$497 =: `(:     $39D =: `(DE    $20B =: `STR    $201 =: `SWAP
+
+$4E2 =, `2+     $3FE =, `AND    $4EB =, `NOT    $4EA =, `NEG
+$401 =, `XOR HERE $4B4B , $F0EB , DUP =, `2-    1 +  =, `1-
+$1CE =, `U< $DF2B , $E4EB ,  HERE 2+ =, `0< $E3D1 , $DEEB ,
 
 
 
+=H `REGA ' `H W, W, DROP =H `REG       Z,
+=H `IP   ' `H W, W, DROP HERE 2- T>R @ Z,  =, `1 1 ,
 
-
-=H _REGA ' _H W, W, W, DROP HERE 2- =: _REG
-=H _IP   ' _H W, W, W, DROP HERE 4 - T>R @ =, _1 1 ,
-
-@' DUP =, _+2/ ,"^CZ~^K~S~Q~[~C~"
-@' DUP =, _+*  ,"v~B~^At^D^C^^" ' _REG , ,"Q~[~Q~Z~C~"
-@' DUP =, _-/  ,"Q~b~Q~S~^K~^N" ' _REG , ,";Y~r^C+Y~BC~"
-@' STR =, _(BK ,"1[~^S~M~^V^H@~t^B0d~^S~C~"
-$44B =, _?BL. ,"^@~{~_s^B3~.C~"
-@' (DE =, _(BE ,"^V~1[~4~^NM~^P^V~C~"
- HERE 2+ =, _(IO  ,"^H~^^" HERE 12 + ,
+  @' DUP =, `+2/ ,"^CZ~^K~S~Q~[~C~"
+  @' DUP =, `+*  ,"v~B~^At^D^C^^" ' `REG , ,"Q~[~Q~Z~C~"
+  @' DUP =, `-/  ,"Q~b~Q~S~^K~^N" ' `REG , ,";Y~r^C+Y~BC~"
+  @' STR =, `(BK ,"1[~^S~M~^V^H@~t^B0d~^S~C~"
+    $44B =, `?BL. ,"^@~{~_s^B3~.C~"
+  @' (DE =, `(BE ,"^V~1[~4~^NM~^P^V~C~"
+ HERE 2+ =, `(IO  ,"^H~^^" HERE 12 + ,
  ,"V^T~[Y"_^T~^W~^R~WM~^P"_^W~^T~RQSW^\~^T~"  @' 2DROP; $E9 ,R
-
 
 ALIGNED
 
 
-=H `NEST >, _IP _PUSH TO _IP           =H> `INT _IP
-=H> `IPN _STR _SWAP TO _IP               \ .... (BK DROP DEBUG
- _DUP _1 _AND _(IF `NEST _1- _(SKIP    =P (AI>F _IP _PUSH _(;
 
-=P !R+ _POP _!+                        =P PUSH _PUSH _(JMP `INT
-=H> F>AI _(: =P (; _POP _(JMP `IPN     =P -/   _-/   _(JMP `INT
-=P (JUMP =H> `JUMP _IP _@ _(JMP `IPN   =P (IF- _1-   _DUP _0<
-=P (IF _(IF  `JUMP _IP _2+ _(JMP `IPN  =P DUP  _DUP  _(JMP `INT
-=P NAND _AND _NOT _(JMP `INT           =P @R+  _@R+  _(JMP `INT
-=P POP _POP _(JMP `INT                 =P XCHG _XCHG _(JMP `INT
-=P XA _REGA XCHG TO _REGA _(JMP `INT   =P +*   _+*   _(JMP `INT
-=P +2/  _+2/ _(JMP `INT                =P J    _J    _(JMP `INT
-=P (BK _(BK  _(JMP `INT                =P (?BL _?BL. _(JMP `INT
-=P (DE _(DE _(JMP `INT                 =P (BE _(BE   _(JMP `INT
-=P (IO _(IO _(JMP `INT ,<
+>, =H> `NEST  TO `IP   =H> `INT `IP    =H> `IPN `PUSH =H> `IPN2
+=P (;    `@R+ `DUP `1 `AND `(IF `NEST      `1- `XCHG TO `IP `(;
+=P !R+ `POP `!+                        =P PUSH `PUSH `(JMP `INT
+=P +2/  `+2/ `(JMP `INT                =P -/   `-/   `(JMP `INT
+=P XA `REGA `XCHG TO `REGA `(JMP `INT  =P +*   `+*   `(JMP `INT
+=P (JUMP =H> `JUMP `IP `@  `(JMP `IPN  =P (IF- `1-   `DUP  `0<
+=P (IF  `(IF `JUMP `IP `2+ `(JMP `IPN  =P DUP  `DUP  `(JMP `INT
+=P NAND `AND `NOT  `(JMP `INT          =P @R+  `@R+  `(JMP `INT
+=P POP  `POP       `(JMP `INT          =P XCHG `XCHG `(JMP `INT
+=H> F>AI `(: `(JMP `IPN2               =P J    `J    `(JMP `INT
+=P (BK  `(BK `(JMP `INT                =P (?BL `?BL. `(JMP `INT
+=P (DE  `(DE `(JMP `INT                =P (BE  `(BE  `(JMP `INT
+=P (IO  `(IO `(JMP `INT                =P AI>F `IP   `PUSH `(;
+=P BYE  AI>F `BYE                      =P ABORT AI>F `ABORT ,<
 
-ESQ
-DO HIDE 37 TIMES
-_@R+    _!+     _XCHG   _J      _(JMP   _(IF    _(SKIP  _REGA
-_PUSH   _POP    _DUP    _DROP   _REG    _(DE    _2+     _AND
-_NOT    _NEG    _XOR    _2-     _1-     _U<     _0<     _IP
-_1      _+2/    _+*     _-/     _(BK    _?BL.   _(BE    _(IO
-_(:     _(;     _STR    _SWAP   _@
-ESQ
+
 
 HERE 'AT H T! TSAVE PB5.COM
 FFFFFFFFFFFFFFFFF
 >, =H> EXECUTE PUSH (; ,< : EXE ' F>AI EXECUTE AI>F ;
+
+
+
+
+
+
+
+
 
 
 
