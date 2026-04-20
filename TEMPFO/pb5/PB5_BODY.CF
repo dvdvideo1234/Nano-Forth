@@ -10,7 +10,7 @@ ZDO VALUE 4 TIMES  `PDATA `INS  `SZ  `ALTER
          CMOVE>  HERE C@ POP C!   ; { FIX CODE  }
 : SWITCH: CREATE HERE 73 1 TO XK 0 -: (LIT  `XK!  TOBE ;
 : ;SWITCH  73 - A" BAD KEYS" XK 2/ 1- SWAP C! ;
- <H>  : `?XY 1L U/MOD 4 0 : V+ ROT + U+ ;
+ <H>  : `?XY 1L U/MOD 4 0 { : V+} ROT + XEP + ;
 
 
 
@@ -122,7 +122,7 @@ SWITCH: `EK `ONEC C^ J -: `<- C^ K -: `-> C^ X -: `CUT 127
 
 : `? J C@ - DUP 0< 0; RDROP : `SRCH; 2DROP 0 EXIT ; : IN-STR>
 SUCSTR : SRCH> PUSH `? FOR> DUP J CSTR -TEXT EXIT2 ?; 1+ <NEXT
-DUP `SRCH; ; : <IN-STR SUCSTR : <SRCH PUSH `? DU+ FOR> DUP J
+DUP `SRCH; ; : <IN-STR SUCSTR : <SRCH PUSH `? A+L FOR> DUP J
 CSTR -TEXT EXIT2 ?; 1- <NEXT DUP `SRCH; ;
 
 

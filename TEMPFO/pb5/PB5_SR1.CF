@@ -1,0 +1,92 @@
+
+: `-TEXT ;GO U1- 1- : `<> PUSH CSTR XCHG CSTR XCHG POP - ;
+: `FOUND DROP I : `NFND POP RDROP C@ ; : ;?I AHEAD  : ;?C >NAME
+THEN PUSH C@I `NFND ?; DUP J EXECUTE `FOUND ?; RECURSE ;
+: FINDC ;?C J AHEAD : FINDI ;?I J : CORA THEN OVER C@ 1+
+: -TEXT FOR `<> IF RDROP `-TEXT ;THEN NEXT 1+ THEN NIP NIP ;
+
+
+
+
+
+
+
+
+
+
+: `ONbs 2PICK OVER- 0; 1- CALL SPACE THEN bs EMIT ;
+: `ONcr NIP DUP ;   SCAN"C `CTBL 4 C, 13 C, 8 C, 127 C, 255 C,
+: `ONchar .ABLE DROP ?; DUP EMIT SWAP C!+ ; 0 WARY `FNtbl
+    >, `ONchar `ONcr `ONbs NOP NOP ,< : AC OVER+ OVER
+ [ DROP OVER- ] ;ZUNTIL KEY `CTBL `FNtbl @EXEC 2DUP - ;
+
+
+
+
+
+
+
+
+
+
+
+{ INIT}
+: @I J @ ; : .C@ DUP C@ ; : OPER! POP 0 OPER[] 8 CMOVE ;;
+: "BSCAN =: :(BSC ;
+ "BSCAN `SPEC? ,T ",!. : TERR. TO STATE vERR ;
+0 WARY `STR  >, CSTR, BS, TERR. ". ,<
+0 WARY `STR, >, TB" BS, TB! TB." ,<
+: `OK" OVER C@ '" - NOP ?; OVER 1+ C@ '" <> STR- ?; ;;
+: `STR@ CSTR `OK" 2- OVER C! SBUF "PK ;
+: STR? DUP NAME> 1- C@ '" = PUSH DUP 1+ C@
+                `SPEC? DUP 1- TO XK   0 <> POP AND ;
+: `NUM STR? NUM? ?; `STR@ XK `STR @EXEC ; : `.R, RDROP , ;
+: `NUM, STR? NUM?, ?; `STR@ XK `STR, @EXEC ;
+: `EXE >NF< NAME> PUSH 2 I+ @ ODD A" DEFINED?" RDROP EXEC ;
+: `COM >NF< NAME> PUSH 2 I+ @ ODD `.R, ?; DROP H @I , POP ! ;
+: TINIT CALL `NUM `EXE `NUM, `COM THEN OPER! ; { TINIT}
+
+{ SEARCH & PARSE} : 2PICK PUSH OVER : XPOP XCHG POP ;
+: `XSC POP : `XSC2 1+ NIP EXIT ; : .C@ DUP C@ ;
+: BI?~> J : B?~> PUSH FOR CSTR J = `XSC ?; NEXT `XSC2 ;
+: BI?> J : B?> PUSH FOR CSTR J - `XSC ?; NEXT `XSC2 ;
+: BI?< J : B?< PUSH A+L FOR C@- SWAP J - `XSC ?; NEXT `XSC2 ;
+: W?< PUSH A+L A+L FOR @- SWAP J - `XSC ?; NEXT  `XSC2 ;
+: SCAN"C CREATE DOES> PUSH XCHG CSTR BI?< DUP XPOP ?; EXIT ;
+: `SRC BLK 0; ETIB 0<>; BLK BLOCK 1K + TO ETIB ;
+: TOKEN? [ .C@ ??# ] : TOKEN BL : WORD [ TBUF (S! '` ROT ! ]
+: PARSE W>B PUSH LTIB TO >LT< `SRC I BL = IF INTIB BI?~>
+TO LTIB THEN LTIB LT0 ?; INTIB 2DUP BI?> DUP TO LTIB - EXIT ;
+
+
+
+
+
+{ NUMBER PARSER} FORGET SRCA1 : SRCA1 ;  0 VALUE SR1  19 LOAD
+: ZSR1 0 : >SR1 SR1 XEP TO SR1 ; SCAN"C `NUM'  6
+C, '# C, '$ C, '% C, '' C, '^ C, 0 C, 2 ALIGNED : `..ERR DROP
+: `.ERR DROP : `ERR ;LTIB 1- ; : UPC '` OVER U< 0; BL - ; 0#> @
+BASE! : ``ERR SR1 `ERR ?; ; N: `HEX 16 , =, `BIN 2 ,   : `DGT
+UPC '0 - 9>? DUP IF - DUP lf U< THEN OR DUP BASE U< `.ERR ?;
+: `*+ SWAP BASE U* + ; : `RADIX ``ERR :; BASE! 0 ;   : `C- OVER
+C@ '- - 0<>; STR- EX XEP NEG ; : `NUM ZSR1 DUP `.ERR ?; `*+ ;
+: `^NUM ZSR1 DUP `.ERR ?; 31 AND `*+ ; 0 WARY `NUMA >, `DGT
+ `RADIX `HEX `BIN `NUM `^NUM NOP  ,< : `;INI 0 INTIB 0 TO LTIB
+0 TO SR1 TUCK OVER+ 1- lf TO BASE ROT EX ZSR1 AHEAD    : ("NUM
+CSTR : (NUM `C- ;MEMTI [ LTIB ] `;INI `..ERR ?; ;RNG> C@
+>SR1  THEN `NUM' `NUMA @EXEC ; : NUM? TOKEN? : >NUM? ("NUM ?? ;
+
+
+
+{ STRING COMPILATION} 20 LOAD : ;HLD, EX : HLD, ;HLD C!+ ;
+: C!I J C! ; : C@HLD- ;HLD : C@- 1- DXEP C@ ; : ?DUP DUP 0; DUP
+; : ;SB, CSTR OVER+ 1- H 2+ TO HLD 0 HLD, 0 TO SR1 EX HLD H 2+
+ PUSH I NOT + C!I POP ; SCAN"C `CTBL ,T "^~_
+SCAN"C `Ctbl2 5 C, 0 C, '" C, '^ C, '~ C, '_ C,
+: "UPK ;SB, ;RNG> C@ DUP 128 AND IF 128 - '~ SWAP ;HLD, THEN
+  DUP ;HLD, `CTBL IF '" HLD, ;THEN  BL = IF DROP '_ ;THEN
+  DUP BL U< 0; '^ HLD, '@ + ;
+: `" ZSR1 ?DUP 0; HLD, ; : `^ ZSR1 ?DUP 0; 31 AND HLD, ;
+: `~ C@HLD- 128 + HLD, ; : `_ BL HLD, ;
+0 WARY `tbl >, HLD, NOP `" `^ `~ `_ ,< : `cTBL1 ZSR1 AHEAD
+: "PK ;SB, `cTBL1 :; ;RNG> C@ >SR1 THEN `Ctbl2 `tbl @EXEC ;
