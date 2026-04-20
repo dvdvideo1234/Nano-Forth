@@ -30,177 +30,177 @@ INCLUDE PB5_BODY
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\ FILE <> BLOCKS CONVERTERS   - PART OF FILE_WRITER
+0 VALUE VBLK   0 VALUE `LastB : LFBLK ;UNTIL 1- DUP ;NIP
+: TRIM<BLK BLOCK 1K : TRIM< FOR  DUP I+ C@ '! U< IF CSWAP> NEXT
+ SKIP THEN POP 1+ ; : `L 2DUP 1+ U< 0; DUP TO `LastB EX `LastB
+ TRIM<BLK 1L UN? AHEAD : B2F TOKEN? AUTO : "B2F ;@CREATE Fput
+;HCLOSE `L 1- ;RNG> BLOCK 1H THEN .LOOPS DUP 1L + XEP 1L TRIM<
+TYPE CR ; : `NEWBLK? XEP LTIB 0<>; 1K TO LTIB BLK 1+ DUP TO BLK
+0 TO ETIB : WIPE DUP : WIPES ;RNG> BLOCK 1K BLANK UPDATE FLUSH
+; : C>BLK `NEWBLK? DUP BL U< IF cr = 0; \` ;THEN SOURCE LTIB  -
+C! UPDATE ;LTIB 1- ; : `FREAD DXEP : FREAD TOKEN? : FREADED
+;@OPENI Fget ;BLKTI BLK WIPE BEGIN KEY C>BLK EOS UNTIL ;
+: FEDIT 100 LFBLK 1+ `FREAD DUP TO VBLK EDIT ;
+: FWIPE VBLK 100 LFBLK WIPES ;
+
+
+
+\ BLOCK1 OF EDITOR
+: WHAT? 7 EMIT ;
+ZDO VALUE 4 TIMES  `PDATA `INS  `SZ  `ALTER
+0#> SWAP TO XK CSTR 2DUP XK BSCAN 1+ 2* + + @EXEC ; =: `XK!
+
+ 2000 HIPUSH <H>
+: -:  ' , C,  XK 2+ DUP TO XK       { BYTES FOR MOVE UP 1 }
+         HERE OVER - DUP PUSH       { START ADDRESS    }
+         DUP 1+ ROT                 { PREPARE FOR MOVE }
+         CMOVE>  HERE C@ POP C!   ; { FIX CODE  }
+: SWITCH: CREATE HERE 73 1 TO XK 0 -: (LIT  `XK!  TOBE ;
+: ;SWITCH  73 - A" BAD KEYS" XK 2/ 1- SWAP C! ;
+ <H>  : `?XY 1L U/MOD 4 0 { : V+} ROT + XEP + ;
+
+
+
+\ BLOCK2 OF EDITOR
+: `POSXY XY `?XY @XY ; : `_INS `INS 0= TO `INS : `.INS 72 0 @XY
+`INS IF ." INS" ;THEN ." OVT" ; ' ETIB =: `EOS^ : `;LRUD XY  EX
+>XY  69 2 @XY XY 6 U.R 69 4 @XY  XY 1L U/MOD 3 U.R 3 U.R ;
+: `ERR 73 1 @XY ;
+: `;LPOS  XY : `;PDATA+ EX `PDATA + ;   : `POS^ `;LPOS ;;
+: `RELOAD SCR BLOCK DUP TO `PDATA 1K + TO ETIB  SPTRTOP? ;
+: `REDRAW  `ERR SPACE  `.INS HOME `PDATA .BLOCK ;
+: `L_DN 1L : `XY+ `;LRUD + ;    : `L_UP 1L : `XY- NEG `XY+ ;
+: `L_END `;LRUD : `/L  1L 1- OR ;  : `EOL `;LPOS `/L 1+ ;
+: `ERR.EXIT `ERR '? EMIT : .EXIT2 RDROP : .EXIT DROP EXIT ;
+: `1L<?; 1L : `>SZ?; TO `SZ : `SZ<?; 1K XY - `SZ U< 0?SKIP
+ `ERR.EXIT  : `;RDRC EX  : `RDRC  `REDRAW UPDATE ;
+: `WIPE `;RDRC 1K LOOPS `EOS^ J - 1- : `IWIPE   DUP C@ BL U<
+        DROP ?; BL SWAP C! ;
+
+\ BLOCK3 OF EDITOR
+: `<_|   `L_DN  : `L_BEG `;LRUD L/ ;    : `->  1 `XY+ ;
+: `<-  1 `XY- ;  : `TAB> bs : `SZTB> `-> :; 1- `;LRUD OR ;
+: `<TAB bs : `<SZTB `<- NEG : `TAB& `;LRUD AND ; { PREVIOUS}
+: `APOS  0 `TAB& ; : `LINE/ `;LPOS  L/ ;  : `/LINE `;LPOS `/L ;
+: `LDRAW `POSXY `LINE/ XY 1L U/ 1+ cr EMIT .LINE DROP ;
+: `RESET -BUF : `LOADRAW `RELOAD `REDRAW ;
+: `N  1 : `LB SCR + 0 MAX TO SCR `LOADRAW ;  : `B -1 `LB ;
+: `ALT SCR `ALTER TO SCR TO `ALTER `LOADRAW ;
+: `ADV 1K XY - TO LTIB BL PARSE TO `SZ DROP XY? >XY XY 0; `<- ;
+: `TEST BL `POS^ C@ U< ;  : `BACK  BEGIN `<- XY 0; `TEST UNTIL
+         BEGIN `<- XY 0; `TEST 0= UNTIL `-> ;
+: `;INSPOS EX PUSH `POS^ I `SZ - DUP `SZ BLANK POP ONPLACE ;
+: `;DELPOS `POS^ DUP `SZ + OVER `SZ BLANK EX ONPLACE ;
+: `AW `ADV : `PREP { ARE} `BACK  : `SKIP `ADV `-> ;
+
+\ BLOCK4 OF EDITOR
+: `DELL `1L<?; : `DO-DEL `;DELPOS `EOS^ ; : `INSL `1L<?;
+: `DO-INS `;INSPOS `EOS^ ; : `altS 1L 1+ `>SZ?; 1L TO `SZ `POS^
+`<_| `DO-INS `POS^ 2DUP - NUP - ONPLACE ; : `COPY `1L<?; RDROP
+: `DO-COPY `POS^ `SZ DUP `XY+ >S ; : `CUT `1L<?; : `DO-CUT
+`DO-COPY  `SZ `XY- `DO-DEL ;
+: `BKCW `AW `BACK `BACK : `CUTW `AW `SZ 0; `SZ 1+ TO `SZ
+ `BACK `;RDRC `DO-CUT `PREP ; : `MOVE `CUTW `SZ 0; `SKIP :;
+: `PASTE SPTR C@ DUP TO `SZ 0; `SZ<?; : `DO-PASTE `DO-INS S> 1+
+ `POS^ `SZ CMOVE ; : `;LDRU 1 TO `SZ EX : `LDRU `LDRAW UPDATE ;
+: `INSC `;LDRU CALL `POS^ C! ;THEN `INS 0; `;INSPOS `EOL ;
+: `BS `<- : `DELC `;LDRU `;DELPOS `EOL ; : `ESQ/E /BUFS
+: `X-POS 75 15 @XY EOS! ; : `Q/ED FLUSH `X-POS ;
+: `SCR; `APOS `<- : `PREPARE `L_END `PREP ;
+ <H>  : C^ TOKEN? 1+ C@ 31 AND ;
+
+{ BLOCK5 OF EDITOR \ KEY CONSTANTS}
+80 CONST kDOWN  81 CONST kPGDN  82 CONST kINS   83 CONST kDEL
+79 CONST kEND   84 CONST ksF1
+59 CONST kF1    60 CONST kF2    61 CONST kF3    62 CONST kF4
+63 CONST kF5    64 CONST kF6    65 CONST kF7    66 CONST kF8
+67 CONST kF9    68 CONST kF10   30 CONST kaA
+113 CONST kaF10 17 CONST kaW    71 CONST kHOME  72 CONST kUP
+73 CONST kPGUP  75 CONST kLEFT  77 CONST kRIGHT 27 CONST kESQ
+9 CONST kTAB    104 CONST kaF1  93 CONST ksF10  94 CONST kCF1
+103 CONST kcF10 15 CONST ksTAB  32 CONST kaD    31 CONST kaS
+115 CONST kcLEFT  116 CONST kcRIGHT  117 CONST kcEND
+118 CONST kcPGDN  119 CONST kcHOME   132 CONST kcPGUP
+
+
+
+
+{ BLOCK6 OF EDITOR }  <H>
+SWITCH: `EF WHAT?   kaA -: `ALT    kLEFT -: `<-    kUP -: `L_UP
+ kHOME -: `L_BEG   kEND -: `L_END  kPGUP -: `B   kPGDN -: `N
+ kDOWN -: `L_DN  kRIGHT -: `->     kINS  -: `_INS kDEL -: `DELC
+ kaW   -: `WIPE kcRIGHT -: `ADV  kcLEFT -: `BACK kcEND -: `SCR;
+ ksTAB -: `<TAB  kcHOME -: `APOS   kaS -: `altS  kaD -: `DELL
+;SWITCH        : `ONEC XK BL U<  IF WHAT? ;THEN XK `INSC `-> ;
+SWITCH: `EK `ONEC C^ J -: `<- C^ K -: `-> C^ X -: `CUT 127
+-: `BKCW bs -: `BS C^ D -: `DELC cr -: `<_| C^ G -: `CUTW C^ Z
+-: `PREPARE C^ N -: `N C^ B -: `B C^ R -: `RESET C^ I -: `TAB>
+ C^ C -: `COPY C^ V -: `PASTE C^ Q -: `ESQ/E C^ F -: `MOVE
+ C^ A -: `ADV  kESQ -: `Q/ED  C^ S -: `INSL  0 -: `EF ;SWITCH
+: `@KEY `POSXY KEY W>BB DUP IF SWAP ;THEN DROP ;
+: EDIT TO SCR : PE PAGE : E  D0 ;MEMTI `LOADRAW ;EOS
+ BEGIN `@KEY `EK EOS  UNTIL ;  HIDROP
+
+: ,T BL ?", ; : `CN 2- C>N?  : `N  EXIT ?; POP ID.   ID. EXIT ;
+: `TO. `CN ,< ,T TO   : `AT. `CN ,< ,T AT
+: ?ID.   C>N? 0= ID. ?; `TO. `AT. 2+ 2+ : `H ." `$" H. ; 0#>
+ PUSH XCHG CSTR POP SCAN 1+ ; =, `?STR 3 C, >, ((A" ((" ((." ,<
+0 VALUE `WW  : `C>N  C>N? ; : `;WW `WW EX TO `WW ; : .HL `WW H.
+; : `GETW `;WW @+ ; : `WW! T>R TO `WW ; : `?TA. `WW R>T `C>N
+NIP 0; : `TA. `WW R>T ADRS. `C>N DROP ?; ." : " ID. ;
+: SEE ' : @SEE `WW! : SL bs LOOPS : WW `TA. `GETW DUP H.
+: `W0 DUP ?ID. `?STR 0; `;WW ;SPC ;[] DUP ". NAME> ;
+: HACK ' : @HACK `WW! : HL `TA. bs LOOPS `?TA. `GETW `W0 ;
+: -HL `WW 23 - @HACK ; : TEST 1 2 3 " 1234" ;
+
+
+
+
+
+: PRUNE  [ TO T DUP STR + OFF DUP INC STR >DICT ] EDICT XEP
+ H DUP OFF ;DROP ;FND J N>C SWAP U< 0;  J 1+ C@ '` - 0;
+ J D>NAME OVER- H S+! DROP ;
+0 VALUE FOUND
+: `DEF: C: : DOES> [ H @ DUP TO FOUND CR . CR ]
+ TO XK H OFF ;2DROP ;FND J NAME> 2+ @ XK PUSH ;
+`DEF: DEF ODD = : `CNTR 0; J ID. H INC ;
+`DEF: =USED 2/ = `CNTR ;
+`DEF: >USED 2/ U< `CNTR ;
+
+: `? J C@ - DUP 0< 0; RDROP : `SRCH; 2DROP 0 EXIT ;
+: IN-STR> SUCSTR : SRCH> PUSH `? FOR> DUP J CSTR -TEXT EXIT2 ?;
+1+ <NEXT DUP `SRCH; ;
+: <IN-STR SUCSTR : <SRCH PUSH `? A+L FOR> DUP J CSTR -TEXT
+EXIT2 ?; 1- <NEXT DUP `SRCH; ;
+
+CREATE `SEARCHBUF 80 ALLOT    63 VALUE ENDBLK  \  ABRAKADABRA
+: `BLK>LINES ENDBLK 1H U* ; : S0! 0 TO SCR  0 TO XY ; \
+: VLINE 1H U/MOD TO SCR 1L U* ;
+: `VMEM VLINE 1L 1- OR  DUP TO XY  : `AT-SCR SCR BLOCK + ;
+: SRCH XY `AT-SCR 1K XY - `SEARCHBUF SRCH> DUP  TO XY 0;
+  XY 0 `AT-SCR - `SEARCHBUF C@ + >XY E ; >, BEGIN SCR 1+ TO SCR
+: `BLOCKSRCH  SCR ENDBLK U< 0;  SRCH XY UNTIL ;
+: S BL : `BLOCKSEARCH  WORD C@ IF   TBUF `SEARCHBUF >" THEN
+  `SEARCHBUF C@ 0; `BLOCKSRCH ;
+: S" '"  `BLOCKSEARCH ; : ?S TOKEN? 1+ C@ `BLOCKSEARCH ;
+: S?EL `BLK>LINES LOOPS J `VMEM  C@ BL - 0; E ;
+: cr>EL FLUSH :; S?EL `BLK>LINES LOOPS cr J `VMEM C! UPDATE ;
+: bl>EL FLUSH :; `BLK>LINES LOOPS BL J `VMEM C! UPDATE ;
+
+
+
+: .ALL ;2DROP ;FND J (TYP : >PRINT = : >PRT? 0; : JID J ID. ;
+: `6N  PUSH PUSH PUSH  CALL  POP POP POP : `N3 THEN SPACE 3
+ LOOPS ROT DUP H. ; : /DBG KEY 17 = A" /DBG" ;
+: `PREFETCH  TOKEN? >LT< TO LTIB FOUND? DROP H. ;
+: DBG  CR POP J H. PUSH J H. I H. `6N I @ ?ID. /DBG ;;
+: [D]` CR POP J H. PUSH J H. I H. `N3 HERE H. TD @ H. `PREFETCH
+  SPACE >NF< ID. TD @ ID. HERE 2- @ ?ID. /DBG ; : .CODE ;2DROP
+  ;FND DROP J N>C @+ >PRINT ; : .WORDS ;2DROP ;FND DUP >PRINT ;
+: .NAMES ;2DROP ;FND J IN-STR> >PRT? ;
+: HIDE -FIND ??# 1+ '` : CSWAP! SWAP C! ;
+: HD-TEST -FIND IF ID. ; THEN DROP ;
 
 
 
