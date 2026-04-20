@@ -1,3 +1,4 @@
+FDGSDFG
 $100 ORG!  0 1 H RBLOCKS                     241 =: --END--
 T' H 4 + T>R @ DUP  HERE! T>R  STR 1- >T
 =! 2-DXEP  =! EMIT  =! vINIT     : `99 vINIT
@@ -13,7 +14,6 @@ EXIT ?; : EX POP : XPSH XCHG : EXECUTE PUSH ; : (LIT @R+ ;
 : (LARY 2* : (WARY 2* : (BARY POP + ; : DXEP1+ DUP 1+ XEP ;
 : (DZ#2 @R+ (DROP : (DZ#1 @R+ (DROP : (DZ#0  POP XCHG ; : I J ;
 : (.CON @R+ (DROP @R+ EMIT EXIT ;
-
 { VARIABLES }
 #DO CONST 13 TIMES     64 1L 1024 1K 16 1H 256 1B $8000 SGN
              $7C NPAD $E000 FIRST  $FD00 SBUF  2 2  9 BOOT 1 1
