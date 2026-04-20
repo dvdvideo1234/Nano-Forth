@@ -1,6 +1,4 @@
 M: @EXEC` @ EXEC;
-M: SCAN` W?>;
-M: 0SWAP` 0 SWAP;
 : ,' ' , ;
 
 : ;RED 2DUP EX SWAP ?; ;  : URED ;RED U< ;
@@ -19,22 +17,21 @@ M: 0SWAP` 0 SWAP;
 : VALUE ;, =H :(CON2 : `S :(SET ;       
 : VECTOR ;, =H :(DEF2 `S ;
 : DEFER ;, =H :(DEF ; : CONST ;, =H  :(CON ;
-: BARY `ARY :(BARY ;  : WARY `2ARY :(WARY ;
+: BARY `ARY :(BARY ; : WARY `2ARY :(WARY ;
 
 0 VALUE XK                
 VARIABLE @HD Z, Z, 
 : MARK@ @HD : MK@ PUSH @R+ TO HOFS @R+  TO H POP @ TO T ; 
 : MARK! @HD : MK! PUSH HOFS !R+ H !R+ T POP ! ;
 
-\  ' ((A" (,X A"` ,"    ' ((." (,X ."` ,"   ' (("   (,X  "` ," 
+ ' ((A" (,X A"` ,"    ' ((." (,X ."` ,"   ' (("   (,X  "` ," 
 : META ' TO' ! ; 
 \ : C:` ' , ;
 : +THRU ;RNG> : +LOAD BLK + : LOAD DUP DROP ?; ;BLKTI vLOAD EVLP ;
 : THRU ;RNG> LOAD ; : CHARS ;RNG> DUP EMIT . ;
 
-: PAGE HOME :; 25 : CRS  LOOPS CR ;
-
 INCLUDE PB5FLUSH
 USE/ USING PB5.COM
 
-\ 15 LOAD  DFLTEMT @EMT !  PAGE
+15 LOAD  
+

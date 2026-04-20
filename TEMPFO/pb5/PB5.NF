@@ -14,12 +14,12 @@
 
 
 
-M: TWICE` CALL THEN;   : N: DUP =, ; : U1- XEP 1- ;
-: STR- 1- XEP 1+ ;
 INCLUDE PB5_BODY
-: TT ;  ' BLK. TO vLOAD
-: SRCA1 ;
-
+' BLK. TO vLOAD
+23 25 THRU
+: TT ;
+DFLTEMT @EMT !  PAGE
+PRUNE
 
 
 
@@ -142,13 +142,11 @@ SWITCH: `EK `ONEC C^ J -: `<- C^ K -: `-> C^ X -: `CUT 127
 : EDIT TO SCR : PE PAGE : E  D0 ;MEMTI `LOADRAW ;EOS
  BEGIN `@KEY `EK EOS  UNTIL ;  HIDROP
 
-: ,T BL ?", ; : `CN 2- C>N?  : `N  EXIT ?; POP ID.   ID. EXIT ;
-: `TO. `CN ,< ,T TO   : `AT. `CN ,< ,T AT
-: ?ID.   C>N? 0= ID. ?; `TO. `AT. 2+ 2+ : `H ." `$" H. ; 0#>
- PUSH XCHG CSTR POP SCAN 1+ ; =, `?STR 3 C, >, ((A" ((" ((." ,<
-0 VALUE `WW  : `C>N  C>N? ; : `;WW `WW EX TO `WW ; : .HL `WW H.
-; : `GETW `;WW @+ ; : `WW! T>R TO `WW ; : `?TA. `WW R>T `C>N
-NIP 0; : `TA. `WW R>T ADRS. `C>N DROP ?; ." : " ID. ;
+0#> PUSH XCHG CSTR POP SCAN 1+ ; =, `?STR
+ 3 C, >, ((A" ((" ((." ,< 0 VALUE `WW
+: `C>N C>N? ; : `;WW `WW EX TO `WW ; : .HL `WW H. ;
+: `GETW `;WW @+ ; : `WW! T>R TO `WW ; : `?TA. `WW R>T `C>N NIP
+    0; : `TA. `WW R>T ADRS. `C>N DROP ?; ." : " ID. ;
 : SEE ' : @SEE `WW! : SL bs LOOPS : WW `TA. `GETW DUP H.
 : `W0 DUP ?ID. `?STR 0; `;WW ;SPC ;[] DUP ". NAME> ;
 : HACK ' : @HACK `WW! : HL `TA. bs LOOPS `?TA. `GETW `W0 ;
@@ -158,21 +156,23 @@ NIP 0; : `TA. `WW R>T ADRS. `C>N DROP ?; ." : " ID. ;
 
 
 
-: PRUNE  [ TO T DUP STR + OFF DUP INC STR >DICT ] EDICT XEP
- H DUP OFF ;DROP ;FND J N>C SWAP U< 0;  J 1+ C@ '` - 0;
- J D>NAME OVER- H S+! DROP ;
-0 VALUE FOUND
-: `DEF: C: : DOES> [ H @ DUP TO FOUND CR . CR ]
- TO XK H OFF ;2DROP ;FND J NAME> 2+ @ XK PUSH ;
-`DEF: DEF ODD = : `CNTR 0; J ID. H INC ;
-`DEF: =USED 2/ = `CNTR ;
-`DEF: >USED 2/ U< `CNTR ;
 
+
+: PRUNE  [ TO T H STR + OFF H INC H STR >DICT ] EDICT XEP H DUP
+OFF T;2DROP ;?I J N>C OVER U< 0; J 1+ C@ '` - 0; J DUP >NAME J
+- H S+! DROP ;
+' (DEF: N: DEF >, ODD = : `CNTR 0; J ID. H INC ;
+N: =USED >, 2/ = `CNTR ; =, >USED >, 2/ U< `CNTR ;
 : `? J C@ - DUP 0< 0; RDROP : `SRCH; 2DROP 0 EXIT ;
-: IN-STR> SUCSTR : SRCH> PUSH `? FOR> DUP J CSTR -TEXT EXIT2 ?;
+: IN-STR> SUCSTR : SRCH> PUSH `? FOR> DUP J CSTR MEM- 2EXIT ?;
 1+ <NEXT DUP `SRCH; ;
-: <IN-STR SUCSTR : <SRCH PUSH `? A+L FOR> DUP J CSTR -TEXT
-EXIT2 ?; 1- <NEXT DUP `SRCH; ;
+: <IN-STR SUCSTR : <SRCH PUSH `? A+L FOR> DUP J CSTR MEM-
+2EXIT ?; 1- <NEXT DUP `SRCH; ;
+
+
+
+
+
 
 CREATE `SEARCHBUF 80 ALLOT    63 VALUE ENDBLK  \  ABRAKADABRA
 : `BLK>LINES ENDBLK 1H U* ; : S0! 0 TO SCR  0 TO XY ; \
@@ -206,6 +206,8 @@ CREATE `SEARCHBUF 80 ALLOT    63 VALUE ENDBLK  \  ABRAKADABRA
 
 
 
+' (DEF: N: DEF >, ODD = : `CNTR 0; J ID. H INC ;
+N: =USED >, 2/ = `CNTR ; =, >USED >, 2/ U< `CNTR ;
 
 
 
@@ -268,9 +270,7 @@ CREATE `SEARCHBUF 80 ALLOT    63 VALUE ENDBLK  \  ABRAKADABRA
 
 
 
-
-
-
+32 61 B2F PB5_TARG
 
 
 
