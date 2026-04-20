@@ -820,10 +820,10 @@ POP : TOBE LATEST ! ; : D# >, EX @H- HERE SWAP : CALL, $E8 : ,R
  C, HP - , ; : " HERE : ," '" : ?, WORD : CSTR, CSTR : STR, ;H
 (S! DROP; ,< $441 =, ;?# >, ??# ; : TOKEN? LTIB TO >LT< TOKN? ;
 : =0, 0 : =, ;, : =H HERE : =: v=: ; : ,X: $2DF : `X =, , : ,'
- ;, : ' ;?# : T? TOKEN? : FND T : FND2 H SWAP (FND ; : M: '; :
- ?M: =0, ?, DOES> : SEVAL CSTR : MEVAL DU+ ;0TI EVLP ; : (M:
- (?S SEVAL ; : 'TO ' 2+ ; : 'AT 'TO 2+ ; : (,X $2DA `X ;
-                                           $281 ' v=: 4 + T>R !
+ ;, : ' ;?# : T? TOKEN? : FND T : FND2 H SWAP (FND ;
+: >SEVAL >LT< XEP : SEVAL CSTR : MEVAL DU+ ;0TI EVLP ;
+: M: '; : ?M: =0, ?, DOES> SEVAL ; : (M: (?S SEVAL ; : 'TO '
+  2+ ; : 'AT 'TO 2+ ; : (,X $2DA `X ; $281 ' v=: 4 + T>R !
 : ;LTIB LTIB EX TO LTIB ; : \ ;LTIB 1- : L/ 1L NEG AND ;
 : { '} PARSE 2DROP ; : BS, CSTR : S, ;DROP LOOPS CSTR C, ;
 : (;GO @R+ XCHG PUSH ; : (GO @R+ XCHG DROP ;
@@ -839,12 +839,12 @@ POP : TOBE LATEST ! ; : D# >, EX @H- HERE SWAP : CALL, $E8 : ,R
 =0, , EX ,' ; : 2MKR `MKR , DOES> `(: : `W, THEN STR , ; : 1MKR
 `MKR DOES> `(: ; : 3MKR `MKR , , DOES> `(: `W, `W, ; : STK,
 SWAP DUP , , , ; : (TYP N>C @ ; : !- 2-DXEP ! ; : @BNDS? @+ @ :
-BOUNDS? WITHIN 0= !"BOUNDS!" ; : ;STK @BNDS? : ;@! @+ XCHG
+BNDS WITHIN 0= !"BNDS!" ; : ;STK @BNDS? : ;@! @+ XCHG
 EXECUTE POP !- DROP; ,< : INC ;@! 1+ ; : S+! XEP TUCK J STR +
 SWAP CMOVE J : +! ;@! + ; : U16? 1H : UN? U/MOD SWAP 0; 1+ ;
 : EDICT T (SKIP BEGIN >NAME .C@ 0= UNTIL 1+ ; : ITEMS@ DUP 2+ @
 SWAP : ITEMS? @+ @ - : 2/ 0 : AVG +2/ : NIP NIP; ,<
-: @I J @ ; : !I J ! ;
+: @I J @ ; : !I J ! ; : STR- 1- XEP 1+ ;
 
 : CORA DUP C@ 1+ : -TEXT FOR PUSH CSTR XCHG CSTR POP = IF
  CSWAP> NEXT -1 PUSH THEN 2DROP POP 1+ ; : ;FND T AHEAD
