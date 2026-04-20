@@ -28,7 +28,7 @@ M: TWICE` CALL THEN;
 : `4ARY 2* : `2ARY 2* : `ARY =H >, EX ,<` CLARY ;
 : BARY `ARY :(BARY ; : WARY `2ARY :(WARY ;
 : LARY `4ARY :(LARY ;
-13 27 THRU  35 LOAD PRUNE
+13 27 THRU  35 LOAD  PRUNE
 
 { IFS} : AHEAD` :(JUMP MARK> ; : ;GO` :(;GO MARK> ;
 : IF` :(IF MARK> ;             : CALL` :(CALL MARK> ;
@@ -94,16 +94,16 @@ CSTR DUP 128 AND IF 128 - [ '~ C, ] THEN [ L C, ] DUP TO L
 
 
 
- 0 VALUE SPTRTOP  0 VALUE SPTR : ;SPTR  SPTR EX TO SPTR ;
-: EOS! bs TO EOS ; : S> SPTR : SDROP ;SPTR NAME> ;
-: C!- 1-DXEP C! ; : ;EOS EOS XCHG 0 TO EOS EXECUTE POP TO EOS ;
-: SPTRTOP? SPTRTOP T <>  SPTR SPTRTOP U< 0=  OR  0;
-  T DUP TO SPTRTOP TO SPTR TWICE  D0
-: >S ;SPTR OVER PUSH (MPUSH XCHG POP C!- ; : >S! CSTR >S ;
-: >"! DXEP : >" OVER C@ 1+ CMOVE ;
-: SUCSTR SWAP : UCSTR XEP CSTR ;
-: "+!  SUCSTR DXEP NAME> (MOVM DROP : L"! J NOT + J C! ;
-: "+C! SWAP DXEP NAME> C!+ L"! ;
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -367,21 +367,21 @@ CREATE FBUFFER 70 ALLOT  ZDO VALUE 3 TIMES  SPAN MPTR 1BLK
 
 
 
+{ STRING COMPILATION } : UNB ;DROP : C@H- ;H : C@- 1-DXEP C@ ;
+"BSCAN `Ctbl ,T "^~_ : PK: C: : DOES> SWAP  ;H XEP DXEP TO H 0
+ C, PUSH CSTR TO L POP EXECUTE  H J NOT + : C!I J C! ;
+: ;L L EX TO L ;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                                  PK: "UNPACK L ;DROP LOOPS
+CSTR DUP 128 AND IF 128 - [ '~ C, ] THEN [ L C, ] DUP TO L
+`Ctbl IF '" C, ;THEN BL L = IF '_ TO L ;THEN L BL U< 0; '^ C,
+'@ ;L + ;
+          : `SRC CSTR ;L 1- ; : `^ UNB L 0; `SRC
+31 AND C, ; : `" UNB L 0; `SRC C, ; : `~ UNB C@H- 128 XOR C, ;
+: `_ UNB BL C, ; 0 WARY `tbl >, NOP `" `^ `~ `_ ,<
+                                                   PK: "PACK
+ ;DROP BEGIN L  0; `SRC DUP C, `Ctbl `tbl @EXEC AGAIN ; UNW
+: "PACK CSTR OVER+ 1- ;RNG C@ DUP HLD, `Ctbl `tbl @EXEC ;
 
 { PROBA.COM } ' \ =: \`    $178 =: EVAL   CMDLN OFF
 M: PRB USING PROBA.COM; \ SELF LOAD
@@ -391,7 +391,7 @@ M: PR5 USING PB5.COM;
 M: NFC USING NFC.COM;
 M: CLR STOP FORGET S0;
 CR .( PROBA.COM !!!)
-CREATE TT  PAGE 35 LIST
+CREATE TT  35 LIST
 
 
 
@@ -415,21 +415,21 @@ M: IF- (IF- X: MARK>;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{ STRING COMPILATION}  FORGET `FRST
+ZDO VALUE 2 TIMES `FRST `SCND : ;HLD, EX : HLD, ;HLD C!+ ;
+: ZH, HLD, : D0>2> TWICE : 0>2> 0 : >2> `SCND TO `FRST TO `SCND
+; : C@HLD- ;HLD C@- ; : ;SB, CSTR : ;B, OVER+ 1- H 2+ TO HLD  0
+HLD, D0>2> EX HLD H 2+ PUSH I NOT + C!I POP ; "BSCAN `CTBL
+,T "^~_ "BSCAN `Ctbl2 5 C, 0 C, '" C, '^ C, '~ C, '_ C,
+: "UPK ;SB, ;RNG> C@ DUP 128 AND IF 128 -  '~ SWAP ;HLD, THEN
+ DUP ;HLD, `CTBL IF '" HLD, ;THEN DUP BL = IF DROP '_ ;THEN DUP
+BL U< 0; '^ HLD, '@ + ;
+CREATE TMP 103 C,  1 28 +DO C, 103 ..TIMES
+: `^ `SCND 0; `SCND 31 AND ZH, ; : `" `SCND 0; `SCND ZH, ;
+: `~ C@HLD- 128 + HLD, ; : `_ BL HLD, ;
+                  0 WARY `tbl >, HLD, NOP `" `^ `~ `_ ,<
+: `cTBL1  0>2> : `cTBL2 `FRST `Ctbl2 `tbl @EXEC ;
+: `PK ;SB, `cTBL1 :; ;RNG> C@ >2> `cTBL2 ; : "PK `PK ;;
 
 
 
