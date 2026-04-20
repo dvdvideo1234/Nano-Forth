@@ -95,10 +95,12 @@ CMOVE:  XCHG AX,SI
         _XT  XT_count,_COUNT            ;= CSTR
 
         _XT XT_EPUSH,@2NIP              ;= S!-
-        INC  CX
+        MOV  CH,0
+        PUSH CX
         MOV  DI,BX
         CALL CPUSHU
         MOV  BX,DI
+        POP  CX
         MOV  [BX],CL
         RET
 

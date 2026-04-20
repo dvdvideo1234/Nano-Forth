@@ -571,6 +571,7 @@ implementation
       REMARK; FPARAM := ''; {SKIP REMAINING TOKEMS IN CALLING LINE}
       WHILE NOT EOF(TOP^) DO BEGIN
         READLN(TOP^,ALINE);
+        WRITELN(ALINE);
         inc(fnline); {line counter}
         MACRO(ALINE);
       END;

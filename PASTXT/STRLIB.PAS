@@ -24,10 +24,12 @@ uses baselib;
   function  MKSTR(var s; B: BYTE) : string;
   function  MKSTROF(C: CHAR; B: BYTE) : string;
   FUNCTION  trimleft(s: string): string;
+  FUNCTION  trimRight(s: string): string;
   function  lextract(var ls: longstr): string;
 
   function  cutStr(var s: string; del: char): string;
   function  GETOKEN(var s: string) : string;
+  function  SplitExt(fname: string; var ext: str7): string;
 
 IMPLEMENTATION
 
@@ -310,11 +312,11 @@ IMPLEMENTATION
   end;
 
   function MKSTR(var s; B: BYTE) : string;
-  VAR TS: STRING;
+  VAR lS: STRING;
   BEGIN
-    TS[0] := CHAR(B);
-    MOVE(S,TS[1],B);
-    MKSTR := TS;
+    lS[0] := CHAR(B);
+    MOVE(S,lS[1],B);
+    MKSTR := lS;
   END;
 
   function MKSTROF(C: CHAR; B: BYTE) : string;
@@ -368,6 +370,25 @@ IMPLEMENTATION
     len := pars(ls);
     WITH LS DO
       trimleft := MKSTR(ADDPTR(CP,-LEN)^ ,LEN+rem);
+  end;
+
+  FUNCTION  trimRight(s: string): string;
+  var len: word;
+  begin len := length(s);
+    while (len > 0) and (s[len]=' ') do dec(len);
+    trimRight := copy(s,1,len);
+  end;
+
+  function SplitExt(fname: string; var ext: str7): string;
+  var pnt: integer;
+  begin pnt := length(fname);
+    while (pnt > 0) and (not (fname[pnt] in ['\','.'])) do dec(pnt);
+    if (pnt=0) or (fname[pnt]='\') then begin
+       ext := ''; SplitExt := fName;
+    end else begin
+       ext := copy(fname,pnt+1,255);
+       SplitExt := copy(fname,1,pnt-1);
+    end;
   end;
 
   function fixblanks(s: string): STRING;

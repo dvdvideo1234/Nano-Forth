@@ -126,16 +126,16 @@ XT     macro   LBL,ADR
 LBL		DW ADR
         ENDM
 
-col3   macro  lbl
-        XT LBL,@NEST3
-        endm
-
-col2   macro  lbl
-        XT LBL,@NEST2
-        endm
-
+;col3   macro  lbl
+;        XT LBL,@NEST3
+;        endm
+;
+;col2   macro  lbl
+;        XT LBL,@NEST2
+;        endm
+;
 col    macro  lbl
-        XT LBL,@NEST
+        XT LBL,@_NEST
         endm
 
 RVAR3  macro  lbl
@@ -144,6 +144,10 @@ RVAR3  macro  lbl
 
 RVAR2  macro  lbl
         XT LBL,@PUSHW2
+        endm
+
+RVAR1   macro  lbl
+        XT LBL,@PUSHW1
         endm
 
 RVAR   macro  lbl
