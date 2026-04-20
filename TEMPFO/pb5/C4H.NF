@@ -570,7 +570,7 @@ FORGET T CREATE T  44 LOAD      37 43 THRU
 %2 TUNTIL UNTIL`        %2 TBEGIN BEGIN`       %2 ]` ]`
 %2 TTWICE TWICE`        %2 TTO TO`             %2 TAT AT`
 %2 T-IF -IF`            %2 TELSE ELSE`         %2 TELSE ENDOF`
-%2 TDOES> DOES>`        %2 CSWAP>` CSWAP>`     %2 [` [`
+%2 TDOES> DOES>`        %2 CSWAP>` CSWAP>`     %2 TCALL [`
 %2 HIDE HIDE
 
 
@@ -735,9 +735,11 @@ $462 =, 2DROP   $461 =, 2DROP;  $4E3 =, 1+      $3EC =, ROT
 : C!- 1- C!+ 1- ; : NOP ; : D0 0 0 ; : C! C!+ DROP; ,<
 
 : 2-DXEP 1- : 1-DXEP 1- : DXEP DUP : XEP XCHG EXECUTE POP ;
-: ..TIMES ;DROP : .TIMES ;DROP : TIMES PUSH XCHG
-: LOOPS FOR J  EXECUTE NEXT : EXIT RDROP ;
-0 QUAN Fbuf     ZDO VECTOR 3 TIMES vLOAD v=: `DO
+: .LOOPS XCHG POP AHEAD : ..LOOPS XCHG POP : ..TIMES ;DROP
+: .TIMES THEN ;DROP : TIMES PUSH XCHG : LOOPS FOR J EXECUTE
+ NEXT : EXIT RDROP ; 0 QUAN Fbuf : DXEP1+ DUP 1+ XEP ;
+: 0<; 0< : 0<>; NOP ?; EXIT ; : 0>=; 0< : 0; EXIT ?; ;
+ZDO VECTOR 3 TIMES vLOAD v=: `DO
 ZDO VALUE 22 TIMES     HLD BASE
       _AX _BX _CX _DX _FR EOS SCRH `USE `PREV BLK SCR XY XK
       L HOFS >LT< >CF< HDICT ENDH `REGA   HERE 2- =: `REG
@@ -747,23 +749,21 @@ ZDO VALUE 22 TIMES     HLD BASE
      0 >NF< 12 BOOT  128 CMDLN  '- sgn
 : ;+ EX + ; : ;2DROP EX 2DROP; ,< : -ROT ROT ROT ; : ;SPC EX
 : SPACE BL EMIT ; : ?SPC NPAD HLD - - : SPACES LOOPS SPACE ;
-: 0<; 0< : 0<>; NOP ?; EXIT ; : 0>=; 0< : 0; EXIT ?; ;
-
 
 @' DUP =, +2/ ,"^CZ~^K~S~Q~[~C~"   : I J ; : = XOR 0= ;
 @' DUP =, +*  ,"v~B~^At^D^C^^" ' `REG , ,"Q~[~Q~Z~C~"
 @' DUP =, -/  ,"Q~b~Q~S~^K~^N" ' `REG , ,";Y~r^C+Y~BC~"
 @' STR =, (BK ,"1[~^S~M~^V^H@~t^B0d~^S~C~"  ' (BK VQUAN KEY
-$44B =, ?BL. ,"^@~{~_s^B3~.C~"     : ID. ;SPC
-: ". CSTR : TYPE ;DROP : ?TYPE LOOPS CSTR ?BL. EMIT ;
+$44B =, ?BL. ,"^@~{~_s^B3~.C~" : ;[] '[ EMIT EX '] EMIT ; : ID.
+;SPC : ". CSTR : TYPE ;DROP : ?TYPE LOOPS CSTR ?BL. EMIT ;
 $3B6 CALL! ,"^Cy~/~/~C~"  @' (DE =, (BE ,"^V~1[~4~^NM~^P^V~C~"
 $3C4 CALL! ,"^K~5^J~^W2v~w~R~^CW~^I~^V" 'TO >NF< ,
  ,":~^B^@^AU^BAC~"       @' (S! =, (MOVM $57 C, $F3 C, $A4 C,
  ' (S! 11 + $E9 ,R     HERE 2+ =, (IO  ,"^H~^^" HERE 12 + ,
  ,"V^T~[Y"_^T~^W~^R~WM~^P"_^W~^T~RQSW^\~^T~"  @' 2DROP; $E9 ,R
-: A! TO `REGA ; : A@ `REGA ; : (CALL @R+   PUSH ; : U/ ;DROP
-: (/MOD A! : (/M 0 : (Z/M TWICE TWICE -/ -/ -/ -/ ; : UMOD
- ;DROP : U/MOD (/MOD SWAP ; : W>BB 1B U/MOD ;
+: A! TO `REGA ; : A@ `REGA ; : (CALL @R+   PUSH ; : U/ ;DROP :
+ (/MOD A! : (/M 0 : (Z/M TWICE TWICE -/ -/ -/ -/ ; : UMOD ;DROP
+: U/MOD (/MOD SWAP ; : W>BB TO Fbuf AT Fbuf .C@ 1+ C@ ;
 : 1B* 1B : U* ;DROP : UM* A! 0 TWICE TWICE +* +*   +* +* ;
 
 : NAME> CSTR + ; : D>NAME DUP : >NAME NAME> 2+ 2+ ;
@@ -772,14 +772,14 @@ $3C4 CALL! ,"^K~5^J~^W2v~w~R~^CW~^I~^V" 'TO >NF< ,
 BB>W 1B* SWAP ;+ : W>B 1B& AND ; : TUCK DUP XEP SWAP ; : =" '"
  WORD : >ZSTR CSTR CMDLN : S! (S! SWAP : OFF 0 : SWAP! SWAP ! ;
 : NUP XEP DUP ; : OR OVER NOT AND XOR ; : ODD 1 AND ; : ALIGNED
-;H : ALIGN 1- SWAP 1- OR 1+ ; \ : 0SWAP 0 SWAP ;
-: ;HLD HLD EX TO HLD ; : N# LOOPS : # BASE U/MOD SWAP ALPHA
-: HOLD ;HLD C!- ; : <# NPAD TO HLD : BASE! 2- W>B 2+ TO BASE  ;
-: #> DROP HLD NPAD OVER- TYPE ; : ;<#> <# EX ?SPC #> ; : U.   0
-: U.RS ;SPC : U.R lf : U.R# ;<#> : u. 31 AND XEP : S# BEGIN   #
-DUP 0= UNTIL ; : ` DUP 0< 0; NEG EX sgn HOLD ; : . 0 : .RS ;SPC
-: .R lf : .R# ;<#> SWAP ` SWAP u. ; : B>HH W>B 1H U/MOD ;
-: H. W>BB CALL : B. ;SPC THEN B>HH TWICE ALPHA EMIT ;
+;H : ALIGN 1- SWAP 1- OR 1+ ; : 0SWAP 0 SWAP ; : ;HLD HLD EX TO
+HLD ; : # BASE U/MOD SWAP ALPHA : HOLD ;HLD C!- ; : <# NPAD  TO
+HLD : BASE! 2- W>B 2+ TO BASE ; : ;<#> <# EX ?SPC : #> DROP HLD
+NPAD OVER- TYPE ; : U. 0 : U.RS ;SPC : U.R lf : U.R# ;<#>  : u.
+31 AND XEP : S# BEGIN # DUP 0= UNTIL ; : ` DUP 0< 0; NEG EX sgn
+HOLD ; : . 0 : .RS ;SPC : .R lf : .R# ;<#> SWAP ` SWAP u. ;
+: B>HH W>B 1H U/MOD ; : H. W>BB CALL : B.S ;SPC : B. THEN  B>HH
+TWICE ALPHA EMIT ;
 
 
 0#> C@ (IO TO _FR TO _AX TO _BX TO _CX TO _DX ;  =, (DOS $21 C,
@@ -814,15 +814,15 @@ LOOPS `+BUF TO `PREV : `?SAVE `PREV `FBUFS C@ 0; `@BUF `PREV
 ; : CMOVE> SWAP OVER + (MPUSH : .; DROP; ,<
 
 
-                       : UNW ;DROP : @H- ;H : @- 2-DXEP @ ; :
-`SRC ETIB BLK 0; DUP 0<>; DROP BLK BLOCK 1K + DUP TO ETIB ; :
-+LOAD BLK + : LOAD DUP .; ?; ;B_TI vLOAD EVLP ; META `SRC
-SOURCE : XY? 1K LTIB - ; : `-USE SCRH 1+ 0; SCRH Fclose : `/SCR
--1 TO SCRH ; : USE/ `/SCR /BUFS ; : USING TOKN? : USED FLUSH
-`-USE FOPEN TO SCRH ; : ((." (?S ". ; : ((" (?S ; : ;CR EX : CR
-cr EMIT lf EMIT 0 TO CNTC ; : (OK ."_Ok" CR .">" ; : (ERR CR
-TBUF ID. STATE ID. CR (LIT (BK TO KEY BLK 0; BLK TO SCR 0 TO
-BLK XY? : >XY 1K 1- AND TO XY ; META (OK vOK. META (ERR vERR
+: UNW ;DROP : @H- ;H : @- 2-DXEP @ ; : `SRC ETIB BLK 0; DUP
+0<>; DROP BLK BLOCK 1K + DUP TO ETIB ; : +LOAD BLK + : LOAD DUP
+.; ?; ;B_TI vLOAD EVLP ; META `SRC SOURCE : XY? 1K LTIB - ;
+: `-USE SCRH 1+ 0; SCRH Fclose : `/SCR -1 TO SCRH ; : USE/
+`/SCR /BUFS ; : USING TOKN? : USED FLUSH `-USE FOPEN TO SCRH  ;
+: ((." (?S ". ; : ((" (?S ; : ;CR EX : CR cr EMIT lf EMIT : ZCT
+0 TO CNTC ; : (OK ."_Ok" CR .">" ; : (ERR CR TBUF ID. STATE ID.
+CR (LIT (BK TO KEY BLK 0; BLK TO SCR 0 TO BLK XY? : >XY 1K   1-
+AND TO XY ; META (OK vOK. META (ERR vERR
 : (OF OVER XOR @R+ SWAP IF XCHG  (SKIP THEN DROP DROP ;
 : (AC  OVER + PUSH DUP BEGIN KEY CASE cr OF DUP XCHG DROP ENDOF
      bs OF  2DUP - IF 1- bs EMIT SPACE bs EMIT THEN  ENDOF
@@ -872,27 +872,27 @@ SWAP : ITEMS? @+ @ - : 2/ 0 : AVG +2/ : NIP NIP; ,<
 0 VALUE `ROWS   : `ROWS! bs TO `ROWS ; : `EOL? C@ CNTC + ,< 80
 5 - >, #, U< 0<>; : `NEWLINE ;CR `ROWS 1- DUP TO `ROWS 0<>; (BK
 27 = `ROWS! ?; RDROP POP EXIT2 ; : WORDS CR ;DROP `ROWS! ;FND
-DROP J `EOL? J N>C H. J ". CNTC 65 U< `NEWLINE ?; 13 : ?ALIGN
-         CNTC { : ALI-N} OVER UMOD - SPACES ;
-: ;[] '[ EMIT EX '] EMIT ; : `TYPE EX SPACE 1H - 1H ;[] ?TYPE ;
-: DUMP' ' DROP >NF< SWAP : DUMP U16? ;DROP LOOPS
-: DU CR DUP H. SPACE `TYPE 1H LOOPS CSTR B. ;
+DROP J `EOL? J N>C H. J ". CNTC 65 U< `NEWLINE ?; 13   : ?ALIGN
+CNTC { : ALI-N} OVER UMOD - SPACES ;
+                           : BDUMP .LOOPS CSTR B.S ;
+: DUMP U16? .LOOPS : DU CR DUP H. SPACE 1H 2DUP BDUMP SPACE
+: [TYPE] ;[] ?TYPE ; : [ID] ;SPC ;[] ". ;
 
 HERE : `INJECT >DICT USE/ "PROBA.COM" USED
  BOOT LOAD 0 TO LTIB ;  'TO DROP; 4 + T!
 : ONPLACE ;GO DXEP TWICE NUP : REVERT THEN ;2DROP BEGIN 1- 2DUP
       U< 0; PUSH PUSH J C@ I C@ J C! POP C!+ POP AGAIN ,<
-: [ID] ;SPC ;[] ". ; : `H ."`$" H. ;
 : `CN 2- C>N?  : `N  EXIT ?; POP ID.   ID. EXIT ;
 : `TO. `CN ,< ,T TO   : `AT. `CN ,< ,T AT
-: ?ID.   C>N? 0= ID. ?; `TO. `AT. 2+ 2+ `H ;
-: .SCR SCR 6 U.R ; : 1SKIP 1- : 0SKIP 0<>; @R+ DROP ;
-: LIST DUP TO SCR BLOCK : .BLOCK  .SCR :; ;DROP 1H
-LOOPS 1H  J - DUP 1SKIP CR : .LINE 2 U.R SPACE 1L ;[] ?TYPE ;
-             : EXI?T (;GO TO 0<>; : EXIST? T? SWAP TO >CF< ;
+: ?ID.   C>N? 0= ID. ?; `TO. `AT. 2+ 2+ : `H ."`$" H. ;
+: 0SKIP 0<>; @R+ DROP ;  : `SCR. EX SCR 6 U.RS ;
+: LIST DUP TO SCR BLOCK : .BLOCK  `SCR. 1H
+ .LOOPS 1H J - J 0SKIP ;CR  : .LINE 2 U.RS 1L [TYPE] ;
+: EXI?T (;GO TO 0<>; : EXIST? T? SWAP TO >CF< ;
 : SAME? TBUF EXIST? 0; TBUF [ID] : ?BLK. BLK 0; : BLK. BLK . ;
 ' SAME? VECTOR vTOK?     ' vTOK? $289 T!
 : !R+ XCHG POP POP !+ PUSH PUSH ; VARIABLE @HD Z, Z, $227 =: `-
+
 
 : D! !+ ! ; : D@ 2+ @+ 2- : 2-@ 2- @ ; 0#> C@ HDICT + ;
 DUP =,  TL 2 C, DUP =, TH 4 C, =, TD 6 C, : ;TD TD @ EX TD ! ;
