@@ -744,7 +744,7 @@ ZDO VALUE 22 TIMES     HLD BASE
 #DO CONST 19 TIMES
      64 1L 1024 1K 16 1H -1 -1 256 1B $8000 SGN 1 1 $7C NPAD
      $E000 FIRST 13 cr 10 lf 8 bs $FD00 SBUF 2 2 255  1B&
-     0 >NF< 62 BOOT  128 CMDLN  '- sgn
+     0 >NF< 12 BOOT  128 CMDLN  '- sgn
 : ;+ EX + ; : ;2DROP EX 2DROP; ,< : -ROT ROT ROT ; : ;SPC EX
 : SPACE BL EMIT ; : ?SPC NPAD HLD - - : SPACES LOOPS SPACE ;
 : 0<; 0< : 0<>; NOP ?; EXIT ; : 0>=; 0< : 0; EXIT ?; ;
