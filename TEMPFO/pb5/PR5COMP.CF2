@@ -1,0 +1,216 @@
+: ` PUSH  PUSH !TD- POP !TD- POP  .C@ 1+ : >T ;TD (MPUSH ;
+: S0 40 TO SCR 0 TO XY S ;
+: TWORDS  ;<D> WORDS ; 
+: % 0 ' >NF< ` ;; 
+: %2 0 ' TOKEN? ` ;;
+
+: TT? TOKEN? 
+: TFND TD @ FND2 ;  
+' ' =: T'
+: OBJ! TO H ; 
+: ORG! H - TO HOFS ;  
+H ORG! { PREPARE FOR <H>}
+: HERE! HERE - ALLOT ;
+: CALL! ;H XEP HERE SWAP HERE!  CALL, ;
+$227 =: `- 
+: INITO FX SAME? AT vTOK? FX (LIT TO (LIT,
+   FX (; TO ESC FX - `- CALL NUM?  EXEC N>#, , THEN OPER! ;
+
+: =, ;, 
+: =H HERE 
+: =: PUSH TT? NIP 0= IF 0 POP TBUF ` ;THEN
+ >NF<  NAME> PUSH 2 I+ @ ODD IF 2 I+ @ 3 - 2 I+ ! BEGIN I
+ WHILE @I J POP ! PUSH REPEAT 
+: 2EXIT POP .EXIT ;THEN RDROP 1 A" ALREADY DEFINED!" ;
+
+
+: ALGN 1- SWAP 1- OR 1+ ; 
+: ?DUP DUP 0; DUP ;
+0 VAR `T_DATA  
+0 VALUE `T_HND     
+0 VAR `TOTAL
+: TWRITE1 `T_DATA ! `T_DATA SWAP 
+: TWRITE3 DUP `TOTAL +! `T_HND Fwrite CR _DX H. _CX . _AX . ;
+: ADDZONE ;RNG> 
+: ADDBLK BLOCK 1K TWRITE3 ;
+: TSAVE  ESC PRUNE ESC  `TOTAL OFF TOKEN? FOPEN
+            {  FCREATE} TO `T_HND   TD 2+ H OVER- TWRITE3
+  2  TD @ " --END--" TFND ??# DROP >NF< SWAP - 1+ TWRITE1
+   TD @   `T_DATA @ 1-  TWRITE3               1 0 TWRITE1 ; 
+
+
+
+
+
+{ PB5 PR5.COM C5 PRB C4 }
+FORGET TT  CREATE TT   32 34 THRU      37 39 THRU
+
+: STOP (LIT TO ESC  @  (LIT (; - 0; MARK@ HIDROP INITO ;;
+: START STOP 
+: EGG PAGE 18000 HIPUSH  36 LOAD MARK!
+ FX NOP TO ESC <H> TINIT TARGET,! 40 62 THRU ;; 
+' : =:O
+: ' ;?# TT? ; 
+: META ' ' 2+ 
+: T! T>R ! ;
+: THACK ' T?ID! @HACK ; 
+: TSEE ' T?ID! @SEE ;
+: T:  =H TWICE T 
+: USED+ NAME> 2+ INC ;
+: =! 0 =: TD @ USED+ ; 
+: N: DUP =, ;
+: TTO ' 2- , ; 
+: TAT ' 2- 2- , ; 
+: VAL' ' 2+ ;
+: : ZSTK =H >, ;;
+PRUNE
+
+
+
+% DEF   
+% =USED 
+% >USED 
+% ESC   
+% STOP  
+% HIDE  
+% SL
+% HACK  
+% @HACK 
+% HL    
+% SEE   
+% @SEE  
+% START 
+%2 ESC ESQ
+% ,<`   
+% ;CASE` 
+% TWICE`       
+% CASE` 
+% {`    
+% \`
+% AHEAD`  
+% REPEAT`  
+% AGAIN`   
+% UNTIL`  
+% BEGIN`  
+% WHILE`
+% OF`   
+% ELSE` 
+% ENDOF` 
+% IF`  
+% THEN` 
+% ;GO`  
+% ;;`
+%2 CSWAP> CSWAP>`  
+%2 :(DROP (DROP` 
+%2 :(1- (1-`   
+%2 TIF- IF-`
+%2 T:; :;`      
+%2 T: :`        
+%2 T; ;`        
+%2 :(IF IO`
+%2 T?; ?;` 
+%2 T;THEN ;THEN`     
+%2 MARK> CALL`     
+%2 MARK> [`
+%2 TNEXT NEXT` 
+%2 T<NEXT <NEXT` 
+%2 TUNTIL- UNTIL-` 
+%2 TFOR FOR`
+%2 TFOR> FOR>`  
+%2 TDOES DOES>` 
+%2 T;THEN ]`    
+%2 TTO TO`
+%2 TAT AT`      
+%2 :-IF -IF`    
+%2 :RDROP (RDROP`
+%2 :RECURSE RECURSE`    
+%2 :TWI TWICES`
+%2 TIND< IND<`  
+%2 TIND> IND>`  
+%2 TDO> DO>`
+%2 TDO< DO<`    
+%2 TLOOP LOOP`
+
+
+M: :(IF- (IF-;   
+M: :(DROP IF THEN;     
+M: :(1- IF- THEN;
+M: :-IF 1+ IF-;  
+M: :NOP AHEAD THEN;    
+M: :TWI TWICE TWICE;
+M: :.RDRP .RDRP; 
+M: :RDROP RDROP;       
+M: :(RDROP (RDROP;
+M: :(VAR3 (VAR3; 
+M: :(VAR2 (VAR2;       
+M: :EX EX;
+M: :(.CON (.CON; 
+M: :DO> (DO>;          
+M: :DO< (DO<;
+
+: TFOR> AHEAD` BEGIN` ; 
+: TFOR TFOR> :PUSH ;
+: TNEXT :POP   
+: T<NEXT THEN` 
+: TUNTIL- 
+:(IF- <RELS ;
+: TIND< :J :I+ ;; 
+: TIND> :J :I- ;; 
+: TDO> :DO> MARK>< :PUSH ;
+: TDO< :DO< MARK>< :PUSH ;    
+: TLOOP TNEXT :.RDRP ;
+: TIF- :(IF- MARK> ;
+: 0#> >, HERE :(DZ#0 ; 
+: TDOES :CODE 0#> DROP ;
+: 1#> >, HERE :(DZ#1 ; 
+: 2#> >, HERE :(DZ#2 ;
+
+
+
+{ DEFINITIONS } 
+: C@+ CSTR SWAP ;
+: `T >, EX ,<` , ; 
+: `Q :(VAR3 
+: `S :(SET2 
+: `H ,<` =H >, ;
+: CREATE UNW :; 
+: VARIABLE 0 
+: VAR `T `H :(VAR ;
+: VARCON `T :(VAR2 `H :(CON ;   
+: QUAN `T `Q :(CON ;
+: VQUAN `T `Q :(DEF ;           
+: VECTOR `T `S :(DEF ;
+: DEFER `T `H :(DEF ;           
+: CONST `T  `H :(CON ;
+: ;VALUE HERE DUP 6 + , >, :EX ,<` " =: ;" SBUF >"! TOKEN? "+!
+ >LT< PUSH SEVAL POP TO LTIB    
+: VALUE `T `S :(CON ;
+: `4ARY 2* 
+: `2ARY 2* 
+: `ARY =H >, EX ,<` CLARY ;
+: BARY `ARY :(BARY ; 
+: WARY `2ARY :(WARY ;
+: LARY `4ARY :(LARY ;
+: :RECURSE TD @ N>C , ; 
+: N: DUP =, ;
+: :VALUE >, :POP :(SET2 :(CON `H :(RET ;;
+: .CONST `T :(.CON `H :(CON ;
+
+
+: `CLRY XEP RLS> RLS> 
+: WALLOT LOOPS Z, ;
+: 3PICK PUSH OVER POP SWAP ;
+: STACK! =H PUSH , , , POP MRK> MRK> MRK> `CLRY RLS> ;
+: ;2ALIGNED EX 
+: 2ALIGNED 2 ALIGNED ;
+' ;2ALIGNED TO v",
+
+: `TvIS:? ODD 0= ; 
+: `x??x EX ??# 
+: `(@H, @H- ;
+: `?? `x??x 
+: `H@:? H 2- @ `TvIS:? HERE ENDH <> AND ;
+: T:; `?? TO <CSTK :(;GO <RELS ;
+: T; `H@:? ;;` 0; UNW `(@H, TO <CSTK AGAIN` ;
+: T;THEN T; THEN` ;  
+: T?; `?? TO <CSTK UNTIL` ;
