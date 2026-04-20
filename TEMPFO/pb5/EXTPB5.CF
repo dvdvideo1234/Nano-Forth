@@ -18,12 +18,12 @@
 
 0 VALUE XK                
 VARIABLE @HD Z, Z, 
+: MARK@ @HD : MK@ PUSH @R+ TO HOFS @R+  TO H POP @ TO T ; 
+: MARK! @HD : MK! PUSH HOFS !R+ H !R+ T POP ! ;
 
 : SAME? TBUF EXIST? 0; TBUF [ID] : ?BLK. BLK 0; '# EMIT : BLK. BLK . ;
 ' SAME? VECTOR vTOK?     ' vTOK? $289 !  : INC ;@! 1+ ;
 
-: MARK@ @HD : MK@ PUSH @R+ TO HOFS @R+  TO H POP @ TO T ; 
-: MARK! @HD : MK! PUSH HOFS !R+ H !R+ T POP ! ;
 ' ((A" (,X A"` ,"    ' ((." (,X ."` ,"   ' (("   (,X  "` ," 
 : META ' TO' ! ; : C:` ' , ;
 : +THRU ;RNG> : +LOAD BLK + : LOAD DUP DROP ?; ;BLKTI vLOAD EVLP ;
@@ -34,12 +34,18 @@ VARIABLE @HD Z, Z,
 INCLUDE PB5FLUSH
 
 USE/ USING PB5.COM
+
 : IXEC J PUSH ; 
 : ;UNTIL BEGIN IXEC UNTIL EXIT ;
 : ;ZUNTIL IXEC EXIT ?; RECURSE ;
-16 26 THRU
+
+INCLUDE PB5_BODY
+INCLUDE PB5_BFFB
+INCLUDE PB5_STR
+
  PRUNE    
 
-: @I ;
 15 LOAD  DFLTEMT @EMT !  PAGE
+
+
 

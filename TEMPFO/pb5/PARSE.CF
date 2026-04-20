@@ -1,0 +1,9 @@
+{ SEARCH & PARSE} : SRCA XEP : A+L XEP : I+ J + ;
+: A-L XEP : I- J - ; : `LT0 RDROP : INTIB ETIB LTIB A-L ;
+: `XSC POP : `XSC2 1+ NIP TO LTIB EXIT ; : `BLSKIP J  BL = 0; J
+            PUSH INTIB FOR CSTR J = `XSC ?;  NEXT `XSC2 ;
+: `CSCAN J PUSH  INTIB FOR CSTR J - `XSC ?;  NEXT `XSC2 ;
+: `SRC BLK 0; ETIB 0<>; BLK BLOCK 1K + TO ETIB ;
+: TOKEN? [ .C@ ??# ] : TOKEN BL : WORD [ TBUF (S! '` ROT ! ]
+: PARSE W>B PUSH LTIB TO >LT< `SRC `BLSKIP LTIB `LT0 ?;
+                     INTIB `CSCAN LTIB - EXIT ;

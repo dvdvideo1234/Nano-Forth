@@ -1,0 +1,15 @@
+{ INIT}
+: @I J @ ; : .C@ DUP C@ ; : OPER! POP 0 OPER[] 8 CMOVE ;;
+: "BSCAN =: :(BSC ;
+ "BSCAN `SPEC? ,T ",!. : TERR. TO STATE vERR ;
+0 WARY `STR  >, CSTR, BS, TERR. ". ,<
+0 WARY `STR, >, TB" BS, TB! TB." ,<    : STR- 1- XEP 1+ ;
+: `OK" OVER C@ '" - NOP ?; OVER 1+ C@ '" <> STR- ?; ;;
+: `STR@ CSTR `OK" 2- OVER C! SBUF "PK ;
+: STR? DUP NAME> 1- C@ '" = PUSH DUP 1+ C@
+                `SPEC? DUP 1- TO XK   0 <> POP AND ;
+: `NUM STR? NUM? ?; `STR@ XK `STR @EXEC ; : `.R, RDROP , ;
+: `NUM, STR? NUM?, ?; `STR@ XK `STR, @EXEC ;
+: `EXE >NF< NAME> PUSH 2 I+ @ ODD A" DEFINED?" RDROP EXEC ;
+: `COM >NF< NAME> PUSH 2 I+ @ ODD `.R, ?; DROP H @I , POP ! ;
+: TINIT CALL `NUM `EXE `NUM, `COM THEN OPER! ; { TINIT}

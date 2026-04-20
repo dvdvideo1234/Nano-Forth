@@ -387,9 +387,9 @@ M: NFC USING NFC.COM;
 : TWORDS  ;<D> WORDS ; : % 0 ' >NF< ` ;; : %2 0 ' TOKEN? ` ;;
 ' ' =: 'O  ' =H =: =HO   ' =: =: =:O  ' =, =: =,O
 : TT? TOKEN? : TFND TD @ Dfnd ;
-0 VALUE FOUND
-: `;RESULT TO XK HERE OFF EX HERE @ DUP TO FOUND CR . ;
-: `DEF: C: : DOES> `;RESULT ;2DROP ;FND J NAME> 2+ @ XK PUSH ;
+0 QUAN FOUND Z, : `@? AT FOUND : 2+@ 2+ @ ;
+: `;RESULT AT FOUND 2+ ! HERE OFF EX HERE @ DUP TO FOUND CR . ;
+: `DEF: C: : DOES> `;RESULT ;2DROP ;FND J NAME> 2+@ `@? PUSH ;
 `DEF: DEF ODD = : `CNTR 0; J ID. HERE INC ;
 `DEF: =USED 2/ = `CNTR ; `DEF: >USED 2/ U< `CNTR ;
 ' HERE =: H      0 TL !    { PREPARE FOR <H>}
@@ -544,7 +544,7 @@ M: `(DO< (DO<;       M: `RDROP RDROP;
 
 { C5H  CED} FORGET T CREATE T  25 32 THRU
 : STOP LIT TO ESQ @  LIT C: ; - 0; MARK@ HIDROP INITO ;
-: START STOP : EGG PAGE 18000 HIPUSH   TL  OFF 24 LOAD MARK!
+: START STOP : EGG PAGE 18000 HIPUSH 24 LOAD MARK!
  FX C: NOP TO ESQ <H> TINIT TARGET,! 40 62 THRU ;; ' : =:O :O
 : `I' `;>INT< : ' TT? ??# ; : `ITO `;>INT< : 'TO ' 2+ ;
 : META ' 'TO : T! T>R ! ;
@@ -646,12 +646,12 @@ $299 =: `TOKN?  $29D =: WORD    $29F =: PARSE   $178 =: EVAL
 $4E2 =, 2+      $3FE =, `AND    $4EB =, `NOT    $4EA =, `NEG
 $401 =, `XOR HERE $4B4B , $F0EB , DUP =, 2-       1 + =, 1-
 $1CE =, U< $DF2B , $E4EB ,   HERE 2+ =, 0< $E3D1 , $DEEB ,
-$461 =, `2DROP; $4E3 =, 1+ $3EC =, `ROT : NAND `AND `NOT ;
+$461 =, `2DROP; $4E3 =, 1+ $3EC =, `ROT : `ND `AND `NOT ;
 $165 =, RESTART
 : CC! 1+ `C!+ 2- : C! `C!+ : DROP IF THEN ; : (LIT @R+ ; : NOP
 ; : 2-DXEP 1- : 1-DXEP 1- : DXEP DUP : XEP XCHG EXECUTE POP ;
-: @- 2-DXEP : @ PUSH @R+ : EXIT RDROP ; : DXEP1+ DUP 1+ XEP ; :
-C@+ DXEP1+ : C@ @ : W>B 255 `AND ; : AND NAND : NOT DUP NAND ;
+: @- 2-DXEP : @ PUSH @R+ : EXIT RDROP ; : DXEP1+ DUP 1+ XEP ;
+: C@+ DXEP1+ : C@ @ : W>B 255 : AND `ND : NOT DUP : NAND `ND ;
 : (CALL @R+ PUSH ; : (;GO @R+ XCHG PUSH ; : (GO @R+ XCHG DROP ;
 
 ZDO VECTOR 6 TIMES    vLOAD v=: `DO v",  vNUM vLIT,
@@ -888,8 +888,8 @@ $227 =: `- : TARGET,! FX `TRG `- ;;
 : ;EOS EOS XCHG 0 TO EOS EXECUTE POP TO EOS ;
 : SPTRTOP? SPTRTOP T <> SPTR SPTRTOP U< 0= OR 0; T DUP       TO
 SPTRTOP TO SPTR TWICE D0 : >S ;SPTR OVER PUSH (MPUSH XCHG   POP
-C!- ; : >S! CSTR >S ;   \ : LIST DUP TO SCR BLOCK
-: 0SKIP 0<>; @R+ DROP ; : .BLOCK [ SCR 6 U.RS ]
+C!- ; : >S! CSTR >S ;  : 0SKIP 0<>; @R+ DROP ;
+{ : LIST DUP TO SCR BLOCK} : .BLOCK [ SCR 6 U.RS ]
 1H .LOOPS 1H J - J 0SKIP ;CR : .LINE 2 U.RS 1L [TYPE] ;
 : ONPLACE ;GO DXEP TWICE NUP : REVERT THEN ;2DROP BEGIN 1- 2DUP
       U< 0; PUSH PUSH J C@ I C@ J C! POP C!+ POP AGAIN ,<
@@ -942,9 +942,6 @@ CR 0 T=USED
 
 
 
-                                               : INC ;@! 1+ ;
-: ITEMS@ DUP 2+ @ SWAP : ITEMS? @+ @ -  2/ ;
-: @I J @ ; : !I J ! ; : STR- 1- : U1+ XEP 1+ ;
 
 
 
@@ -975,9 +972,12 @@ CR 0 T=USED
 
 
 
-: INITO FX SAME? AT vTOK? FX (LIT TO (LIT, FX (; TO ESC FX - `-
-   CALL NUM? EXEC NUM?, , : OPER! THEN POP 0 OPER[] 8 CMOVE ;
 
+
+
+: `AC  OVER + PUSH DUP BEGIN KEY CASE cr OF DUP XCHG DROP ENDOF
+ bs OF  2DUP - IF 1- bs EMIT SPACE bs EMIT THEN  ENDOF .ABLE IF
+DUP EMIT SWAP C!+ DUP THEN ;CASE ?I= UNTIL OVER- EXIT ;
 
 
 
