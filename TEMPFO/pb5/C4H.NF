@@ -916,12 +916,12 @@ $40E 1#> DUP @+ ;STK !+ ; 2#> DUP STR 2- SWAP ;STK @- ;
 : ZSTK AT CSTK> ZST  AT <CSTK ZST ;;
 : `M> TO CSTK> : `;E EX : END! HERE TO ENDH ; : `R> CSTK> `;E ;
 : `<M TO <CSTK `;E ;  : `<R  <CSTK `;E ;   : <RELS `<R , ;
-: MARK> MRK> `M> ;;  : MARK>< MARK> : <MARK HERE `<M ;; :
- <RELS> <RELS : RELS> `R> RLS> ; 0#> STATE >, >SEVL  TO STATE ;
-N: :J "J" N: :I+ "I+"  N: :I- "I-" N: :(IF- "(IF-"
+: MARK> MRK> `M> ;; : MARK>< MARK> : <MARK HERE `<M ;; : <RELS>
+   <RELS : RELS> `R> RLS> ; 0#> STATE >, >SEVL  TO STATE ;
+N: :J "J" N: :I+ "I+"  N: :I- "I-"         N: :(IF-  "(IF-"
+N: :(RET "(;" N: :(AB "(A""" N: :(" "("""  N: :(BSC  "(BSC"
 N: :(JUMP "(JUMP"      N: :(;GO  "(;GO"    N: :(IF   "(IF"
-N: :(OF   "(OF"        N: :DROP  "DROP"    N: :PUSH "PUSH"
-N: :(RET  "(;"         N: :(AB   "(A"""    N: :("   "("""
+N: :(OF   "(OF"        N: :DROP  "DROP"    N: :PUSH  "PUSH"
 N: :(."   "(."""       N: :(LIT  "(LIT"    N: :(CON  "(CON"
 N: :(CON2 "(CON2"      N: :(CON3 "(CON3"   N: :(DEF3 "(DEF3"
 N: :(VAR  "(VAR"       N: :(SET  "(SET"    N: :(SET2 "(SET2"
