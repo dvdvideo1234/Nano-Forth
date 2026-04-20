@@ -19,22 +19,27 @@
 0 VALUE XK                
 VARIABLE @HD Z, Z, 
 
-: SAME? TBUF EXIST? 0; TBUF [ID] : ?BLK. BLK 0; : BLK. BLK . ;
+: SAME? TBUF EXIST? 0; TBUF [ID] : ?BLK. BLK 0; '# EMIT : BLK. BLK . ;
 ' SAME? VECTOR vTOK?     ' vTOK? $289 !  : INC ;@! 1+ ;
 
 : MARK@ @HD : MK@ PUSH @R+ TO HOFS @R+  TO H POP @ TO T ; 
 : MARK! @HD : MK! PUSH HOFS !R+ H !R+ T POP ! ;
 ' ((A" (,X A"` ,"    ' ((." (,X ."` ,"   ' (("   (,X  "` ," 
 : META ' TO' ! ; : C:` ' , ;
-: +THRU ;RNG> : +LOAD BLK + : LOAD DUP DROP ?; ;BLKTI EVLP ;
+: +THRU ;RNG> : +LOAD BLK + : LOAD DUP DROP ?; ;BLKTI vLOAD EVLP ;
 : THRU ;RNG> LOAD ; : CHARS ;RNG> DUP EMIT . ;
 
 : PAGE HOME :; 0 24 @XY  25 : CRS  LOOPS CR ;
 
 INCLUDE PB5FLUSH
-: LIST DUP TO SCR BLOCK .BLOCK ;
-: `SRC [ ETIB ] BLK 0; ETIB 0<>; BLK BLOCK 1K + TO ETIB ;
-META `SRC SOURCE
 
 USE/ USING PB5.COM
-15 LOAD
+: IXEC J PUSH ; 
+: ;UNTIL BEGIN IXEC UNTIL EXIT ;
+: ;ZUNTIL IXEC EXIT ?; RECURSE ;
+16 26 THRU
+ PRUNE    
+
+: @I ;
+15 LOAD  DFLTEMT @EMT !  PAGE
+
