@@ -1,19 +1,3 @@
-
-
-
-\ 12 LOAD  { :`S , DOES>`S  AND  STACK`S  DEFINITION }
-\ 13 LOAD  { IFS}
-\ 14 LOAD  { ; - SES }
-\ 15 LOAD  { STRING COMPILATION }
-\ 16 LOAD  { INIT}
-\ 17 LOAD  { EDITOR}
-
-
-
-
-
-
-
 { :`S , DOES>`S  AND  STACK`S DEFINITION} : `T =H >, EX ,<` , ;
 M: :(CALL (CALL; M: :(FOR (FOR; M: :(NEXT (NEXT;
 M: TWICE` CALL THEN;
@@ -417,19 +401,19 @@ M: IF- (IF- X: MARK>;
 
 { STRING COMPILATION}  FORGET `FRST
 ZDO VALUE 2 TIMES `FRST `SCND : ;HLD, EX : HLD, ;HLD C!+ ;
-: ZH, HLD, : D0>2> TWICE : 0>2> 0 : >2> `SCND TO `FRST TO `SCND
-; : C@HLD- ;HLD C@- ; : ;SB, CSTR : ;B, OVER+ 1- H 2+ TO HLD  0
-HLD, D0>2> EX HLD H 2+ PUSH I NOT + C!I POP ; "BSCAN `CTBL
-,T "^~_ "BSCAN `Ctbl2 5 C, 0 C, '" C, '^ C, '~ C, '_ C,
-: "UPK ;SB, ;RNG> C@ DUP 128 AND IF 128 -  '~ SWAP ;HLD, THEN
- DUP ;HLD, `CTBL IF '" HLD, ;THEN DUP BL = IF DROP '_ ;THEN DUP
-BL U< 0; '^ HLD, '@ + ;
-CREATE TMP 103 C,  1 28 +DO C, 103 ..TIMES
-: `^ `SCND 0; `SCND 31 AND ZH, ; : `" `SCND 0; `SCND ZH, ;
-: `~ C@HLD- 128 + HLD, ; : `_ BL HLD, ;
-                  0 WARY `tbl >, HLD, NOP `" `^ `~ `_ ,<
-: `cTBL1  0>2> : `cTBL2 `FRST `Ctbl2 `tbl @EXEC ;
-: `PK ;SB, `cTBL1 :; ;RNG> C@ >2> `cTBL2 ; : "PK `PK ;;
+: `" `SCND : `;SCND `SCND .; ?; : ZH, HLD, : D0>2> TWICE : 0>2>
+0 : >2> `SCND TO `FRST TO `SCND ; : C@HLD- ;HLD C@- ;    : ;SB,
+CSTR : ;B, OVER+ 1- H 2+ TO HLD 0 HLD, D0>2> EX HLD H 2+ PUSH I
+NOT + C!I POP ; "BSCAN `CTBL ,T "^~_ "BSCAN `Ctbl2 5 C, 0 C, '"
+C, '^ C, '~ C, '_ C, : "UPK ;SB, ;RNG> C@ DUP 128 AND IF 128  -
+'~ SWAP ;HLD, THEN DUP ;HLD, `CTBL IF '" HLD, ;THEN DUP BL = IF
+DROP '_ ;THEN DUP BL U< 0; '^ HLD, '@ + ;
+CREATE TMP 103 C,  1 28 +DO C, 103 ..TIMES : `BB `FRST HLD,  ;
+: `^ `SCND 31 AND `;SCND ; : `~ C@HLD- 128 + HLD, ; : `_ BL
+     HLD, ;    0 WARY `tbl >, `BB NOP `" `^ `~ `_ ,<
+: `cTBL1  0>2> AHEAD ; : "PK ;SB, `cTBL1 :; ;RNG> C@ >2>
+: `cTBL2 THEN `FRST `Ctbl2 `tbl @EXEC ;
+
 
 
 

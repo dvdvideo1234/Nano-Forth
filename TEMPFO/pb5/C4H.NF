@@ -598,7 +598,7 @@ M: `((." ((.";       M: `(LIT (LIT;     M: `(CON (CON;
 M: `(CON2 (CON2;     M: `(CON3 (CON3;   M: `(DEF3 (DEF3;
 M: `(VAR (VAR;       M: `(SET (SET;     M: `(SET2 (SET2;
 M: `(DEF (DEF;       M: `(DEF2 (DEF2;   M: `(NEST (:;
-M: `(SKIP (SKIP;     M: `(-IF  (-IF;
+M: `(SKIP (SKIP;     M: `(-IF  (-IF;    M: `SCAN (BSC;
 M: TD0 0 0;          M: `BARY (BARY;    M: `WARY (WARY;
 M: TTWICE CALL THEN; M: T-IF DUP 0< IF; '' ?M: `CODE ;code'
 M: `DZ#0 (DZ#0;      M: `DZ#1 (DZ#1;    M: `DZ#2 (DZ#2;
@@ -673,7 +673,7 @@ M: `(DO< (DO<;        M: `RDROP RDROP;
 : `T =H >, EX ,<` , ;  : `2ARY 2* : `ARY =H >, EX ,<` CLARY ;
 : CREATE UNW :; : VARIABLE 0 : VAR `T `(VAR ;
 : QUAN `T `(CON3 : `Q `(SET2 `(VAR ; : `;>INT< ,<` EX >, ;
-: VQUAN `T `(DEF3 `Q ;
+: VQUAN `T `(DEF3 `Q ;  : "BSCAN =H >, `SCAN ,<` ;
 : VALUE `T `(CON2 : `S `(SET ;
 : VECTOR `T `(DEF2 `S ;
 : DEFER `T `(DEF ; : CONST `T  `(CON ;
@@ -775,11 +775,11 @@ BB>W 1B* SWAP ;+ : W>B 1B& AND ; : TUCK DUP XEP SWAP ; : =" '"
 ;H : ALIGN 1- SWAP 1- OR 1+ ; \ : 0SWAP 0 SWAP ;
 : ;HLD HLD EX TO HLD ; : N# LOOPS : # BASE U/MOD SWAP ALPHA
 : HOLD ;HLD C!- ; : <# NPAD TO HLD : BASE! 2- W>B 2+ TO BASE  ;
-0#> @ 1H ;SPC <# N# : #> DROP HLD NPAD OVER- TYPE ; DUP =, H. 4
-, =, B. 2 , : ;<#> <# EX ?SPC #> ; : U. 0 : U.RS ;SPC : U.R  lf
-: U.R# ;<#> : u. 31 AND XEP : S# BEGIN # DUP 0= UNTIL ; : ` DUP
-0< 0; NEG EX sgn HOLD ; : . 0 : .RS ;SPC : .R lf : .R# ;<#>
-SWAP ` SWAP u. ;
+: #> DROP HLD NPAD OVER- TYPE ; : ;<#> <# EX ?SPC #> ; : U.   0
+: U.RS ;SPC : U.R lf : U.R# ;<#> : u. 31 AND XEP : S# BEGIN   #
+DUP 0= UNTIL ; : ` DUP 0< 0; NEG EX sgn HOLD ; : . 0 : .RS ;SPC
+: .R lf : .R# ;<#> SWAP ` SWAP u. ; : B>HH W>B 1H U/MOD ;
+: H. W>BB CALL : B. ;SPC THEN B>HH TWICE ALPHA EMIT ;
 
 
 0#> C@ (IO TO _FR TO _AX TO _BX TO _CX TO _DX ;  =, (DOS $21 C,
@@ -953,25 +953,25 @@ N: :(RDROP "POP_(DROP" N: :.RDRP ".RDRP"   DROP
 : SUCSTR SWAP : UCSTR XEP CSTR ;
 : "+!  SUCSTR DXEP NAME> (MOVM DROP : L"! J NOT + J C! ;
 : "+C! SWAP DXEP NAME> C!+ L"! ;
+{ STRING COMPILATION} ZDO VALUE 2 TIMES `FRST `SCND : ;HLD,  EX
+: HLD, ;HLD C!+ ; : `" `SCND : `;SCND `SCND .; ?;    : ZH, HLD,
+: D0>2> TWICE : 0>2> 0 : >2> `SCND TO `FRST TO `SCND ; : C@HLD-
+;HLD : C@- 1- DXEP C@ ;
 
-
-
-
-
+: C!I J C! ; 0#> PUSH XCHG CSTR POP BSCAN 1+ ; =: (BSC
+: ;SB, CSTR : ;B, OVER+ 1- H 2+ TO HLD 0 HLD,  D0>2>
+EX HLD H 2+ PUSH I NOT + C!I POP ; "BSCAN `CTBL ,T "^~_  "BSCAN
+`Ctbl2 5 C, 0 C, '" C, '^ C, '~ C, '_ C, : "UPK ;SB, ;RNG>   C@
+DUP 128 AND IF 128 - '~ SWAP ;HLD, THEN DUP ;HLD, `CTBL IF   '"
+HLD, ;THEN DUP BL = IF DROP '_ ;THEN DUP BL U< 0; '^ HLD, '@ +
+; : `BB `FRST HLD, ; : `^ `SCND 31 AND `;SCND ; : `~ C@HLD- 128
++ HLD, ; : `_ BL HLD, ; 0 WARY `tbl >, `BB NOP `" `^ `~ `_ ,<
+: `cTBL1  0>2> AHEAD ; : "PK ;SB, `cTBL1 :; ;RNG> C@ >2>
+: `cTBL2 THEN `FRST `Ctbl2 `tbl @EXEC ;
 : : ZSTK =H >, :(NEST ;
-
 $221 =: FOUND? ESQ HIDE ;` ESQ $235 =: ;`
-
 HERE 'AT H T! TSAVE PROBA.COM
 FFFFFFFFFFFFFFFFF
-
-
-
-
-
-
-
-
 
 
 
