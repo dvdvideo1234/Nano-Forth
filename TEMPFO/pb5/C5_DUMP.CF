@@ -1,0 +1,14 @@
+0#> PUSH XCHG CSTR POP SCAN 1+ 0;  ;SPC ;[] DUP ". NAME> ;
+=, `?STR 3 C, >, (A"  (" (." ,< : `STR EX DUP 2- @ `?STR ;
+0 VALUE `WW 0 VECTOR `DBG : `ID! 0 TO `DBG ; : `C>N `DBG C>N? ;
+: `;WW `WW EX TO `WW ; : `:ID. DUP R>T `C>N
+ DUP NOP ?; XEP OVER CALL ." : " ID. ;THEN : ``CR- CR R>T H. ;
+: `CR-H `:ID.    ``CR- ?; ; : `CR- `:ID. IF ;THEN DROP ;
+: .HL `WW H. ; : T?ID! LIT ;<D> TO `DBG ;
+: SEE ' `ID! : @SEE T>R TO `WW : SL      bs LOOPS
+: WW `;WW `CR-H @+ OVER H. : `W0 `STR XEP `DBG ?ID. ; : HACK '
+ `ID! : @HACK T>R TO `WW : HL CR bs LOOPS `;WW `CR- @+ `W0 ;
+: -HL `WW 23 - @HACK ;
+: `TYPE EX SPACE 1H - 1H ;[] ?TYPE ;
+: DUMP' ' DROP >NF< SWAP : DUMP U16? ;DROP LOOPS
+: DU CR DUP H. SPACE `TYPE 1H LOOPS CSTR B. ;

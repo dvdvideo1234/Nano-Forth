@@ -1,0 +1,12 @@
+: BS>T TBUF DUP 256 ERASE (S! SBUF "UNPACK DUP C@ 1+ DUMP ;
+: TS, BL WORD SBUF "PACK CSTR ;DROP LOOPS CSTR C, ;
+: INJECT { ADDR LENGHT / TO SCR-BLOCK XY-OFFSET }
+ TBUF DUP 256 ERASE (S! SBUF "UNPACK CSTR
+  SCR BLOCK XY + SWAP CMOVE UPDATE ;
+{ @' DUP =, U/MOD  $C933 , $9291 , $F3F7 , $9193 , $C3 C,     }
+{ 3I~^Q~^R~w~s~^S~^Q~C~                                       }
+{ $44B   =, UM* $F793 , $92E2 , $C393 , \ ^S~w~b~^R~^S~C~     }
+{ @' DUP =, SM* $F793 , $92EA , $C393 , \ ^S~w~j~^R~^S~C~     }
+{ $44B=, ?BL. $FB80 , $7320 , $B302 , $C32E , \ ^@~{~_s^B3~.C~}
+{ @' (DE =, (BE  $3196 , $B4DB , $CD0E , $9610 , $C3 C,       }
+{  $194 (,X A"` ,"     ' (." (,X ."` ,"   ' (" (,X "` ,"      }

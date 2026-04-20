@@ -1,0 +1,56 @@
+$100 ORG!  0 BLOCK H 1K CMOVE 1K 8 - ALLOT  251 =: --END--
+
+$1D7 =: `@R+    $1E5 =: `XCHG   $241 =: `J
+$444 =: `PUSH   $253 =: `POP    $1EA =: `DUP
+$12E =: `BYE    $24D =: `ABORT  $39D =: `(DE
+
+$4E2 =, `2+     $3FE =, `AND    $4EB =, `NOT    $4EA =, `NEG
+$497 =: (:      $134 =: `vINIT  $13A =: `H      $14C =: `T
+$1F8 =: `@      $1F2 =: (LIT    $42A =: `!+     $209 =: `+
+$4C8 =: _(IF    $24F =: _(;     $249 =: _(JUMP
+
+
+
+
+
+
+=H `REGA ' `H W, W, DROP =H `REG Z,
+=H `IP   ' `H W, W, DROP  Z,
+
+  @' DUP =, `+2/ ,"^CZ~^K~S~Q~[~C~"
+  @' DUP =, `+*  ,"v~B~^At^D^C^^" ' `REG , ,"Q~[~Q~Z~C~"
+  @' DUP =, `-/  ,"Q~b~Q~S~^K~^N" ' `REG , ,";Y~r^C+Y~BC~"
+  @' STR =, `(BK ,"1[~^S~M~^V^H@~t^B0d~^S~C~"
+    $44B =, `?BL. ,"^@~{~_s^B3~.C~"
+  @' (DE =, `(BE ,"^V~1[~4~^NM~^P^V~C~"
+ HERE 2+ =, `(IO  ,"^H~^^" HERE 12 + ,
+ ,"V^T~[Y"_^T~^W~^R~WM~^P"_^W~^T~RQSW^\~^T~"  @' 2DROP; $E9 ,R
+
+ALIGNED
+
+
+
+: F>AI AHEAD BEGIN TO `IP =H> `INT `IP =H> `IPN `PUSH  THEN
+=P (; `@R+ `DUP 1 `AND UNTIL         -1 `+ `XCHG TO `IP ; >,
+=P (JUMP =H> `JUMP `IP `@  >IPN         =P DUP  `DUP  >INT
+=P (IF- -1 `+ `DUP $8000 `AND    =P (IF _(IF `JUMP `IP `2+ >IPN
+=P XA `REGA `XCHG TO `REGA >INT         =P +*   `+*   >INT
+=P -/   `-/  >INT                       =P +2/  `+2/  >INT
+=P !R+ `POP `!+                         =P PUSH `PUSH >INT
+=P POP  `POP >INT                       =P XCHG `XCHG >INT
+=P NAND `AND `NOT  >INT                 =P @R+  `@R+  >INT
+=P (BK  `(BK >INT                       =P (?BL `?BL. >INT
+=P (DE  `(DE >INT                       =P (BE  `(BE  >INT
+=P (IO  `(IO >INT                       =P J    `J    >INT
+=P AI>F `IP `PUSH ; >, =P BYE AI>F `BYE =P ABORT AI>F `ABORT ,<
+
+
+
+
+ESQ
+HIDE _(;        HIDE _(JUMP     HIDE _(IF       HIDE (:
+HIDE (LIT
+ESQ
+
+HERE 'AT H T! TSAVE PB5.COM
+FFFFFFFFFFFFFFFFF FINALIZATION
