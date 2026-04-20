@@ -111,7 +111,7 @@ CSTR DUP 128 AND IF 128 - [ '~ C, ] THEN [ L C, ] DUP TO L
 
 
 \ BLOCK1 OF EDITOR
-    : WHAT? 7 EMIT ;
+: WHAT? 7 EMIT ; : SWIPE SCR : WIPE BLOCK 1K BLANK UPDATE ;
 ZDO VALUE 4 TIMES  `PDATA `INS  `SZ  `ALTER
 0#> SWAP TO XK CSTR 2DUP XK BSCAN 1+ 2* + + @EXEC ; =: `XK!
 
@@ -122,15 +122,15 @@ ZDO VALUE 4 TIMES  `PDATA `INS  `SZ  `ALTER
          CMOVE>  HERE C@ POP C!   ; { FIX CODE  }
 : SWITCH: CREATE HERE 73 1 TO XK 0 -: (LIT  `XK!  TOBE ;
 : ;SWITCH  73 - A" BAD KEYS" XK 2/ 1- SWAP C! ;
- <H>
+ <H>  : `?XY 1L U/MOD 6 3 : V+ ROT + U+ ;
 
 
 
 \ BLOCK2 OF EDITOR
-: `?XY 1L U/MOD 6 3 : V+ ROT + U+ ;
-: `POSXY XY `?XY @XY   ;        : `_INS  `INS 0= TO `INS
-: `.INS  75 1 @XY `INS IF ." INS" ;THEN ." OVT" ;
-: `;LRUD  XY EX >XY ; : `ERR 73 1 @XY ; ' ETIB =: `EOS^
+: `POSXY XY `?XY @XY ; : `_INS `INS 0= TO `INS : `.INS 75 1 @XY
+`INS IF ." INS" ;THEN ." OVT" ; ' ETIB =: `EOS^ : `;LRUD XY  EX
+>XY  73 3 @XY XY 5 .UR 72 5 @XY  XY 1L U/MOD 3 .UR 3 .UR ;
+: `ERR 73 1 @XY ;
 : `;LPOS  XY : `;PDATA+ EX `PDATA + ;   : `POS^ `;LPOS ;;
 : `RELOAD SCR BLOCK DUP TO `PDATA 1K + TO ETIB  SPTRTOP? ;
 : `REDRAW  `ERR SPACE  `.INS HOME CR  `PDATA .BLOCK ;
@@ -149,7 +149,7 @@ ZDO VALUE 4 TIMES  `PDATA `INS  `SZ  `ALTER
 : `APOS  0 `TAB& ; : `LINE/ `;LPOS  L/ ;  : `/LINE `;LPOS `/L ;
 : `LDRAW `POSXY `LINE/ XY 1L U/ 1+ cr EMIT .LINE DROP ;
 : `RESET -BUF : `LOADRAW `RELOAD `REDRAW ; { !!!!!!! }
-: `N  1 : `LB SCR + 0 MAX TO SCR `LOADRAW ;  : `B -1 `LB ;
+: NBLK1  1 : `LB SCR + 0 MAX TO SCR `LOADRAW ;  : `B -1 `LB ;
 : `ALT SCR `ALTER TO SCR TO `ALTER `LOADRAW ;
 : `ADV 1K XY - TO LTIB BL PARSE TO `SZ DROP XY? >XY XY 0; `<- ;
 : `TEST BL `POS^ C@ U< ;  : `BACK  BEGIN `<- XY 0; `TEST UNTIL
@@ -192,17 +192,17 @@ ZDO VALUE 4 TIMES  `PDATA `INS  `SZ  `ALTER
 
 <H> \ BLOCK6 OF EDITOR
 SWITCH: `EF WHAT?   kaA -: `ALT    kLEFT -: `<-    kUP -: `L_UP
- kHOME -: `L_BEG   kEND -: `L_END  kPGUP -: `B   kPGDN -: `N
+ kHOME -: `L_BEG   kEND -: `L_END  kPGUP -: `B   kPGDN -: NBLK1
  kDOWN -: `L_DN  kRIGHT -: `->     kINS  -: `_INS kDEL -: `DELC
  kaW   -: `WIPE kcRIGHT -: `ADV  kcLEFT -: `BACK kcEND -: `SCR;
  ksTAB -: `<TAB  kcHOME -: `APOS   kaS -: `altS  kaD -: `DELL
 ;SWITCH        : `ONEC XK BL U<  IF WHAT? ;THEN XK `INSC `-> ;
-SWITCH: `EK `ONEC C^ J -: `<- C^ K -: `-> C^ X -: `CUT 127
--: `BKCW bs -: `BS C^ D -: `DELC cr -: `<_| C^ G -: `CUTW C^ Z
--: `PREPARE C^ N -: `N C^ B -: `B C^ R -: `RESET C^ I -: `TAB>
+SWITCH: `EK `ONEC C^ J -: `<- C^ K -: `-> C^ X -: `CUT 127 -:
+`BKCW bs -: `BS C^ D -: `DELC cr -: `<_| C^ G -: `CUTW C^ Z -:
+`PREPARE C^ N -: NBLK1 C^ B -: `B C^ R -: `RESET C^ I -: `TAB>
  C^ C -: `COPY C^ V -: `PASTE C^ Q -: `ESQ/E C^ F -: `MOVE
  C^ A -: `ADV  kESQ -: `Q/ED  C^ S -: `INSL  0 -: `EF ;SWITCH
-: `@KEY `POSXY (BK W>BB DUP IF SWAP ;THEN DROP ;
+: `@KEY `POSXY KEY W>BB DUP IF SWAP ;THEN DROP ;
 : EDIT TO SCR : PE PAGE : E  D0 ;0TI `LOADRAW ;EOS  BEGIN `@KEY
 `EK EOS  UNTIL ;  HIDROP
 
@@ -335,6 +335,47 @@ $1A0 1+ =:  DUP         $1A2 1+ =: J
 $1C4 1+ =: +2/          $1DE 1+ =: NAND
 $1CE 1+ =: +*           $1B2 1+ =: -/
 
+{ STREAMS : D". DUP : ?".  CR ". SPACE SBUF ". ; } 26 CONST eof
+: AUTO PUSH " \AUTO\" SBUF >"! POP "+! " .CF" "+! ;
+: FGET Fbuf [ DROP cr EOS! ] AT Fbuf 1 AT HANDLES TOP Fread _AX
+0; DROP Fbuf DUP eof XOR 0; RDROP ; : ;@FILE TO HANDLES @R+ AT
+  KEY @ XCHG PUSH TO KEY EX POP TO KEY : HCLOSE HANDLES Fclose
+;   \ : EDKEY XY 960 = IF 0 TO XY NBLK1 THEN XY 0= IF WIPE1 THEN
+: EDKEY  FGET DUP lf = IF DROP 0 THEN ;
+                            : ;NOEMIT (LIT DROP; : ;EMIT!  (LIT
+TO EMIT : ;SAFE! DUP XCHG OVER @ PUSH PUSH ! EX POP POP ! ;
+: NEEDS EXIST? 0<>; TBUF AUTO : INCLUDED FOPEN ;@FILE FGET D0
+ ;0TI ;NOEMIT : KEVAL ;EOS BEGIN vINIT EVAL EOS UNTIL ;
+: INCLUDE TOKEN?  INCLUDED ;
+: FTYPE TOKEN? FOPEN ;@FILE FGET ;EOS BEGIN KEY EMIT EOS UNTIL
+;     : CLOSE_ALL    AT HANDLES ITEMS? LOOPS HCLOSE ;
+: FLOAD TOKEN? FOPEN ;@FILE EDKEY E ;
+
+\ FILE TO BLOCKS CONVERTER   PART OF FILE_READER
+CREATE FBUFFER 70 ALLOT  ZDO VALUE 3 TIMES  SPAN MPTR 1BLK
+: GETLINE FBUFFER 1L ACCEPT TO SPAN DROP ;
+: WIPE? XY 1K U< 0<>; SCR 1+ TO SCR
+: `?ADDLINE WIPE? FBUFFER  MPTR XY + SPAN CMOVE XY 1L + TO XY ;
+: F2B  TOKEN?  : "F2B FOPEN ;FILE SCR TO 1BLK WIPE ;EOS
+  ;NOEMIT BEGIN  GETLINE `?ADDLINE EOS  UNTIL ;
+
+\ TO DO         DEFINERS
+\          IO  FILE_READER  COMPILER  FILE_WRITER
+\ EDITOR  TARGET_COMPILER         NEW_KERNEL   NEW_FORTH
+
+
+
+
+
+: FLOAD TOKEN? FOPEN ;FILE E ;
+: F62  FLUSH 62 BLOCK DROP D0 SCRH Fwrite ;
+EXIT
+EXI?T HLD     0 VALUE HLD
+: ;HLD HLD EX TO HLD ; : BASE! 2 UMAX TO BASE ;
+: <# 0 : <#? 0 TO HLD 0; NEG EX sgn : HOLD ;HLD C!- ;
+: 1# BASE U/MOD SWAP ALPHA HOLD ; : ?#> HLD DUP NEG ;
+: `N# XEP DUP 0< <#? : S# 1# DROP; #?; RECURSE ;
+: .R lf : .RB BASE! `N# HLD + SPACES : #> ?#> TYPE ;           .
 
 
 
@@ -342,48 +383,7 @@ $1CE 1+ =: +*           $1B2 1+ =: -/
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{ PROBA.COM } ' \ =: \`
+{ PROBA.COM } ' \ =: \`    $178 =: EVAL   CMDLN OFF
 M: PRB USING PROBA.COM; \ SELF LOAD
 M: C4 USING C4H.COM;
 M: C5 USING C5H.COM;
@@ -391,7 +391,7 @@ M: PR5 USING PB5.COM;
 M: NFC USING NFC.COM;
 M: CLR STOP FORGET S0;
 CR .( PROBA.COM !!!)
-CREATE TT
+CREATE TT  PAGE 35 LIST
 
 
 
@@ -415,6 +415,13 @@ M: IF- (IF- X: MARK>;
 
 
 
+     0 VALUE HLD    0 VALUE BASE
+
+: ;HLD HLD EX TO HLD ; : BASE! 2- W>B 2+ TO BASE ;
+: <# 0 : <#? CMDLN TO HLD 0; NEG EX '- : HOLD ;HLD C!- ;
+: 1# BASE U/MOD SWAP ALPHA HOLD ; : ?# CMDLN HLD - ;
+: `N# XEP DUP 0< <#? : S# BEGIN 1# DUP 0= UNTIL DROP ;
+: .R lf : .RB BASE! `N# ?# - SPACES : #> HLD ?# TYPE ;
 
 
 
@@ -424,6 +431,15 @@ M: IF- (IF- X: MARK>;
 
 
 
+FORGET HLD
+0 VALUE HLD 0 VALUE BASE '- CONST sgn
+: ;HLD HLD EX TO HLD ; : BASE! 2- W>B 2+ TO BASE ; : N# LOOPS :
+# BASE U/MOD SWAP ALPHA : HOLD ;HLD C!- ; : ?SPC CMDLN HLD - -
+: SPACES LOOPS SPACE ; : <# CMDLN TO HLD BASE! ; 0#> @ 1H ;SPC
+<# N# : #> DROP HLD CMDLN OVER- TYPE ; DUP =, H. 4 , =, B. 2 ,
+: ;<#> <# EX ?SPC #> ; : U. 0 ;SPC : U.R lf : U.R# ;<#> : u. 31
+AND XEP : S# BEGIN # DUP 0= UNTIL ; : ` DUP 0< 0; NEG EX    sgn
+HOLD ; : . 0 ;SPC : .R lf : .R# ;<#> SWAP ` SWAP u. ;
 
 
 
@@ -431,49 +447,33 @@ M: IF- (IF- X: MARK>;
 
 
 
+\ FLOAD AUTO\BLHS.CF
+0 VALUE V  0 VALUE VH
+: ;V V EX TO V ; : C!V+ ;V C!+
+: VHI! DUP 1K U* TO V ;
+: 1L+ : V+ ;V 1L + ;
+: C!V+ ;V 1K U/MOD OVER ?WIPE
+                        960 U< IF
+
+IF V 1023 AND
+              960 = IF 1L+ THEN
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 34 ALLOT HERE CONSTANT #BUF     10 TO BASE
+: ` DUP 0< 0; NEG EX sgn : HOLD HLD C!-  TO HLD ; : <# #BUF TO
+: ` DUP 0< 0; NEG EX sgn : HOLD HLD C!-  TO HLD ; : <# #BUF TO
+ HLD ; : BLHS LOOPS : BLH BL HOLD ; : ;<#> <# TO BASE EX CALL -
+  BLHS : #> DROP HLD THEN #BUF HLD - ; : #.>S ;<#> BLH DXEP
+: N# LOOPS : # BASE U/MOD SWAP ALPHA HOLD ; : `1 BLH ?; ; :
+ .R#>S ;<#> SWAP ` SWAP : U_S# 0 MAX 33 UMIN XEP J `1
+: S# BEGIN # DUP 0= UNTIL ; : U.R>S lf : U.R#>S ;<#> U_S# ;
+: . 0 : .R lf : .R# .R#>S TYPE ; : H. 4 : H.L 1H #.>S TYPE ;
+: U. 0 : U.R lf : U.R# U.R#>S TYPE ; : B. 2 H.L ; : 1H. 1 H.L ;
+: %. 16 : %.L 2 : #.L #.>S TYPE ;
 
 
 

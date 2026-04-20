@@ -581,12 +581,12 @@ $498 =, `;E >, @H- EXEC EX HERE TO ENDH ;
 : `MARK>< `MARK> : `<MARK HERE `<M ; : `<RLS `<R , ;
 : `<RLS> `<RLS : `RELS> `R> : RLS. HERE SWAP! ;
 ' `RELS> =: TTHEN      ' `<MARK =: TBEGIN
-: =, ;, : =H HERE : =: PUSH TT? NIP 0= IF 0 POP TBUF ` ;THEN
- >NF<  NAME> PUSH 2 I+@ ODD IF 2 I+@ 3 - 2 I+! BEGIN I
- WHILE @I J POP ! PUSH REPEAT : 2EXIT POP .EXIT ;THEN RDROP 1
-A" ALREADY DEFINED!" ;  : N: DUP =, ;
+: N: DUP : =, ;, : =H HERE : =: PUSH TT? NIP 0= IF 0 POP TBUF `
+   ;THEN >NF< NAME> PUSH 2 I+@ ODD IF 2 I+@ 3 - 2 I+! BEGIN I
+   WHILE @I J POP ! PUSH REPEAT : 2EXIT POP .EXIT ;THEN RDROP 1
+   A" ALREADY DEFINED!" ;  : 3PICK PUSH OVER POP SWAP ;
 : `CLRY XEP RLS. RLS. : WALLOT LOOPS Z, ;
-: 3PICK PUSH OVER POP SWAP ;
+: STACK: PUSH 3PICK 3PICK 3PICK POP
 : STACK! =H PUSH , , , POP MRK>` MRK>` MRK>` `CLRY RLS. ;
 
 
@@ -734,10 +734,10 @@ $1CE =, U< $DF2B , $E4EB ,   HERE 2+ =, 0< $E3D1 , $DEEB ,
 $462 =, 2DROP   $461 =, 2DROP;  $4E3 =, 1+      $3EC =, ROT
 
 
-#DO CONST 17 TIMES
+#DO CONST 18 TIMES
      64 1L 1024 1K 16 1H -1 -1 256 1B $8000 SGN 1 1 $7C NPAD
      $E000 FIRST 13 cr 10 lf 8 bs $FD00 SBUF 2 2 255  1B&
-     0 >NF< 62 BOOT
+     0 >NF< 12 BOOT  128 CMDLN
 : ;+ EX + ; : ;2DROP EX 2DROP; ,< : -ROT ROT ROT ;
 : ;SPC EX : SPACE BL EMIT ;
 0 QUAN Fbuf
@@ -768,7 +768,7 @@ $3C4 CALL! ,"^K~5^J~^W2v~w~R~^CW~^I~^V" 'TO >NF< ,
 
 : 9>? 9 OVER U< 7 AND ; : ALPHA 9>? + '0 + ; : 2DUP OVER OVER ;
 : BB>W 1B* SWAP ;+ : W>B 1B& AND ; : TUCK DUP XEP SWAP ;  : NUP
-XEP DUP ; : =" '" WORD : >ZSTR CSTR SBUF : S! (S! SWAP :  OFF 0
+XEP DUP ; : =" '" WORD : >ZSTR CSTR CMDLN : S! (S! SWAP : OFF 0
 : SWAP! SWAP ! ; : OR OVER NOT AND XOR ; : ODD 1 AND ;
 : ALIGNED ;H : ALIGN 1- SWAP 1- OR 1+ ; : IO? _FR ODD !":IO?" ;
 0#> C@ (IO TO _FR TO _AX TO _BX TO _CX TO _DX ;  =, (DOS $21 C,
@@ -836,8 +836,8 @@ POP : TOBE LATEST ! ; : D# >, EX @H- HERE SWAP : CALL, $E8 : ,R
  C, HP - , ; : " HERE : ," '" : ?, WORD : CSTR, CSTR : STR,
  v", ;H (S! DROP; ,< $441 =, ;?# >, ??# ; : TOKEN? LTIB TO >LT<
 TOKN? ; : =0, 0 : =, ;, : =H HERE : =: v=: ; : ,X: $2DF : `X =,
-, : ,' ;, : ' ;?# : T? TOKEN? : FND T : FND2 H SWAP (FND ;
-: >SEVAL >LT< XEP : SEVAL CSTR : MEVAL DU+ ;0TI EVLP ;
+, : ,' ;, : ' ;?# : T? TOKEN? : FND T : Dfnd H SWAP (FND ;
+: >SEVAL >LT< : >SEVL XEP : SEVAL CSTR : MEVAL DU+ ;0TI EVLP ;
 : M: '; : ?M: =0, ?, DOES> SEVAL ; : (M: (?S SEVAL ; : 'TO '
   2+ ; : 'AT 'TO 2+ ; : (,X $2DA `X ; $281 ' v=: 4 + T>R !
 : ;LTIB LTIB EX TO LTIB ; : \ ;LTIB 1- : L/ 1L NEG AND ;
@@ -912,8 +912,8 @@ DUP =,  TL 2 C, DUP =, TH 4 C, =, TD 6 C, : ;TD TD @ EX TD ! ;
 
 : MRK> H : Z, 0 , ; : RLS> HERE SWAP! ; : ZST DUP 2+ @ SWAP! ;
 $40E 1#> DUP @+ ;STK !+ ; 2#> DUP STR 2- SWAP ;STK @- ;
-3PICK 3PICK 3PICK  20 STACK! HANDLES 3PICK 3PICK 3PICK
-  20 STACK! CSTK>    20 STACK! <CSTK
+20 STACK: HANDLES   20 STACK: CSTK>   20 STACK! <CSTK
+
 : `;STK> CSTK> EX TO CSTK> ;  : CSWAP> `;STK> `;STK> SWAP ;
 : `;<STK <CSTK EX TO <CSTK ;  : <CSWAP `;<STK `;<STK SWAP ;
 : ZSTK AT CSTK> ZST  AT <CSTK ZST ;;
@@ -923,7 +923,7 @@ $40E 1#> DUP @+ ;STK !+ ; 2#> DUP STR 2- SWAP ;STK @- ;
 : MARK> MRK> `M> ;;  : MARK>< MARK> : <MARK HERE `<M ;;
 : <RELS> <RELS : RELS> `R> RLS> ;
 
-0#> STATE PUSH >, SEVAL  POP TO STATE ;
+0#> STATE >, >SEVL  TO STATE ;
 
 
 N: :J "J" N: :I+ "I+"  N: :I- "I-" N: :(IF- "(IF-"
