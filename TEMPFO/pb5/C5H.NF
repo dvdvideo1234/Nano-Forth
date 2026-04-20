@@ -807,15 +807,15 @@ HANDLES ITEMS? LOOPS HCLOSE ; : INCLUDE TOKEN? INCLUDED ;
 : (>M: (?S : `(>M: STATE >, >SEVL TO STATE ; 0#> RECURSE ;
    39 LOAD      : MARK>< MARK> : <MARK HERE `<M ;;
 : TAHEAD :(JUMP MARK> ; : T;GO :(;GO MARK> ; : TIF :(IF MARK> ;
-: TIF- :(IF- MARK> ; : `ZST AT CSTK> ZST  AT <CSTK ZST ; :
+: TIF- :(IF- MARK> ; : (ZST AT CSTK> ZST  AT <CSTK ZST ; :
  TNEXT :POP RELS> : TUNTIL- :(IF- <RELS ;
 : TFOR TAHEAD : TFOR> <MARK :PUSH ; : T<NEXT :POP TUNTIL- ;
 : TDOES> :CODE :(DZ#0 @H- : CALL, $E8 : ,R C, HP - , ;
-: D# `ZST >, EX @H- HERE SWAP CALL, ;
+: D# (ZST >, EX @H- HERE SWAP CALL, ;
 : 0#> D# :(DZ#0 ; : 1#> D# :(DZ#1 ; : 2#> D# :(DZ#2 ;
 
 : T;; :(RET  AT <CSTK ITEMS? AT CSTK> ITEMS? + 0<>; ,<` ;
-: T: `ZST : `TH: =H >, :(NEST ; : T:: :(SKIP ,<` `TH: ;
+: T: (ZST : `TH: =H >, :(NEST ; : T:: :(SKIP ,<` `TH: ;
 : :=? @ $497 = ; ' 2+ VECTOR vADJ      ' :=? VECTOR vISW?
 : `x??x EX ??# : `(@H, @H- vADJ ;
 : `?? `x??x : `H@:? H 2- @ vISW? HERE ENDH <> AND ;
@@ -823,12 +823,12 @@ HANDLES ITEMS? LOOPS HCLOSE ; : INCLUDE TOKEN? INCLUDED ;
 : T; `H@:? T;; 0; UNW `(@H, TO <CSTK : TAGAIN :(JUMP <RELS ;
 : T;THEN T; RELS> ; : T?; `?? TO <CSTK : TUNTIL :(IF <RELS ;
 : `(DO XCHG PUSH - XCHG @ PUSH ; : (DO< DUP `(DO ; 0 VALUE `5
-: (DO> OVER 1- `(DO ; : I+ J + ;  : I- J - ;
-: `T POP `5 XCHG TO `5 PUSH : R>DO 1+  SWAP ;
+: (DO> OVER 1- `(DO ; : `MPUSH MARK>< :PUSH ; : I+ J + ;
+: `T POP `5 XCHG TO `5 PUSH : R>DO 1+  SWAP ; : I- J - ;
 : ;RNG> `T DO> IND> `5 EXECUTE LOOP : `T2 POP TO `5 ;
 : ;RNG< `T DO< IND< `5 EXECUTE LOOP `T2 ;
-: TIND< :J :I+ ;; : TIND> :J :I- ;; : TDO> :(DO> MARK>< ;
-: TDO< :(DO< MARK>< ; : TLOOP RELS> T<NEXT :RDROP ;
+: TIND< :J :I+ ;; : TIND> :J :I- ;; : TDO> :(DO> `MPUSH ;
+: TDO< :(DO< `MPUSH ; : TLOOP TNEXT :RDROP ;
 
 { STRING COMPILATION} ZDO VALUE 2 TIMES `FRST `SCND : ;HLD,  EX
 : HLD, ;HLD C!+ ; : `" `SCND : `;SCND `SCND DROP ?; : ZH, HLD,
