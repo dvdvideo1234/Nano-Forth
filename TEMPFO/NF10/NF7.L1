@@ -1,0 +1,79 @@
+_0                      Number MYCSEG:0106                 #181  974
+_1M                     Word   MYCSEG:0262                 #481  563  928
+_1P                     Word   MYCSEG:026B                 #490
+_2DROP                  Word   MYCSEG:0226                 #424
+_2M                     Word   MYCSEG:025D                 #476
+_2P                     Word   MYCSEG:0266                 #485
+_@@DROP                 Near   MYCSEG:0240                 #445
+_@EMIT                  Near   MYCSEG:0246                 197  #455
+_@KEY                   Word   MYCSEG:024D                 201  #460
+_@TXTDOT                Number MYCSEG:0442                 #1001
+_ADD                    Word   MYCSEG:01A9                 #304
+_AND                    Word   MYCSEG:01B8                 #316
+_BASE                   Number MYCSEG:0160                 #249
+_BCOMMA                 Number MYCSEG:02B6                 #561  963  963  974
+_BLK                    Number MYCSEG:013C                 #225  271
+_BS                     Number MYCSEG:010A                 #187
+_CMOVE                  Number MYCSEG:020E                 #393
+_CNTC                   Number MYCSEG:0130                 #217  642
+_COMMA                  Number MYCSEG:02AE                 #555  971  971
+_COUNT                  Number MYCSEG:03B4                 #926  963  963  990  1003
+_CPUSHU                 Number MYCSEG:0213                 #400  977
+_CURR                   Number MYCSEG:015A                 #245  971  977
+_DICT                   Number MYCSEG:014E                 #237  977  977
+_DROP                   Number MYCSEG:039E                 #880  957
+_DUP                    Word   MYCSEG:0220                 #415  963  977
+_EMIT                   Number MYCSEG:0112                 #196  990
+_ENTRY                  Number MYCSEG:0400                 #969  1021
+_ETIB                   Number MYCSEG:0142                 #229
+_EX                     Number MYCSEG:03AE                 550  #913  950  957
+_EXECUTE                Number MYCSEG:03C0                 #933  942
+_EXIT                   Number MYCSEG:03B2                 550  557  563  #921  928  935  943  950  957  963  977  990  1003  1010+
+_FIND                   Number MYCSEG:01C0                 #325
+_FLIP                   Word   MYCSEG:019D                 #295
+_FOR                    Number MYCSEG:03AA                 #905  941
+_FORTH                  Number MYCSEG:016C                 #257
+_HERE                   Number MYCSEG:0166                 #253  550  550  974
+_I                      Number MYCSEG:029C                 #536
+_IF                     Word   MYCSEG:023B                 #443
+_IFM                    Word   MYCSEG:022D                 #434
+_IFNZ                   Word   MYCSEG:0235                 #439
+_INIT                   Number MYCSEG:044E                 #208  279  #1008
+_J                      Number MYCSEG:02A0                 #542  942  971  974  974
+_JUMP                   Number MYCSEG:03AC                 #909
+_KEY                    Number MYCSEG:0118                 #200
+_LD                     Word   MYCSEG:0284                 #513  971
+_LDP                    Word   MYCSEG:026F                 #494  928
+_LIT                    Number MYCSEG:03A0                 #884
+_LOOPS                  Number MYCSEG:03C6                 #939  963  990
+_LTIB                   Number MYCSEG:0148                 #233  272
+_MACRO                  Number MYCSEG:0170                 #261  273
+_NEXT                   Number MYCSEG:03A2                 #889  943
+_NIP                    Word   MYCSEG:01BD                 #320
+_NTXT                   Number MYCSEG:0154                 #241
+_OR                     Word   MYCSEG:01B3                 #312
+_OVER                   Number MYCSEG:042E                 #983
+_P2DIV                  Word   MYCSEG:0192                 #284
+_PARS                   Number MYCSEG:01E1                 #354
+_PNT                    Number MYCSEG:012A                 #212
+_POP                    Number MYCSEG:03A6                 #897  950  1003
+_PUSH                   Number MYCSEG:03A4                 #893  935  1003
+_RDROP                  Number MYCSEG:03A8                 #901  943  943
+_SCOMMA                 Number MYCSEG:03EE                 #961  974
+_SCRH                   Number MYCSEG:0136                 #221
+_SOURCE                 Number MYCSEG:011E                 #204
+_ST                     Word   MYCSEG:028B                 #518  977
+_STP                    Word   MYCSEG:027B                 #506  557  563
+_SUB                    Word   MYCSEG:01A2                 #299  974
+_SWAP                   Word   MYCSEG:0295                 #528  928
+_TBUF                   Number MYCSEG:010E                 #191  974
+_TIB                    Number MYCSEG:0102                 #176
+_TYPE                   Number MYCSEG:043C                 #995
+_TYPES                  Number MYCSEG:0430                 #988  997  1003
+_W_B                    Near   MYCSEG:0258                 #472  928
+_XCHG                   Number MYCSEG:03B0                 #917  950
+_XDROP                  Number MYCSEG:03E6                 #955  963  997
+_XEP                    Number MYCSEG:03DC                 #948  971
+_XHERE                  Number MYCSEG:02A4                 #548  557  563  971
+_XOR                    Word   MYCSEG:01AE                 #308
+

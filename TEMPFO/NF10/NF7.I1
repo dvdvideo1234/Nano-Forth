@@ -1,0 +1,37 @@
+
+        ; SWAP 0 OVER C! BEGIN KEY
+        ;   bs OF C@. IF DEC .BS .BL .BS THEN ENDOF
+        ;   cr OF NIP C@. SWAP ENDOF
+        ; DUP bl #BYTE WHITHIN IF DUP EMIT S+C! DUP THEN  DROP
+        ; 2DUP C@ = UNTIL NIP CSTR ;
+
+        _bvect  xt_BS,8                 ;= bs
+        _bvect  xt_CCR,13               ;= cr
+        _XT XT_MBYTE,BCONST
+        DB 255
+
+        _XT XT_OF,__OF
+
+        _XT XT_NIP,@NIP
+        RET
+
+;       _XT XT_OVER,_OVER
+        _XT XT_1M,__1M
+
+        _COLON XT_EQ
+        DW XT_MINUS,XT_EQZ,XT_EXIT
+
+        _COLON XT_ACCEZ
+        DW XT_KEY,XT_BS,XT_OF,@@CR,XT_CFETCHD,XT_0EX
+        DW XT_DEC,_TO+XT_BS,_TO+XT_BL,_TO+XT_BS,XT_EXIT
+@@CR    DW XT_CcR,XT_OF,@@CHAR,XT_NIP,XT_CFETCHD,XT_SWAP,XT_EXIT
+@@CHAR  DW XT_DUP,XT_MBYTE,XT_WITHIN,XT_0BR,@@NOCHAR
+        DW XT_DUP,XT_EMIT,XT_STRPC,XT_DUP
+@@NOCHAR DW XT_DROPX
+
+        _COLON XT_ACCE
+        DW XT_SWAP,XT_ZER,XT_OVER,XT_CSTORE
+@@CRLP  DW XT_ACCEZ,XT_OVER,XT_OVER,XT_CFETCH,XT_EQ
+        DW XT_0BR,@@CRLP,XT_NIP,XT_COUNT,XT_EXIT
+
+
