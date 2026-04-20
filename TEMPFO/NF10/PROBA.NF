@@ -78,15 +78,10 @@ BEGIN CSTK> DUP WHILE TO CSTK> THEN` REPEAT     DROP ;
 
 
 
-{ DO / LOOP / RANGE }
-0 VALUE `  : C:` ,' ;
-
-EXIT
-: ?DUP DUP IF DUP THEN ;
-: `(RNG: C: : DOES> POP ` PUSH TO ` PUSH : RNG>DO 1+ SWAP ;
-`(RNG: ;RNG> DO> IND> ` EXECUTE LOOP : `XP! POP TO ` ;
-
- POP ` PUSH TO ` PUSH
+: C:` ,' ;
+: DXEP1+ DUP 1+ XEP ; : DXEP2+ DUP 2+ XEP ;
+: THRU 1+ OVER- ;DROP LOOPS DXEP1+ LOAD ;
+' :TWICE =: TWICE`
 
 
 
@@ -94,11 +89,16 @@ EXIT
 
 
 
-: `R>DO TO ` 1+ SWAP ;
-: ;RNG> POP ` PUSH `R>DO DO> IND> ` EXECUTE LOOP : `XP! POP
-   TO ` ; : CHARS ;RNG> EMIT ;
-: ;RNG< POP ` PUSH `R>DO DO< IND< ` EXECUTE LOOP `XP! ;
-: THRU ;RNG> LOAD ;  : +THRU ;RNG> +LOAD ;
+
+
+
+
+
+
+
+
+
+
 
 
 

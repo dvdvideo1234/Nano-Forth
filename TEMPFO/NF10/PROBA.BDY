@@ -50,7 +50,7 @@
 ,""~~^Ck~^Dj~^D^A^DKKk~p~^B^E^C^EN~^A+"_~k~d~^R^EQ~c~k~"^~b^Da"
 ,"^Dc~^Dl~^C^W~^DQ^BK^B^W~^D0^A^L^AO^B^L^D@^@^L^D^@^D^L^D^P^@"
 ,"^L^D~~^L^D^@^A^L^D^@^@~^L^D^A^@^L^D|^@^L^D^@`~^L^D^M^@^L^D"
-,"^J^@^L^D^H^@^L^D^@}~^L^D^B^@^L^D~^@^L^D^@^@^L^D>^@^W~^DQ^B"
+,"^J^@^L^D^H^@^L^D^@}~^L^D^B^@^L^D~^@^L^D^@^@^L^D^K^@^W~^DQ^B"
 ,"^I^BO^B^W~^DQ^B^X^E^W~^D^\^E^\^EO^B^J^D^Z^D^N^D^@^@o^D^[^D^@"
 ,"^@o^D^[^D^A~^Bo^D^[^D^@^@^K^D^[^D^@^@^K^D^[^D^@^@^K^D^[^D^@"
 ,"^@^K^D^[^D^@^@^K^D^[^D^@^@^K^D^[^D^@^@^K^D^[^D^@^@^K^D^[^D^@"
