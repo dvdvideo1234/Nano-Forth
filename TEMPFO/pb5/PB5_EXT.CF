@@ -1,9 +1,14 @@
+M: @EXEC` @ EXEC;
+M: SCAN` W?>;
+M: 0SWAP` 0 SWAP;
+: ,' ' , ;
+
 : ;RED 2DUP EX SWAP ?; ;  : URED ;RED U< ;
 : ;MAX 2DUP EX IF  XEP THEN DROP ; 
 : UMAX ;MAX U< ;  : UMIN ;MAX  : U>= U< 0= ;  : MAX ;MAX < ;
 
 : CLARY H OVER ERASE : ALLOT ;H + ; 
-: `(: =H CALL EX @EXEC ;  : `MKR =0, , EX ,' ; 
+: `(: =H CALL EX @EXEC ;  : `MKR 0 =, , EX ,' ; 
 : 2MKR `MKR , DOES> `(:  : W, THEN STR , ;
 : 1MKR `MKR DOES> `(: ;  : 3MKR `MKR , , DOES> `(: W, W, ;
 
@@ -21,15 +26,13 @@ VARIABLE @HD Z, Z,
 : MARK@ @HD : MK@ PUSH @R+ TO HOFS @R+  TO H POP @ TO T ; 
 : MARK! @HD : MK! PUSH HOFS !R+ H !R+ T POP ! ;
 
-: SAME? TBUF EXIST? 0; TBUF [ID] : ?BLK. BLK 0; '# EMIT : BLK. BLK . ;
-' SAME? VECTOR vTOK?     ' vTOK? $289 !  : INC ;@! 1+ ;
-
-' ((A" (,X A"` ,"    ' ((." (,X ."` ,"   ' (("   (,X  "` ," 
-: META ' TO' ! ; : C:` ' , ;
+\  ' ((A" (,X A"` ,"    ' ((." (,X ."` ,"   ' (("   (,X  "` ," 
+: META ' TO' ! ; 
+\ : C:` ' , ;
 : +THRU ;RNG> : +LOAD BLK + : LOAD DUP DROP ?; ;BLKTI vLOAD EVLP ;
 : THRU ;RNG> LOAD ; : CHARS ;RNG> DUP EMIT . ;
 
-: PAGE HOME :; 0 24 @XY  25 : CRS  LOOPS CR ;
+: PAGE HOME :; 25 : CRS  LOOPS CR ;
 
 INCLUDE PB5FLUSH
 USE/ USING PB5.COM
