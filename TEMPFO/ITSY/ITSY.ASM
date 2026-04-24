@@ -1,5 +1,7 @@
 include itsy.mac
 
+TO_ = 2     ; ???
+
 MyCseg  segment para  use16
 
         assume cs: MyCseg,  ds: MyCseg, ss: MyCseg, es: MyCseg
@@ -22,20 +24,26 @@ Start   Label byte
   mov sp,-256
   
   call @_TROFF
-  call @_does
+  call @toforth
   dw _lpar 						;init interpretter
-@_CICLE	dw _init,_eval,_nop,_BRAN,@_CICLE
+@_CICLE	dw _init,_eval,_cr,_BRAN,@_CICLE
 
-PRIM accpt
-  POP   AX
-  mov   DX,AX
-  XCHG  BX,AX
-	mov   [BX],AX
-	mov   ah,10
-	CALL  @DOS
-	INC   bx
-
+;------------------------------
+; FLAGS & REGISTERS
+	
+@_xr:
+	xchg  bx,[bp]         ;XR
+  jmps  @_DONE
+	
+@_XA:
+  xchg  DX,[BP]         ;XA
+  jmps  @_DONE
+	
 ;===========================================================
+
+@_dc@:
+	push  bx
+	jmps  @_c@
 
 @_count:
 	inc   bx
@@ -64,21 +72,9 @@ PRIM accpt
 	dec   bx
 	jmps  @_DONE
 	
-@_dc@:
-	push  bx
-	jmps  @_c@
-
-;------------------------------
-; FLAGS & REGISTERS
-	
-@_xr:
-	xchg  bx,[bp]         ;XR
-  jmps  @_DONE
-	
-@_XA:
-  xchg  DX,[BP]         ;XA
-  jmps  @_DONE
-	
+@_zeq:		
+	sub   bx,1
+  jmps  @_cf_bx
 @_Uless:
   pop   ax
   SUB   Ax,Bx
@@ -88,25 +84,108 @@ PRIM accpt
 @_cf_bx:
 	sbb   bx,bx
 	jmps  @_DONE		
-@_zeq:		
-	sub   bx,1
-  jmps  @_cf_bx
 				
-  XT  RSP,@_DUSWA_
-  MOV   AX,RSP
+; -------------------
+; Variables
+; -------------------
+
+  value erra,0
+  defer errv,_err1
+
+  point found,0
+  point init,_initadr
+
+  defer key,_dk
+	value CNTC,0
+  XT emit,@_deferI
+			DW _de
+	defer accept,_Dacpt
+
+  value ltib,0
+  value etib,0
+	defer source,_etib
+  value dp,@_freemem
+	value ofst,0
+  value dict,0f000h-270
+  vector cdict,_dict
+col dictx
+	dw _dict,_ex,to_dict,_exit
+col DPx
+	dw _DP,_ex,to_DP,_exit
+
+	value DOSERR,0
+	value base,10
+
+  cnst  bl_,0
+  cnst  zero,0
+  cnst  tib,080h
+  cnst  inl,80			; max char in line
+  cnst  tbuf,0f000h-260	; str evaluation
+  cnst  LASTOK,0	; LAST TOKEN ADDRESS
+
+		
+; -------------------
+; Compilation
+; -------------------
+
+  TRAP3 XCOMMA
+  COL @comma
+    DW _FETCH
+  LBL BECKREL
+  COL comma
+;    DW _DP,_STP,TO_DP,_EXIT
+    DW _DPX,_STP,_EXIT
+  
+  LBL BACKMARK		; BEGIN
+  col HERE
+    dw _dp,_ofst
+  col _plus
+    dw _pl2div,_dropx
+  
+;  LBL COMMENT
+;  COL COMMENTI
+;    dw _zero,To_ltib,_exit
+  
+;  XT  RSP,@_DUSWA_
+;  MOV   AX,RSP
+;  RET
+;
+;  XT  DSP,@_DUSWA_
+;  MOV   AX,DSP
+;  RET
+;
+;  XT  RSPST,@_DROP_
+;  MOV   RSP,BX
+;  RET
+;
+;PRIM DSPST
+;  mov   DSP,bx
+;  NEXT
+
+;
+@_SCAN_:  ;where times  what  di cx bx -> index bx
+  POP   cx aX
+  push  cx
+  xchg  ax,di
+  xchg  ax,bx
+  CALL  bX
+  POP   bx
+  cld
+  JE    @@1
+  MOV   CX,bX
+@@1:
+  INC   CX
+  SUB   bX,CX
+  next
+
+Xt SCANW,@_SCAN_
+  REPNE SCASW
   RET
 
-  XT  DSP,@_DUSWA_
-  MOV   AX,DSP
+Xt SCANb,@_SCAN_
+  REPNE SCASb
   RET
 
-  XT  RSPST,@_DROP_
-  MOV   RSP,BX
-  RET
-
-PRIM DSPST
-  mov   DSP,bx
-  NEXT
 
 ;==============================================
 ; PEAK & POKE PRIMITIVES
@@ -122,13 +201,18 @@ PRIM DSPST
 
 @_getwatch:
 	mov	  di,[di]
+  SKIPA
+
+	scasw
+	scasw
 @_doconst:
 	mov   ax,[di]
 	jmp   @_ph
 	
 @_setwatch:
 	mov   di,[di+2]
-	skipb
+	skipA
+	scasw
 @_setvar:
 	scasw
 	mov   [di],bx
@@ -231,6 +315,9 @@ lbl nop
 @_drop:		
   pop bx
   jmps @_DONEXT   ; GETS 1,2,3 RETURNS 0
+@_USEBX_:
+  XCHG  AX,BX
+  JMPS  @_DROP_
 
 @_cLnip_:  
 	POP   cX
@@ -295,8 +382,8 @@ lbl nop
 	inc bp
 	jmps @_ph
 
-@_DROPDUP:
-	POP BX
+;@_DROPDUP:
+;	POP BX
 @_dup:
 	push bx
 	jmps @_DONEXT
@@ -304,23 +391,6 @@ lbl nop
 @_setpoint:
 	mov [di+2],si
 	jmps @_rts
-	
-@_nipx:
-	pop ax
-	jmps @_rts
-
-@_0ex:	
-	or bx,bx
-	jNe @_drop
-	
-@_dropx:
-	pop bx
-@_rts:
-	mov si,[bp]
-@_rdrop:		
-	inc bp
-	inc bp
-	jmps @_DONEXT
 	
 	scasw
 	scasw
@@ -344,6 +414,23 @@ lbl nop
 ;--------------------------------------
 ; Control
 
+@_nipx:
+	pop ax
+	jmps @_rts
+
+@_0ex:	
+	or bx,bx
+	jNe @_drop
+	
+@_dropx:
+	pop bx
+@_rts:
+	mov si,[bp]
+@_rdrop:		
+	inc bp
+	inc bp
+	jmps @_DONEXT
+	
 @_for:
 	mov	  si,[si]
 @_push:
@@ -384,7 +471,7 @@ lbl nop
 ;-----------------------------------------
 ; MEMORY
 
-  XT PARSE,@_SOURCE_
+XT PARSE,@_SOURCE_
   XCHG  AX,DI
 	mov	  AL,' '
 	inc   CX
@@ -411,7 +498,7 @@ lbl nop
 	sub		cx,ax		      ; LENGTH OF THE WORD
   SKIPA
 
-  XT	MAKESTR,@_Bnip_
+XT	MAKESTR,@_Bnip_
   mov   BX,@_dict     ; END OF DICTIONARY
   SUB   BX,4          ; MAKE ROOM FOR ADDRESS & COUNTER
   mov   PW [BX+2],0   ; SET  COUNTER
@@ -419,18 +506,18 @@ lbl nop
   mov   PB [BX],'`'   ; after TOKEN flag
   SKIPA
 
-  XT	PUSHSTR,@_CLnip_
+XT	PUSHSTR,@_CLnip_
   SUB   BX,CX         ; MAKE ROOM FOR CHARS
   dec   BX            ; MAKE ROOM FOR COUNTER
   mov   @_LASTOK,BX    ; REGISTER FOR ERRORS & OTHER
   SKIPA
 
-  XT  movESTR,@_cLnip_ ; S!
+XT  movESTR,@_cLnip_ ; S!
   MOV   [BX],CL       ; STORE LENGTH OF THE NAME
   LEA   DI,[BX+1]
   JMPS  @_CMOVE
 
-  XT    CPUSHU,@_cnip_
+XT    CPUSHU,@_cnip_
   mov   DI,bx
   SUB   BX,CX
 @_CPUSHU:
@@ -447,81 +534,23 @@ lbl nop
 @_troff: 
 	RET
 
-  xt	CMOVEU,@_DROP_3
+xt	CMOVEU,@_DROP_3
 	JMPS @_CMOVEU
 
-  XT	CMOVE,@_DROP_3
+XT	CMOVE,@_DROP_3
 	JMPS @_CMOVE
 		
-  xt FILL,@_DROP_3
+xt FILL,@_DROP_3
 	XCHG AX,DI
 	REP STOSB
 	RET
 	
-  xt FILLW,@_DROP_3
+xt FILLW,@_DROP_3
 	XCHG AX,DI
 	REP STOSW
 	RET
 	
 
-; -------------------
-; Variables
-; -------------------
-
-  value erra,0
-  defer errv,0
-
-  point found,0
-  point init,_initadr
-
-  defer key,_dk
-	value CNTC,0
-  XT emit,@_deferI
-			DW _de
-	defer accept,_accpt
-
-  value ltib,0
-  value etib,0
-	defer source,_etib
-  value dp,@_freemem
-	value ofst,0
-  value dict,0f000h-270
-  vector cdict,_dict
-col dictx
-	dw _dict,_ex,to_dict,_exit
-col DPx
-	dw _DP,_ex,to_DP,_exit
-
-	value DOSERR,0
-
-  cnst  zero,0
-  cnst  tib,080h
-  cnst  inl,80			; max char in line
-  cnst  tbuf,0f000h-260	; str evaluation
-  cnst  LASTOK,0	; LAST TOKEN ADDRESS
-
-		
-; -------------------
-; Compilation
-; -------------------
-
-  TRAP3 XCOMMA
-  COL @comma
-    DW _FETCH
-  LBL BECKREL
-  COL comma
-    DW _DPX,_STP,_EXIT
-  
-  LBL BACKMARK		; BEGIN
-  col HERE
-    dw _dp,_ofst
-  col _plus
-    dw _pl2div,_dropx
-  
-  LBL COMMENT
-  COL COMMENTI
-    dw _zero,To_ltib,_exit
-  
   trap1 xthen
   col THEN
     dw _here,_swap,_storE,_exit
@@ -558,15 +587,12 @@ col DPx
   XT J,@_J
   XT XA,@_XA
   XT XR,@_XR
-  XT DROPDUP,@_DROPDUP
+;  XT DROPDUP,@_DROPDUP
 		
 ; -------------------
 ; Maths / Logic
 ; -------------------
 
-;  xt minus,@minus
-;  xt plus,@plus
-;  xt equals,@equals
   XT 1M,@_M
   XT 2M,@_M-1
   XT 1P,@_P
@@ -575,6 +601,7 @@ col DPx
   XT ULESS,@_ULESS
   XT ZLESS,@_ZLESS
   XT LOBYTE,@_LOBYTE
+  XT HIbyte,@_HIbyte
 		
   xt and,@_nip_
     AND   BX,AX
@@ -588,18 +615,29 @@ col DPx
     NEG   BX
     RET
 
-  xt pl2div,@_NINU_
+xt pl2div,@_NINU_
 	ADD     ax,bx
 	mov     bx,AX
 	rcr     bx,1
 	RET
 
-;  COL MINUS
-;	DW _NEG
-;  COL plus
-;	DW _pl2div,_DROPX
-	
-  xt plmul,@_NINU_
+xt dplus,@_dINU_    ; bx dx cx ax
+	ADD     ax,dx
+	ADc     bx,cx
+	RET
+
+xt dminus,@_dINU_    ; bx dx cx ax
+	sub     ax,dx
+	sbb     cx,bx
+  mov     bx,cx
+	RET
+
+COL MINUS
+	DW _NEG
+COL plus
+	DW _pl2div,_DROPX
+
+xt plmul,@_NINU_
 	TEST	al,1
 	jz	@_pl1
 	ADD	bx,dx
@@ -613,10 +651,10 @@ col DPx
 	XCHG BX,DX	
 	RET
 	
-  COL Umul
-	DW _XDROP
-  COL UMmul
-    DW _ASTZ,_TWICE,_TWICE,_plmul,_plmul,_plmul,_plmul,_EXIT
+;  COL Umul
+;	DW _XDROP
+;  COL UMmul
+;    DW _ASTZ,_TWICE,_TWICE,_plmul,_plmul,_plmul,_plmul,_EXIT
 
   xt midiv,@_NINU_                        ; -/
 	SHL	ax,1
@@ -645,13 +683,13 @@ COL UMDIVMOD
 	stosw
 	RET
 	
-  xt Dstore ,@_DROP_3
+xt Dstore ,@_DROP_3
 	XCHG AX,CX
 	stosw
 	XCHG AX,CX
 	stosw
 	RET
-	
+
 XT STM,@_stm          ; !-
 
 XT STP,@_stP          ; !+
@@ -718,7 +756,7 @@ col rpar							; compiler is on
   XT EXEC,@_EXEC
   XT EXECUTE,@_EXECUTE
   XT SKIP,@_SKIP
-  XT TRAP,@_TWICE
+  XT TRAP,@_TRAP
   XT TWICE,@_TWICE
   XT FOR,@_FOR
   XT IFM,@_IFM
@@ -728,27 +766,12 @@ col rpar							; compiler is on
   xt ex,@_ex
   xt @exec,@_exec@
   xt dropx,@_dropx
-;  XT SWAPX,@_SWAPX
+; XT SWAPX,@_SWAPX
   xt 0x,@_0ex
 
 ; -------------------
 ; String
 ; -------------------
-
-  col TIMES
-	dw _push,_xr
-  col xTIMES
-        DW _FOR,@@LP2
-@@LP1   DW _J,_EXECUTE
-@@LP2	DW _NEXT,@@LP1
-		DW _RDROP,_EXIT
-
- COL STRTYPE	;COMPILE MODE ONLY
-       DW _STRSKIP
- COL STYPE
-       DW _COUNT
- COL TYPE
-       DW _XDROP,_xTIMES,_COUNT,_EMIT,_EXIT
 
 XT  to_number,@_NINU_
   push 	SI 
@@ -877,14 +900,14 @@ XT  to_number,@_NINU_
 
 ;  xt accpt,@__accept
 
-xUNpack:XOR   ax,AX
-        xchg  Al,bh
-        PUSHREG
-
-xpack:  pop   ax
-        xchg  bl,bh
-        mov   bl,al
-        next
+;xUNpack:XOR   ax,AX
+;        xchg  Al,bh
+;        PUSHREG
+;
+;xpack:  pop   ax
+;        xchg  bl,bh
+;        mov   bl,al
+;        next
 
 
   col token?
@@ -896,8 +919,8 @@ xpack:  pop   ax
 ; IO
 
 XT SCRN,@_DOVAR-2
-XT WBLK,XWBLK
-XT RBLK,XRBLK
+XT WBLK,@_WBLK
+XT RBLK,@_RBLK
   DW -1 
 
 	value AX,0
@@ -905,11 +928,11 @@ XT RBLK,XRBLK
 	value CX,0
 	value DX,0
 
-XWBLK:  
+@_WBLK:  
   MOV   CH,40H
   SCASW
   DB    0B8H
-XRBLK:  
+@_RBLK:  
   MOV   CH,3FH
   MOV   AX,1024
   push  AX CX
@@ -918,11 +941,13 @@ XRBLK:
   XCHG  AX,CX
   MOV   AX,4200H
   MOV   BX,[DI]     ; _SCRH
-  call  @DOS
+  INT   21H
   POP   AX CX DX
   JC    @SETREG
 @DOS0:
-  call  @DOS
+  INT   21H
+  JNC   @SETREG
+  MOV   @_DOSERR,AX
 @SETREG:
   MOV   @_AX,AX
   MOV   @_BX,BX
@@ -941,10 +966,10 @@ XRBLK:
   mov   AX,[DI]
   jmps  @DOS0
 
-;XT UMUL,@_NINU_
-;  mul   bx
-;  mov   BX,DX
-;  RET
+XT UMUL,@_NINU_
+  mul   bx
+  mov   BX,DX
+  RET
 
 XT FAPOS,@DOS4
   dw  4200H
@@ -967,27 +992,6 @@ XT  FCLOSE,@DOS5
 XT  FNEW,@DOS2
   dw  5B02H         ; ????
 
-  xt dk,@_DUSWA_
-@_getchar:
-	mov ah,7
-	int 021h
-	mov ah,0
-	ret
-
-  xt de,@_DROP_
-@_outchar:
-  mov   DX,BX
-	mov   ah,2
-@DOS: 
-	int   021h
-	PUSH  AX
-	JC    @@DOS
-	XOR   AX,AX
-@@DOS:  	
-	MOV   @_DOSERR,AX
-	POP   AX
-	ret
-
 ; -----------------------
 ; Dictionary Search
 ; -----------------------
@@ -1007,7 +1011,7 @@ xt find,@_NINU_
   SCASW           ; di := di + 4
   SCASW
 	add   di,cx		    ; adjust to next
-  MOV   BX,DI
+;  MOV   BX,DI
 	mov   cl,[di]
   jcxz  @_findi
 	inc   cx
@@ -1043,7 +1047,7 @@ xt find,@_NINU_
 ; -----------------------
 
   col head		; =h
-	dw _HERE
+	dw _HERE    ;_DP ; 
   col header	; =:			NOP IS PLACE FOR THE (SAME) FUNCTION 
 	dw _nop,_token?,_dup,to_dict,_n_to_c,_store,_exit
 		
@@ -1055,10 +1059,10 @@ xt find,@_NINU_
 ; -----------------------
 
 
-  xt constant,@_defcomm
+xt constant,@_defcomm
 	dw @_doconst,_comma
 	
-  xt CREATE,@_defcomm
+xt CREATE,@_defcomm
 	dw @_doVAR,_NOP
 	
   XT GETWATCH,@_GETWATCH
@@ -1074,13 +1078,18 @@ xt find,@_NINU_
   xt _ABORT,@_ABORT
 		
   lbl oper  ; OPERATE ON STATES
-	dw @_wary,_@exec,_to_num,_@comma,_numc
+	dw @_wary,_@exec,_to_num,_@comma,_numc,0,0
 
-  trap3 _xeval
+  trap3 xeval
   xt eval,@_COL_EVAL
 		dw to_ltib,to_etib
-@_eval	dw _token,_dc@,_zbran,@_xeval
-		dw _found,_oper,_@exec,_BRAN,@_eval
+@_eval	dw _token
+    dw _dumpstr
+    dw _dc@,_zbran,@_xeval
+    dw _dumpstr
+		dw _found
+    dw _swap,_dup,_numd,_swap,_dup,_numd
+    dw _oper,_@exec,_BRAN,@_eval
 
   trap xdrop
 @_xeval	dw _dropx
@@ -1093,16 +1102,185 @@ xt find,@_NINU_
   COL   PUSHwSTR
     dw _dictx,_cpushu,_exit
 
-  COL PUSHcS
-    dw  _count
   col phCSTR
     dw _dictx,_PUSHSTR,_exit
 
   lbl initadr
-	dw  _tib,_PUSHcS	; GET CMD LINE
-	DW _dp,_PUSHwS,__xeval,to_init	; GET VOCABULAY AND EVAL
+	dw  _tib,_count,_phCSTR	; GET CMD LINE
+	DW _dp,_PUSHwS,_xeval,to_init	; GET VOCABULAY AND EVAL
 	dw _tib,_inl,_accept,_exit
 		
+;COL init
+;	DW _dp,_xeval
+;COL   PUSHwS
+;	DW _str
+;COL   PUSHwSTR
+;  dw _dictx,_cpushu,_exit
+
+; -----------------------
+; TERMINAL INPUT / OUTPUT
+;xtname 'COUNT',COUNT,@_count
+
+xt DE,@_USEBX_
+  XCHG AX,DX
+  MOV AH,2
+  INT 021H
+  RET
+
+xt CR,@_NOP_
+  MOV AL,13
+  CALL OUTCHAR
+  MOV AL,10
+  CALL OUTCHAR
+  RET
+
+xt DK,@_DUSWA_
+  MOV AH,7
+  INT 021H
+  MOV AH,0
+  RET
+
+xt DACPT,@_NINU_
+  PUSH  AX
+  XCHG  AX,DI
+  XOR   CX,CX
+ACCEPTL: 
+  CALL  GETCHAR
+  CALL  DOKEY
+  JMPS  ACCEPTL
+
+DOKEY:
+  CMP   AL,8
+  JNE   ACCEPTN
+  JCXZ  ACCEPTB
+  CALL  OUTCHAR
+  MOV   AL,' '
+  CALL  OUTCHAR
+  MOV   AL,8
+  CALL  OUTCHAR
+  DEC   CX
+  DEC   DI
+ACCEPTB:
+  RET
+ACCEPTN:
+  CMP   AL,13
+  JE    ACCEPTZ
+  CMP   AL,32
+  JB    ACCEPTB
+
+ACCEPTS: 
+  STOSB
+  INC   CX
+  CALL  OUTCHAR
+  CMP   CX,BX
+  JNE   ACCEPTB
+ACCEPTZ: 
+  MOV   BX,CX
+  POP   AX  ; DROP RETURN
+  POP   AX  ; POP ADDRESS
+  RET       ; EXIT TO MAIN
+
+OUTCHAR:
+  push  dx
+  call  @STOREGS
+  dw    _dup,_emit
+  dw    _from4th
+  jmps  @LODREGS
+
+GETCHAR: 
+  push  dx
+  call  @STOREGS
+  dw    _key
+  dw    _from4th
+  POP   AX
+  xchg  ax,bx
+@LODREGS:
+  POP  cx bx bp di si dX
+  RET
+
+@STOREGS:
+  POP   dx
+  push  si di bp bx cx dX
+  xchg  ax,bx
+@toforth:
+  POP   si
+  next
+
+prim from4th
+  jmp si
+
+;-----------------------------------------
+; PRINTING ROUTINES
+
+col TIMES
+	dw _push,_xr
+col xTIMES
+        DW _FOR,@@LP2
+@@LP1   DW _J,_EXECUTE
+@@LP2	DW _NEXT,@@LP1
+		DW _RDROP,_EXIT
+
+ COL STRTYPE	;COMPILE MODE ONLY
+       DW _STRSKIP
+ COL STYPE
+       DW _COUNT
+ COL TYPE
+       DW _XDROP,_xTIMES,_COUNT,_EMIT,_EXIT
+
+col GETLINE
+  DW _TIB,_LIT,50,_ACCEPT,_SPC,_EXIT 
+        
+col  dumpstr
+  dw _cr,_dup
+col  IDOT
+  DW _COUNT
+col  TYPEBL
+  DW _TYPE
+col  SPC
+  DW _BL_,_EMIT,_EXIT
+
+;XT ERR?,DOCOLON
+;  DW _SKIPSTR,_SWAP
+;  DW _ZERO_BRANCH,@DROPX  ; DROPX
+;  DW _ERR,_ABORT
+
+col ERR1
+  DW _CR,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
+
+XT DIVMOD,@_niNU_
+  XOR DX,DX
+@DM2:
+  DIV BX
+  XCHG  AX,DX
+  mov   BX,DX
+  RET
+
+XT DIVMOD2,@_ciNU_
+  XCHG  AX,DX
+  XCHG  AX,CX
+  JMPS  @DM2
+
+XT TC,@_NOP_
+  mov   ax,127
+  and   ax,bx
+  CMP AL,10
+  JB  @LESS10
+  ADD AL,7
+@LESS10:
+  ADD AL,48
+  XCHG BX,AX
+  RET
+
+col NUMDOT
+  DW _BASE,_FETCH,_DIVMOD,_ZSKIP,_NUMDOT,_TC,_EMIT,_EXIT
+; : >CHAR ( n -- c ) 
+;   DUP 10 < IF 48 + ELSE 55 + THEN ;
+; DUP 9 SWAP U< 7 AND 48 + ;
+
+COL NUMD
+  DW _NUMDOT,_SPC,_EXIT
+
+
 @_freemem:
   dw @_final-@_freemem-2
   
