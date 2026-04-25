@@ -54,6 +54,11 @@ diff = $
   endIf
   ENDM
 
+bpnt macro msg
+  dw _amih
+  aname msg
+endm
+
 aname macro cnam
   local len,end
   db end-len

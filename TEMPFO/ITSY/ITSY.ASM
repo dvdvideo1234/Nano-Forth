@@ -103,7 +103,7 @@ Start   Label byte
 
   value ltib,0
   value etib,0
-	defer source,_etib
+	defer source,_nop
   value dp,@_freemem
 	value ofst,0
   value dict,0f000h-270
@@ -116,8 +116,23 @@ col DPx
 	value DOSERR,0
 	value base,10
 
+@_setbase:
+  call  @_does
+  dw _c@,to_base,_EXIT
+
+xt hex,@_setbase
+  db 16
+
+xt dec,@_setbase
+  db 10
+
+xt bin,@_setbase
+  db 2
+
   cnst  bl_,0
   cnst  zero,0
+bye = $-2
+
   cnst  tib,080h
   cnst  inl,80			; max char in line
   cnst  tbuf,0f000h-260	; str evaluation
@@ -146,21 +161,21 @@ col DPx
 ;  COL COMMENTI
 ;    dw _zero,To_ltib,_exit
   
-;  XT  RSP,@_DUSWA_
-;  MOV   AX,RSP
-;  RET
-;
-;  XT  DSP,@_DUSWA_
-;  MOV   AX,DSP
-;  RET
-;
-;  XT  RSPST,@_DROP_
-;  MOV   RSP,BX
-;  RET
-;
-;PRIM DSPST
-;  mov   DSP,bx
-;  NEXT
+  XT  RSP,@_DUSWA_
+  MOV   AX,RSP
+  RET
+
+  XT  DSP,@_DUSWA_
+  MOV   AX,DSP
+  RET
+
+  XT  RSPST,@_DROP_
+  MOV   RSP,BX
+  RET
+
+PRIM DSPST
+  mov   DSP,bx
+  NEXT
 
 ;
 @_SCAN_:  ;where times  what  di cx bx -> index bx
@@ -341,12 +356,12 @@ lbl nop
   push bx
 	jmps @_nop_
 
-@_swapc_:
-	pop   cx
-@_swap_:
+@_over_:
 	pop   ax
+;@_swap_:
+	push  ax
 @_DUSWA_:
-	call  di      ; GETS 1,2,3 RETURNS 2
+	call  di      ; GETS 1,2 RETURNS 2
 
 ; -------------------
 ; Inner Interpreter
@@ -401,14 +416,14 @@ lbl nop
 @_DEFERI:
   INC   PW [@_CNTC]
 @_defer: 
-	push bx
-	mov	bx,di
-@_exec@:
-	mov bx,[bx]
+	push  bx
+	mov	  bx,di
+@_@exec:
+	mov   bx,[bx]
 @_exec:
-	mov di,bx
+	mov   di,bx
 	scasw
-    pop bx
+  pop   bx
 	jmps @_DONEXT1
 
 ;--------------------------------------
@@ -574,11 +589,12 @@ xt FILLW,@_DROP_3
 ; Stack
 ; -------------------
 
-  xt drop,@_drop
-  xt dup,@_dup
+xt drop,@_drop
+xt dup,@_dup
 
-  lbl cswap
-  xt swap,@_swap_
+lbl cswap
+xt swap,@_NINU_
+  xchg  ax,bx
 	ret
 
   XT POP,@_POP
@@ -764,9 +780,8 @@ col rpar							; compiler is on
   XT NEXT,@_NEXT
   xt exit,@_rts
   xt ex,@_ex
-  xt @exec,@_exec@
+  xt @exec,@_@exec
   xt dropx,@_dropx
-; XT SWAPX,@_SWAPX
   xt 0x,@_0ex
 
 ; -------------------
@@ -848,7 +863,7 @@ XT  to_number,@_NINU_
 @@N5:
   cmp   al,'9'+1
   jc    @@ton2
-  and   AL,0DFH
+  ;and   AL,0DFH
   cmp   al,'A'      ; no case sensivity
   jc    @@ERNUM
   sub   al,7
@@ -870,10 +885,14 @@ XT  to_number,@_NINU_
 
   xt count,@_count
 
-  col to_num			; NOPS RESERVED PLACE FOR STRING FUNCTIONS
-    dw _NOP
-  COL TO_NUM2
-    DW _count,_to_number,_err?,_exit
+col to_num			; NOPS RESERVED PLACE FOR STRING FUNCTIONS
+  dw _NOP
+COL TO_NUM2
+  DW _count
+  bpnt "before-num"
+  dw _to_number
+  bpnt "after-num"
+  dw _err?,_exit
 	
   col NUMC				; NOPS RESERVED PLACE FOR STRING FUNCTIONS
     dw _NOP,_to_num2,_litc,_exit
@@ -883,7 +902,9 @@ XT  to_number,@_NINU_
 ; -----------------------
 
   col error?
-    dw _strskIp,to_erra,_0x,_errv,__ABORT
+    dw _strskIp
+    bpnt "error?"
+    dw  to_erra,_0x,_errv,_ABORT
 	
   trap xtok?
     dw _dc@
@@ -1011,7 +1032,7 @@ xt find,@_NINU_
   SCASW           ; di := di + 4
   SCASW
 	add   di,cx		    ; adjust to next
-;  MOV   BX,DI
+  MOV   dX,DI
 	mov   cl,[di]
   jcxz  @_findi
 	inc   cx
@@ -1075,21 +1096,38 @@ xt CREATE,@_defcomm
 ; Outer Interpreter
 ; -----------------------
 
-  xt _ABORT,@_ABORT
+  xt ABORT,@_ABORT
 		
   lbl oper  ; OPERATE ON STATES
-	dw @_wary,_@exec,_to_num,_@comma,_numc,0,0
+	dw @_wary,_to_num,_@exec,_numc,_@comma,0,0
+
+col 2swap
+  dw _push,_mrot,_pop
+col mrot
+  dw _swap
+col uswap
+  dw _push,_swap,_pop,_exit
+
+col rot
+  dw _uswap,_swap,_exit
 
   trap3 xeval
   xt eval,@_COL_EVAL
 		dw to_ltib,to_etib
-@_eval	dw _token
-    dw _dumpstr
-    dw _dc@,_zbran,@_xeval
-    dw _dumpstr
-		dw _found
-    dw _swap,_dup,_numd,_swap,_dup,_numd
-    dw _oper,_@exec,_BRAN,@_eval
+@_eval:
+  bpnt "token/"
+	dw _token
+  bpnt "/token"
+  dw _dumpstr
+  dw _dc@,_zbran,@_xeval
+  bpnt "before-found"
+  dw _found
+  bpnt "after-found"
+  dw _oper
+  bpnt "before-@exec"
+  dw _@exec
+  bpnt "after-@exec"
+  dw _BRAN,@_eval
 
   trap xdrop
 @_xeval	dw _dropx
@@ -1106,20 +1144,27 @@ xt CREATE,@_defcomm
     dw _dictx,_PUSHSTR,_exit
 
   lbl initadr
+  dw _lit,12
+  dw _lit,34
+  dw _lit,56
+  bpnt "init0"
+  dw _lit,78
+  dw _lit,90
+  bpnt "init1"
 	dw  _tib,_count,_phCSTR	; GET CMD LINE
-	DW _dp,_PUSHwS,_xeval,to_init	; GET VOCABULAY AND EVAL
-	dw _tib,_inl,_accept,_exit
+  bpnt "init2"
+	DW _dp,_PUSHwS
+  bpnt "init3"
+  dw _xeval,to_init	; GET VOCABULAY AND EVAL
+  bpnt "init4"
+	dw _tib,_inl
+  bpnt "init5_accept/"
+  dw _accept
+  bpnt "init6_/accept"
+  dw _exit
 		
-;COL init
-;	DW _dp,_xeval
-;COL   PUSHwS
-;	DW _str
-;COL   PUSHwSTR
-;  dw _dictx,_cpushu,_exit
-
 ; -----------------------
 ; TERMINAL INPUT / OUTPUT
-;xtname 'COUNT',COUNT,@_count
 
 xt DE,@_USEBX_
   XCHG AX,DX
@@ -1129,9 +1174,9 @@ xt DE,@_USEBX_
 
 xt CR,@_NOP_
   MOV AL,13
-  CALL OUTCHAR
+  CALL @_OUTCHAR
   MOV AL,10
-  CALL OUTCHAR
+  CALL @_OUTCHAR
   RET
 
 xt DK,@_DUSWA_
@@ -1144,50 +1189,50 @@ xt DACPT,@_NINU_
   PUSH  AX
   XCHG  AX,DI
   XOR   CX,CX
-ACCEPTL: 
-  CALL  GETCHAR
-  CALL  DOKEY
-  JMPS  ACCEPTL
+@_ACCEPTL: 
+  CALL  @_GETCHAR
+  CALL  @_DOKEY
+  JMPS  @_ACCEPTL
 
-DOKEY:
+@_DOKEY:
   CMP   AL,8
-  JNE   ACCEPTN
-  JCXZ  ACCEPTB
-  CALL  OUTCHAR
+  JNE   @_ACCEPTN
+  JCXZ  @_ACCEPTB
+  CALL  @_OUTCHAR
   MOV   AL,' '
-  CALL  OUTCHAR
+  CALL  @_OUTCHAR
   MOV   AL,8
-  CALL  OUTCHAR
+  CALL  @_OUTCHAR
   DEC   CX
   DEC   DI
-ACCEPTB:
+@_ACCEPTB:
   RET
-ACCEPTN:
+@_ACCEPTN:
   CMP   AL,13
-  JE    ACCEPTZ
+  JE    @_ACCEPTZ
   CMP   AL,32
-  JB    ACCEPTB
+  JB    @_ACCEPTB
 
-ACCEPTS: 
+@_ACCEPTS: 
   STOSB
   INC   CX
-  CALL  OUTCHAR
+  CALL  @_OUTCHAR
   CMP   CX,BX
-  JNE   ACCEPTB
-ACCEPTZ: 
+  JNE   @_ACCEPTB
+@_ACCEPTZ: 
   MOV   BX,CX
   POP   AX  ; DROP RETURN
   POP   AX  ; POP ADDRESS
   RET       ; EXIT TO MAIN
 
-OUTCHAR:
+@_OUTCHAR:
   push  dx
   call  @STOREGS
   dw    _dup,_emit
   dw    _from4th
   jmps  @LODREGS
 
-GETCHAR: 
+@_GETCHAR: 
   push  dx
   call  @STOREGS
   dw    _key
@@ -1239,13 +1284,11 @@ col  TYPEBL
 col  SPC
   DW _BL_,_EMIT,_EXIT
 
-;XT ERR?,DOCOLON
-;  DW _SKIPSTR,_SWAP
-;  DW _ZERO_BRANCH,@DROPX  ; DROPX
-;  DW _ERR,_ABORT
-
 col ERR1
   DW _CR,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
+
+col amih ;ere ;COMPILE MODE ONLY
+  DW _STRSKIP,_cr,_idot,_d3p,_key,_dropx
 
 XT DIVMOD,@_niNU_
   XOR DX,DX
@@ -1261,8 +1304,8 @@ XT DIVMOD2,@_ciNU_
   JMPS  @DM2
 
 XT TC,@_NOP_
-  mov   ax,127
-  and   ax,bx
+  XCHG BX,AX
+  mov   ah,0
   CMP AL,10
   JB  @LESS10
   ADD AL,7
@@ -1272,11 +1315,14 @@ XT TC,@_NOP_
   RET
 
 col NUMDOT
-  DW _BASE,_FETCH,_DIVMOD,_ZSKIP,_NUMDOT,_TC,_EMIT,_EXIT
-; : >CHAR ( n -- c ) 
-;   DUP 10 < IF 48 + ELSE 55 + THEN ;
-; DUP 9 SWAP U< 7 AND 48 + ;
+  DW _BASE,_DIVMOD,_ZSKIP,_NUMDOT,_TC,_EMIT,_EXIT
 
+col d3p
+  dw _d1p,_d1p
+col d1p
+  dw _rot,_dup
+COL sNUMD
+  dw _mif,_numd+2,_neg,_lit,'-',_emit
 COL NUMD
   DW _NUMDOT,_SPC,_EXIT
 
