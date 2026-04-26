@@ -131,7 +131,7 @@ xt bin,@_setbase
 
   cnst  bl_,0
   cnst  zero,0
-bye = $-2
+_bye = $-2
 
   cnst  tib,080h
   cnst  inl,80			; max char in line
@@ -148,7 +148,6 @@ bye = $-2
     DW _FETCH
   LBL BECKREL
   COL comma
-;    DW _DP,_STP,TO_DP,_EXIT
     DW _DPX,_STP,_EXIT
   
   LBL BACKMARK		; BEGIN
@@ -177,7 +176,6 @@ PRIM DSPST
   mov   DSP,bx
   NEXT
 
-;
 @_SCAN_:  ;where times  what  di cx bx -> index bx
   POP   cx aX
   push  cx
@@ -200,7 +198,6 @@ Xt SCANW,@_SCAN_
 Xt SCANb,@_SCAN_
   REPNE SCASb
   RET
-
 
 ;==============================================
 ; PEAK & POKE PRIMITIVES
@@ -594,6 +591,13 @@ xt dup,@_dup
 
 lbl cswap
 xt swap,@_NINU_
+  xchg  ax,bx
+	ret
+
+xt over,@_over_
+	ret
+
+xt nup,@_over_
   xchg  ax,bx
 	ret
 
@@ -1032,15 +1036,15 @@ xt find,@_NINU_
   SCASW           ; di := di + 4
   SCASW
 	add   di,cx		    ; adjust to next
-  MOV   dX,DI
+  MOV   dX,DI       ; START OF THE NAME
 	mov   cl,[di]
   jcxz  @_findi
 	inc   cx
 	MOV   si,AX
 	rep   cmpsb
   jne   @_NEXTRY
-	MOV   cL,2
-	ADD   [DI+2],CX	; COUNTER OF USING & FLAG of undefinity
+	inc   cx
+	INC   [DI+2]	; COUNTER OF USING & FLAG of undefinity
 	xchg  ax,DI     ; RETURNS ADDRESS OF ADDRESS
 @_findi:
 	pop   DI si
@@ -1059,6 +1063,7 @@ xt find,@_NINU_
 	mov   bx,cx
 ;	xchg  di,ax
 	call  @_dofindc
+	inc bx
 	inc bx
 @_fend:
 	ret
@@ -1099,7 +1104,9 @@ xt CREATE,@_defcomm
   xt ABORT,@_ABORT
 		
   lbl oper  ; OPERATE ON STATES
-	dw @_wary,_to_num,_@exec,_numc,_@comma,0,0
+	dw @_wary,_to_num,_@exec  ; INTERPRET
+  DW _numc,_@comma          ; COMPILE
+  DW 0,0                    ; REMARK
 
 col 2swap
   dw _push,_mrot,_pop
@@ -1115,18 +1122,18 @@ col rot
   xt eval,@_COL_EVAL
 		dw to_ltib,to_etib
 @_eval:
-  bpnt "token/"
+;;  bpnt "token/"
 	dw _token
-  bpnt "/token"
+;  bpnt "/token"
   dw _dumpstr
   dw _dc@,_zbran,@_xeval
   bpnt "before-found"
   dw _found
   bpnt "after-found"
   dw _oper
-  bpnt "before-@exec"
+;  bpnt "before-@exec"
   dw _@exec
-  bpnt "after-@exec"
+;  bpnt "after-@exec"
   dw _BRAN,@_eval
 
   trap xdrop
@@ -1144,23 +1151,24 @@ col rot
     dw _dictx,_PUSHSTR,_exit
 
   lbl initadr
-  dw _lit,12
-  dw _lit,34
-  dw _lit,56
-  bpnt "init0"
-  dw _lit,78
-  dw _lit,90
+;  dw _lit,12
+;  dw _lit,34
+;  dw _lit,56
+;  bpnt "init0"
+;  dw _lit,78
+;  dw _lit,90
   bpnt "init1"
 	dw  _tib,_count,_phCSTR	; GET CMD LINE
-  bpnt "init2"
+;  bpnt "init2"
 	DW _dp,_PUSHwS
-  bpnt "init3"
+;  bpnt "init3"
   dw _xeval,to_init	; GET VOCABULAY AND EVAL
-  bpnt "init4"
+;  bpnt "init4"
 	dw _tib,_inl
   bpnt "init5_accept/"
   dw _accept
   bpnt "init6_/accept"
+  DW _SPC
   dw _exit
 		
 ; -----------------------
@@ -1330,6 +1338,8 @@ COL NUMD
 @_freemem:
   dw @_final-@_freemem-2
   
+  aname 'BYE'
+  dw _bye,0
   aname '=:'
   dw _header,0
   db 0
