@@ -63,7 +63,7 @@ Start   Label byte
 @_P:
 	INc bx
 @_DONE:
-	jmp @_DONEXT      ; =================  !!!
+	jmp @MAIN      ; =================  !!!
 
 @_STM:	
 	POP	  [bx-2]
@@ -95,10 +95,18 @@ Start   Label byte
   point found,0
   point init,_initadr
 
+  value MEMp,@_final
+
+xat 	key,@_dovar-2
   vector key,_MEMK
 	value CNTC,0
+	value HIRES,0
+
+xat 	emit,@_dovar-2
+xto 	emit,@_setvar
   XT emit,@_deferI
-			DW _de
+			DW _DROP     ;_de
+
 	defer accept,_Dacpt
 
   value ltib,0
@@ -106,10 +114,9 @@ Start   Label byte
 	defer source,_nop
 
 
-  value MEMp,@_final
   value dp,@_freemem
 	value ofst,0
-  value dict,0f000h-270
+  value dict,0f000h
   vector cdict,_dict
 
 
@@ -186,6 +193,10 @@ PRIM DSPST
   mov   DSP,bx
   NEXT
 
+;@_SCANL_:  
+;  POP   AX
+;  push  BX AX
+;  POP   EBX
 @_SCAN_:  ;where times  what  di cx bx -> index bx
   POP   cx aX
   push  cx
@@ -200,6 +211,10 @@ PRIM DSPST
   INC   CX
   SUB   bX,CX
   next
+
+;Xt SCAND,@_SCAN_
+;  REPNE SCASD
+;  RET
 
 Xt SCANW,@_SCAN_
   REPNE SCASW
@@ -219,7 +234,7 @@ Xt SCANb,@_SCAN_
 	PUSH  [bx+2]
 @_fetch:
 	mov   bx,[bx]
-	jmp   @_DONEXT	
+	jmp   @MAIN	
 
 @_getwatch:
 	mov	  di,[di]
@@ -246,7 +261,7 @@ Xt SCANb,@_SCAN_
 	shl   bx,1
 @_bary:
 	add   bx,di
-	jmps  @_DONEXT
+	jmps  @MAIN
 ;------------------------------------------------
 
 
@@ -279,7 +294,7 @@ lbl nop
   X
   push  AX
   X
-	jmps @_DONEXT
+	jmps @MAIN
 	
 @_DINU_:  
 	POP	  DX
@@ -291,7 +306,7 @@ lbl nop
 	CALL  DI
 @_phax:	
 	PUSH  AX
-	jmps  @_DONEXT
+	jmps  @MAIN
 		
 	scasw
 	scasw
@@ -324,7 +339,7 @@ lbl nop
 	call  DI
 @_EX:
   xchg    SI,[BP]
-  jmps  @_DONEXT
+  jmps  @MAIN
 
 @_DROP_3: 
 	POP   CX        ;DRP3
@@ -336,7 +351,7 @@ lbl nop
 	CALL  BX        ;DRP
 @_drop:		
   pop bx
-  jmps @_DONEXT   ; GETS 1,2,3 RETURNS 0
+  jmps @MAIN   ; GETS 1,2,3 RETURNS 0
 @_USEBX_:
   XCHG  AX,BX
   JMPS  @_DROP_
@@ -362,7 +377,7 @@ lbl nop
 	POP   AX
 @_nop_:   
 	CALL  DI
-	jmps @_DONEXT     ; GETS 1,2,3 RETURNS 1
+	jmps @MAIN     ; GETS 1,2,3 RETURNS 1
 
 @_SOURCE_:
 	mov		AX,@_Etib
@@ -374,7 +389,6 @@ lbl nop
 
 @_over_:
 	pop   ax
-;@_swap_:
 	push  ax
 @_DUSWA_:
 	call  di      ; GETS 1,2 RETURNS 2
@@ -388,13 +402,13 @@ lbl nop
 @_sw:
   xchg ax,bx
 
-@_DONEXT:   
+@MAIN:   
   mov di,[si]
   cmpsw
-@_DONEXT1:		
+@MAIN1:		
   jmp [di-2]
 
-@_TODBG: JMP @_TROFF		; POINTS TO DEBUGGER IF ANY
+@TODBG: JMP @_TROFF		; POINTS TO DEBUGGER IF ANY
 
 ; ^^^^^^^^^^^^^^^^^^
 ; Inner Interpreter
@@ -417,7 +431,7 @@ lbl nop
 ;	POP BX
 @_dup:
 	push bx
-	jmps @_DONEXT
+	jmps @MAIN
 	
 @_setpoint:
 	mov [di+2],si
@@ -440,7 +454,7 @@ lbl nop
 	mov   di,bx
 	scasw
   pop   bx
-	jmps @_DONEXT1
+	jmps @MAIN1
 
 ;--------------------------------------
 ; Control
@@ -460,7 +474,7 @@ lbl nop
 @_rdrop:		
 	inc bp
 	inc bp
-	jmps @_DONEXT
+	jmps @MAIN
 	
 @_zSKIP:
 	test bx,bx
@@ -470,7 +484,7 @@ lbl nop
 @_skip:		
 	lodsw
 @_NONEQ:	
-	jmps @_DONEXT
+	jmps @MAIN
 @_zero_branch:
 	test bx,bx
 	jNe @_DrSKIP
@@ -478,8 +492,8 @@ lbl nop
 	pop bx
 @_br:
 	mov si,[si]
-@_DONEXT2:
-	jmp @_DONEXT	
+@MAIN2:
+	jmp @MAIN	
 @_NEXT:
   DEC   PW [BP]
   JNS   @_br
@@ -809,14 +823,15 @@ col rpar							; compiler is on
 ; -------------------
 
 XT  to_number,@_NINU_
-  push 	SI 
+  push 	SI BP
   mov   CX,BX
   xchg 	ax,SI  	; START ADR
   mov		AL,10	; NUM BASE
   call  @_NUM
   xchg  AX,Di   ; RESULT
+  mov   @_HIRES,BP
   mov   BX,CX   ; REMAINDER BYTES <> 0 ERROR
-  POP   SI
+  POP   BP SI
   RET
 
 @_NUM:
@@ -833,7 +848,12 @@ XT  to_number,@_NINU_
   JNE   @@n0
   POP   dX
   CALL  dX         ; return to caller
-  NEG   DI
+  NOT   DI
+  NOT   BP
+  inc   di
+  JNE   @@2
+  inc   BP
+@@2:
   RET
 @@n0:
   JCXZ  @@N5
@@ -841,7 +861,8 @@ XT  to_number,@_NINU_
   JNE   @@N1
   XCHG  AX,DI
 @@numini:
-  Xor   DI,DI       ; ACCUMULATOR
+  Xor   DI,DI       ; ACCUMULATOR LO
+  Xor   BP,BP       ; ACCUMULATOR HI
 @@setbas:
   DEC   AX
   DEC   AX
@@ -857,10 +878,14 @@ XT  to_number,@_NINU_
 @@ESCAPE1:
   deC   CX
 @@ESCAPE:
+  XCHG  BP,AX
+  mul   BX
+  XCHG  BP,AX
   XCHG  DI,AX
   mul   BX
   XCHG  DI,AX
   add   DI,ax
+  adC   BP,Dx
   JCXZ  @@EXNUM
   RET
 @@N2:
@@ -1200,24 +1225,65 @@ COL GETLINE
 	
 COL MEMK
   DW _MEMpx,_COUNT,_SWAP,_OVER,_IF,@_MEMZ,_EXIT
-COL STDKEY
+COL STDIO
 @_MEMZ:
-  DW _LIT,_dk,TO_KEY,_EXIT
+  DW _LIT,_dk,TO_KEY
+  DW _LIT,_dE,TO_EMIT,_EXIT
 
 ; -----------------------
 ; TERMINAL INPUT / OUTPUT
-
-xt DE,@_USEBX_
-  XCHG AX,DX
-  MOV AH,2
-  INT 021H
-  RET
 
 xt CR,@_NOP_
   MOV AL,13
   CALL @_OUTCHAR
   MOV AL,10
   CALL @_OUTCHAR
+  XOR   AX,AX
+  mov   @_CNTC,AX
+  RET
+
+xt nDOT,@_USEBX_
+  jmps  @_outdig
+
+xt bDOT,@_USEBX_
+  jmps  @_OUTBYTE
+
+xt WDOT,@_USEBX_
+@_OUTWORD:
+  PUSH AX
+  MOV  aL,aH
+  call @_OUTBYTE
+  pop  ax
+@_OUTBYTE:
+  push ax
+  mov cl,4
+  shr al,cl
+  call @_outdig
+  pop ax
+@_outdig: 
+  and al,0fh
+  ADD AL,090h
+  DAA
+  ADC AL,040h
+  DAA
+@_OUTC:
+  CALL @_OUTCHAR
+  RET
+
+xt BE,@_USEBX_
+  mov ah,0EH
+  INT 010h
+  RET
+
+xt BK,@_DUSWA_
+  MOV AH,0
+  INT 016H
+  RET
+
+xt DE,@_USEBX_
+  XCHG AX,DX
+  MOV AH,2
+  INT 021H
   RET
 
 xt DK,@_DUSWA_
@@ -1323,7 +1389,7 @@ col  SPC
   DW _BL_,_EMIT,_EXIT
 
 col ERR1
-  DW _CR,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
+  DW _CR,_STDIO,_DEC,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
 
 col amih ;ere ;COMPILE MODE ONLY
   DW _STRSKIP,_cr,_idot,_@d3p,_key,_dropx
@@ -1380,7 +1446,13 @@ XT B_TO_NN,@_NUP_
   DB  0D4H,10H
   xchg  AH,BL
   RET
-  
+
+;@_T1 EQU  < Ok>
+;@_T2 EQU  %13
+;@_T3 EQU  %10
+;@_T4 EQU  < >
+;@_OK CATSTR @_T1,@_T2 ;,@_T3,@_T4 
+
 COL OK
   DW _STRTYPE
   DB  8

@@ -18,11 +18,11 @@ pb  equ byte  ptr
 ppp = 0
 qqq = 0
 
-SKIPA   MACRO		; change the carry
+SKIPA   MACRO		; change FLAGS - does not change REGISTERS
   DB    03DH
   ENDM
 
-SKIPB   MACRO		; change the carry
+SKIPB   MACRO		; change FLAGS - does not change REGISTERS
   DB    03CH
   ENDM
 
@@ -40,10 +40,10 @@ DROPREG MACRO
   ENDM
 
 NEXT MACRO
-  JMP @_DONEXT
+  JMP @MAIN
   ENDM
 
-SKIPR   MACRO reg	; does not change the carry
+SKIPR   MACRO reg	; does not change the FLAGS
   local diff
 diff = $
   mov   reg,0
