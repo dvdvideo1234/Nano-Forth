@@ -20,8 +20,8 @@ Start   Label byte
 
 @_ABORT:
   CLD
-  mov bp,0
-  mov sp,-256
+  mov bp,-320
+  mov sp,-768
   
   call @_TROFF
   call @toforth
@@ -89,7 +89,7 @@ Start   Label byte
 ; Variables
 ; -------------------
 
-  value erra,0
+  value erra,@_final
   defer errv,_err1
 
   point found,0
@@ -129,13 +129,16 @@ xt dec,@_setbase
 xt bin,@_setbase
   db 2
 
-  cnst  bl_,0
+  cnst  bl_,32
   cnst  zero,0
-_bye = $-2
+
+ORG $-2
+_bye DW 0
 
   cnst  tib,080h
   cnst  inl,80			; max char in line
-  cnst  tbuf,0f000h-260	; str evaluation
+  cnst  tbuf,-260	; str evaluation
+  cnst  CSTK,-260	; str evaluation
   cnst  LASTOK,0	; LAST TOKEN ADDRESS
 
 		
@@ -331,6 +334,15 @@ lbl nop
   XCHG  AX,BX
   JMPS  @_DROP_
 
+@_for:
+	mov	  si,[si]
+@_push:
+  X
+@_SWPSTK:
+	PUSH  Bx
+	x
+	jmp   @_drop
+
 @_cLnip_:  
 	POP   cX
   mov   CH,0
@@ -443,12 +455,6 @@ lbl nop
 	inc bp
 	jmps @_DONEXT
 	
-@_for:
-	mov	  si,[si]
-@_push:
-	pop   ax
-	xchg  ax,bx
-	jmp   @_rpush
 @_zSKIP:
 	test bx,bx
 	jNe @_NONEQ
@@ -588,6 +594,7 @@ xt FILLW,@_DROP_3
 
 xt drop,@_drop
 xt dup,@_dup
+XT SWPSTK,_SWPSTK
 
 lbl cswap
 xt swap,@_NINU_
@@ -761,9 +768,12 @@ col lpar							; interpretter is on
   
 lbl col
 COL colI
-  DW _HEAD,_COMPILE,@_DOCOLON
+  DW _HEAD
+  DW _LASTOK,_dumpstr,_DROP
+  
+  DW _COMPILE,@_DOCOLON
 col rpar							; compiler is on
-	dw to_found,_cdict,_findc,_exit
+	dw to_found,_Cdict,_findc,_exit
 		
 ; -------------------
 ; Flow Control
@@ -797,13 +807,13 @@ XT  to_number,@_NINU_
   mov   CX,BX
   xchg 	ax,SI  	; START ADR
   mov		AL,10	; NUM BASE
-  call  @NUM
+  call  @_NUM
   xchg  AX,Di   ; RESULT
   mov   BX,CX   ; REMAINDER BYTES <> 0 ERROR
   POP   SI
   RET
 
-@NUM:
+@_NUM:
   CALL  @@numini
   CALL  @@END?
   CALL  @@SGN
@@ -891,15 +901,15 @@ XT  to_number,@_NINU_
 
 col to_num			; NOPS RESERVED PLACE FOR STRING FUNCTIONS
   dw _NOP
-COL TO_NUM2
+COL @TO_NUM2
   DW _count
-  bpnt "before-num"
+;  bpnt "before-num"
   dw _to_number
-  bpnt "after-num"
+;  bpnt "after-num"
   dw _err?,_exit
 	
   col NUMC				; NOPS RESERVED PLACE FOR STRING FUNCTIONS
-    dw _NOP,_to_num2,_litc,_exit
+    dw _NOP,_@to_num2,_litc,_exit
 		
 ; -----------------------
 ; errors prompt
@@ -907,7 +917,7 @@ COL TO_NUM2
 
   col error?
     dw _strskIp
-    bpnt "error?"
+;    bpnt "error?"
     dw  to_erra,_0x,_errv,_ABORT
 	
   trap xtok?
@@ -935,10 +945,12 @@ COL TO_NUM2
 ;        next
 
 
-  col token?
-    dw _xtok?
-  col token
-    dw _source,_parsE,_exit
+col token?
+  dw _xtok?
+col token
+  dw _source,_parsE
+;  DW _dumpstr
+  DW _exit
 	
 ;---------------------------------------
 ; IO
@@ -1044,7 +1056,7 @@ xt find,@_NINU_
 	rep   cmpsb
   jne   @_NEXTRY
 	inc   cx
-	INC   [DI+2]	; COUNTER OF USING & FLAG of undefinity
+	INC   PW [DI+2]	; COUNTER OF USING & FLAG of undefinity
 	xchg  ax,DI     ; RETURNS ADDRESS OF ADDRESS
 @_findi:
 	pop   DI si
@@ -1072,14 +1084,26 @@ xt find,@_NINU_
 ; Headers
 ; -----------------------
 
-  col head		; =h
+COL CODECOMMA
+  DW _XCOMMA
+col head		; =h
 	dw _HERE    ;_DP ; 
-  col header	; =:			NOP IS PLACE FOR THE (SAME) FUNCTION 
-	dw _nop,_token?,_dup,to_dict,_n_to_c,_store,_exit
+col header	; =:			NOP IS PLACE FOR THE (SAME) FUNCTION 
+	dw _nop,_token?
+;  DW _dumpstr
+  DW _dup,to_dict,_COUNT,_PLUS,_store,_exit
+
+COL ATICK
+  DW _X2P
+COL TOTICK
+  DW _X2P
+COL TICK
+  DW _token?
+;  DW _dumpstr
+  DW _dict,_FIND,_nz?,_FETCH,_EXIT
 		
-  col n_to_c
-	dw _push,_strskIp,_pop,_exit
-	
+  TRAP X2P
+  DW _2P,_EXIT
 ; -----------------------
 ; Makers
 ; -----------------------
@@ -1125,11 +1149,11 @@ col rot
 ;;  bpnt "token/"
 	dw _token
 ;  bpnt "/token"
-  dw _dumpstr
+;  dw _dumpstr
   dw _dc@,_zbran,@_xeval
-  bpnt "before-found"
+;  bpnt "before-found"
   dw _found
-  bpnt "after-found"
+;  bpnt "after-found"
   dw _oper
 ;  bpnt "before-@exec"
   dw _@exec
@@ -1151,13 +1175,7 @@ col rot
     dw _dictx,_PUSHSTR,_exit
 
   lbl initadr
-;  dw _lit,12
-;  dw _lit,34
-;  dw _lit,56
-;  bpnt "init0"
-;  dw _lit,78
-;  dw _lit,90
-  bpnt "init1"
+  DW _erra,_DUP,_TBUF,_ZERO,_SCANB,_DUP,to_ltib,_PLUS,to_etib
 	dw  _tib,_count,_phCSTR	; GET CMD LINE
 ;  bpnt "init2"
 	DW _dp,_PUSHwS
@@ -1165,9 +1183,9 @@ col rot
   dw _xeval,to_init	; GET VOCABULAY AND EVAL
 ;  bpnt "init4"
 	dw _tib,_inl
-  bpnt "init5_accept/"
+;  bpnt "init5_accept/"
   dw _accept
-  bpnt "init6_/accept"
+;  bpnt "init6_/accept"
   DW _SPC
   dw _exit
 		
@@ -1235,23 +1253,23 @@ xt DACPT,@_NINU_
 
 @_OUTCHAR:
   push  dx
-  call  @STOREGS
+  call  @_STOREGS
   dw    _dup,_emit
   dw    _from4th
-  jmps  @LODREGS
+  jmps  @_LODREGS
 
 @_GETCHAR: 
   push  dx
-  call  @STOREGS
+  call  @_STOREGS
   dw    _key
   dw    _from4th
   POP   AX
   xchg  ax,bx
-@LODREGS:
+@_LODREGS:
   POP  cx bx bp di si dX
   RET
 
-@STOREGS:
+@_STOREGS:
   POP   dx
   push  si di bp bx cx dX
   xchg  ax,bx
@@ -1296,11 +1314,11 @@ col ERR1
   DW _CR,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
 
 col amih ;ere ;COMPILE MODE ONLY
-  DW _STRSKIP,_cr,_idot,_d3p,_key,_dropx
+  DW _STRSKIP,_cr,_idot,_@d3p,_key,_dropx
 
 XT DIVMOD,@_niNU_
   XOR DX,DX
-@DM2:
+@_DM2:
   DIV BX
   XCHG  AX,DX
   mov   BX,DX
@@ -1309,15 +1327,15 @@ XT DIVMOD,@_niNU_
 XT DIVMOD2,@_ciNU_
   XCHG  AX,DX
   XCHG  AX,CX
-  JMPS  @DM2
+  JMPS  @_DM2
 
 XT TC,@_NOP_
   XCHG BX,AX
   mov   ah,0
   CMP AL,10
-  JB  @LESS10
+  JB  @_LESS10
   ADD AL,7
-@LESS10:
+@_LESS10:
   ADD AL,48
   XCHG BX,AX
   RET
@@ -1325,9 +1343,9 @@ XT TC,@_NOP_
 col NUMDOT
   DW _BASE,_DIVMOD,_ZSKIP,_NUMDOT,_TC,_EMIT,_EXIT
 
-col d3p
-  dw _d1p,_d1p
-col d1p
+col @d3p
+  dw _@d1p,_@d1p
+col @d1p
   dw _rot,_dup
 COL sNUMD
   dw _mif,_numd+2,_neg,_lit,'-',_emit
@@ -1338,8 +1356,6 @@ COL NUMD
 @_freemem:
   dw @_final-@_freemem-2
   
-  aname 'BYE'
-  dw _bye,0
   aname '=:'
   dw _header,0
   db 0

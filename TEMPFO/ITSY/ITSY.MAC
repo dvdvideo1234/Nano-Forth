@@ -159,7 +159,7 @@ QWATCH macro anam,data
   
 vector macro anam,data
   xto 	anam,@_setvar
-  defer anam,@_defer
+  defer anam,data
   endm
   
 point  macro anam,data
