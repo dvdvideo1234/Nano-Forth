@@ -26,7 +26,7 @@ Start   Label byte
   call @_TROFF
   call @toforth
   dw _lpar 						;init interpretter
-@_CICLE	dw _init,_eval,_cr,_BRAN,@_CICLE
+@_CICLE	dw _init,_eval,_ok,_BRAN,@_CICLE
 
 ;------------------------------
 ; FLAGS & REGISTERS
@@ -95,7 +95,7 @@ Start   Label byte
   point found,0
   point init,_initadr
 
-  defer key,_dk
+  vector key,_MEMK
 	value CNTC,0
   XT emit,@_deferI
 			DW _de
@@ -104,10 +104,17 @@ Start   Label byte
   value ltib,0
   value etib,0
 	defer source,_nop
+
+
+  value MEMp,@_final
   value dp,@_freemem
 	value ofst,0
   value dict,0f000h-270
   vector cdict,_dict
+
+
+col MEMpx
+	dw _MEMp,_ex,to_MEMp,_exit
 col dictx
 	dw _dict,_ex,to_dict,_exit
 col DPx
@@ -706,6 +713,9 @@ COL UMDIVMOD
   xt fetch,@_fetch
   xt Dfetch,@_Dfetch
   xt dC@ ,@_dC@
+  XT STM,@_stm          ; !-
+  XT STP,@_stP          ; !+
+
   xt store ,@_DROP_2
 	stosw
 	RET
@@ -716,10 +726,6 @@ xt Dstore ,@_DROP_3
 	XCHG AX,CX
 	stosw
 	RET
-
-XT STM,@_stm          ; !-
-
-XT STP,@_stP          ; !+
 
 XT STR,@_DUSWA_        ; STR
   MOV   AX,[BX]
@@ -779,7 +785,7 @@ col rpar							; compiler is on
 ; Flow Control
 ; -------------------
 
-  xt zbran,@_zero_branch
+  xt IF,@_zero_branch
   xt zSKIP,@_zSKIP
   xt bran,@_br
   XT CONT,@_CONT
@@ -1003,10 +1009,13 @@ XT RBLK,@_RBLK
   mov   AX,[DI]
   jmps  @DOS0
 
-XT UMUL,@_NINU_
+XT UmMUL,@_NINU_
   mul   bx
   mov   BX,DX
   RET
+
+col Umul
+  DW _UMMUL,_DROPX
 
 XT FAPOS,@DOS4
   dw  4200H
@@ -1150,7 +1159,7 @@ col rot
 	dw _token
 ;  bpnt "/token"
 ;  dw _dumpstr
-  dw _dc@,_zbran,@_xeval
+  dw _dc@,_IF,@_xeval
 ;  bpnt "before-found"
   dw _found
 ;  bpnt "after-found"
@@ -1174,21 +1183,27 @@ col rot
   col phCSTR
     dw _dictx,_PUSHSTR,_exit
 
-  lbl initadr
-  DW _erra,_DUP,_TBUF,_ZERO,_SCANB,_DUP,to_ltib,_PLUS,to_etib
+;  lbl initadr
+;  DW _erra,_DUP,_TBUF,_ZERO,_SCANB,_DUP,to_ltib,_PLUS,to_etib
+lbl initadr
 	dw  _tib,_count,_phCSTR	; GET CMD LINE
 ;  bpnt "init2"
 	DW _dp,_PUSHwS
 ;  bpnt "init3"
-  dw _xeval,to_init	; GET VOCABULAY AND EVAL
-;  bpnt "init4"
-	dw _tib,_inl
-;  bpnt "init5_accept/"
-  dw _accept
-;  bpnt "init6_/accept"
-  DW _SPC
-  dw _exit
-		
+;  dw _xeval,
+  DW _GETLINE
+  DW to_init	; GET VOCABULAY AND EVAL
+  DW _GETLINE,_SPC,_exit
+
+COL GETLINE
+	dw _tib,_inl,_accept,_exit
+	
+COL MEMK
+  DW _MEMpx,_COUNT,_SWAP,_OVER,_IF,@_MEMZ,_EXIT
+COL STDKEY
+@_MEMZ:
+  DW _LIT,_dk,TO_KEY,_EXIT
+
 ; -----------------------
 ; TERMINAL INPUT / OUTPUT
 
@@ -1298,9 +1313,6 @@ col xTIMES
  COL TYPE
        DW _XDROP,_xTIMES,_COUNT,_EMIT,_EXIT
 
-col GETLINE
-  DW _TIB,_LIT,50,_ACCEPT,_SPC,_EXIT 
-        
 col  dumpstr
   dw _cr,_dup
 col  IDOT
@@ -1316,7 +1328,7 @@ col ERR1
 col amih ;ere ;COMPILE MODE ONLY
   DW _STRSKIP,_cr,_idot,_@d3p,_key,_dropx
 
-XT DIVMOD,@_niNU_
+XT DIVMOD,@_niNU_   ; U/MOD
   XOR DX,DX
 @_DM2:
   DIV BX
@@ -1324,7 +1336,7 @@ XT DIVMOD,@_niNU_
   mov   BX,DX
   RET
 
-XT DIVMOD2,@_ciNU_
+XT DIVMOD2,@_ciNU_    ; UM/MOD
   XCHG  AX,DX
   XCHG  AX,CX
   JMPS  @_DM2
@@ -1352,6 +1364,28 @@ COL sNUMD
 COL NUMD
   DW _NUMDOT,_SPC,_EXIT
 
+XT W_TO_BB,@_NUP_
+  XOR   AX,AX
+  xchg  AX,bx
+  xchg  AH,BL
+  RET
+  
+
+;COL W_TO_BB
+;  DW _DUP,_LOBYTE,_SWAP,_HIbyte,_EXIT
+
+XT B_TO_NN,@_NUP_
+  XOR   AX,AX
+  xchg  AX,bx
+  DB  0D4H,10H
+  xchg  AH,BL
+  RET
+  
+COL OK
+  DW _STRTYPE
+  DB  8
+  db ' Ok',13,10,'>> ' 
+  dw _EXIT
 
 @_freemem:
   dw @_final-@_freemem-2
