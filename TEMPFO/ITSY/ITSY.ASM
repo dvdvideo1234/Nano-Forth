@@ -120,8 +120,6 @@ xto 	emit,@_setvar
   vector cdict,_dict
 
 
-col MEMpx
-	dw _MEMp,_ex,to_MEMp,_exit
 col dictx
 	dw _dict,_ex,to_dict,_exit
 col DPx
@@ -173,9 +171,9 @@ _bye DW 0
   col _plus
     dw _pl2div,_dropx
   
-;  LBL COMMENT
-;  COL COMMENTI
-;    dw _zero,To_ltib,_exit
+  LBL COMMENT
+  COL COMMENTI
+    dw _zero,To_ltib,_exit
   
   XT  RSP,@_DUSWA_
   MOV   AX,RSP
@@ -907,8 +905,7 @@ XT  to_number,@_NINU_
 
 @@N5:
   cmp   al,'9'+1
-  jc    @@ton2
-  ;and   AL,0DFH
+  jc    @@ton2      ; and   AL,0DFH
   cmp   al,'A'      ; no case sensivity
   jc    @@ERNUM
   sub   al,7
@@ -933,10 +930,8 @@ XT  to_number,@_NINU_
 col to_num			; NOPS RESERVED PLACE FOR STRING FUNCTIONS
   dw _NOP
 COL @TO_NUM2
-  DW _count
-;  bpnt "before-num"
-  dw _to_number
-;  bpnt "after-num"
+  DW _count       ;  bpnt "before-num"
+  dw _to_number   ;  bpnt "after-num"
   dw _err?,_exit
 	
   col NUMC				; NOPS RESERVED PLACE FOR STRING FUNCTIONS
@@ -947,8 +942,7 @@ COL @TO_NUM2
 ; -----------------------
 
   col error?
-    dw _strskIp
-;    bpnt "error?"
+    dw _strskIp     ;    bpnt "error?"
     dw  to_erra,_0x,_errv,_ABORT
 	
   trap xtok?
@@ -979,8 +973,7 @@ COL @TO_NUM2
 col token?
   dw _xtok?
 col token
-  dw _source,_parsE
-;  DW _dumpstr
+  dw _source,_parsE     ;  DW _dumpstr
   DW _exit
 	
 ;---------------------------------------
@@ -1106,8 +1099,7 @@ xt find,@_NINU_
 	DEC   pb [di]
 	or    bx,bx
 	jnz   @_fend      ; FOUND & EXECUTE
-	mov   bx,cx
-;	xchg  di,ax
+	mov   bx,cx       ;	xchg  di,ax
 	call  @_dofindc
 	inc bx
 	inc bx
@@ -1123,8 +1115,7 @@ COL CODECOMMA
 col head		; =h
 	dw _HERE    ;_DP ; 
 col header	; =:			NOP IS PLACE FOR THE (SAME) FUNCTION 
-	dw _nop,_token?
-;  DW _dumpstr
+	dw _nop,_token?   ;  DW _dumpstr
   DW _dup,to_dict,_COUNT,_PLUS,_store,_exit
 
 COL ATICK
@@ -1138,6 +1129,8 @@ COL TICK
 		
   TRAP X2P
   DW _2P,_EXIT
+
+
 ; -----------------------
 ; Makers
 ; -----------------------
@@ -1161,7 +1154,7 @@ xt CREATE,@_defcomm
 
   xt ABORT,@_ABORT
 		
-  lbl oper  ; OPERATE ON STATES
+  lbl oper                  ; OPERATE ON STATES
 	dw @_wary,_to_num,_@exec  ; INTERPRET
   DW _numc,_@comma          ; COMPILE
   DW 0,0                    ; REMARK
@@ -1179,19 +1172,12 @@ col rot
   trap3 xeval
   xt eval,@_COL_EVAL
 		dw to_ltib,to_etib
-@_eval:
-;;  bpnt "token/"
-	dw _token
-;  bpnt "/token"
-;  dw _dumpstr
-  dw _dc@,_IF,@_xeval
-;  bpnt "before-found"
-  dw _found
-;  bpnt "after-found"
-  dw _oper
-;  bpnt "before-@exec"
-  dw _@exec
-;  bpnt "after-@exec"
+@_eval:                 ;  bpnt "token/"
+	dw _token             ;  bpnt "/token"    ;  dw _dumpstr
+  dw _dc@,_IF,@_xeval   ;  bpnt "before-found"
+  dw _found             ;  bpnt "after-found"
+  dw _oper              ;  bpnt "before-@exec"
+  dw _@exec             ;  bpnt "after-@exec"
   dw _BRAN,@_eval
 
   trap xdrop
@@ -1224,11 +1210,22 @@ COL GETLINE
 	dw _tib,_inl,_accept,_exit
 	
 COL MEMK
-  DW _MEMpx,_COUNT,_SWAP,_OVER,_IF,@_MEMZ,_EXIT
+  DW _MEMp,_COUNT,_SWAP,to_MEMp,_DUP,_IF,_STDIO,_EXIT
 COL STDIO
-@_MEMZ:
-  DW _LIT,_dk,TO_KEY
-  DW _LIT,_dE,TO_EMIT,_EXIT
+  DW __STD
+COL SETIO
+  DW TO_KEY,TO_EMIT,_EXIT
+
+XT _STD,@_DCONST
+  DW _DK,_dE
+
+@_SETIO:
+  CALL @_DOES
+  DW _Dfetch,_SETIO,_EXIT
+
+XT BIO,@_SETIO
+  DW _BK,_BE
+
 
 ; -----------------------
 ; TERMINAL INPUT / OUTPUT
@@ -1389,7 +1386,7 @@ col  SPC
   DW _BL_,_EMIT,_EXIT
 
 col ERR1
-  DW _CR,_STDIO,_DEC,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
+  DW _CR,_BIO,_DEC,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
 
 col amih ;ere ;COMPILE MODE ONLY
   DW _STRSKIP,_cr,_idot,_@d3p,_key,_dropx
