@@ -1,6 +1,6 @@
 include itsy.mac
 
-TO_ = 2     ; ???
+;TO_ = 2     ; ???
 
 MyCseg  segment para  use16
 
@@ -1210,7 +1210,8 @@ COL GETLINE
 	dw _tib,_inl,_accept,_exit
 	
 COL MEMK
-  DW _MEMp,_COUNT,_SWAP,to_MEMp,_DUP,_IF,_STDIO,_EXIT
+  DW _MEMp,_COUNT,_SWAP,to_MEMp,_DUP,_IF,_STDIO+2,_EXIT
+  ;DW _MEMp,_COUNT,_SWAP,to_MEMp,_DUP,_ZSKIP,_EXIT,_ZERO,_STDIO,_EXIT
 COL STDIO
   DW __STD
 COL SETIO
@@ -1344,12 +1345,12 @@ xt DACPT,@_NINU_
   POP   AX
   xchg  ax,bx
 @_LODREGS:
-  POP  cx bx bp di si dX
+  POP  cx bx di si dX
   RET
 
 @_STOREGS:
   POP   dx
-  push  si di bp bx cx dX
+  push  si di bx cx dX
   xchg  ax,bx
 @toforth:
   POP   si
@@ -1389,7 +1390,9 @@ col ERR1
   DW _CR,_BIO,_DEC,_LASTOK,_IDOT,_erra,_IDOT,_EXIT
 
 col amih ;ere ;COMPILE MODE ONLY
-  DW _STRSKIP,_cr,_idot,_@d3p,_key,_dropx
+  DW _STRSKIP,_cr,_idot,_@d3p
+COL WAIT
+  DW _key,_dropx
 
 XT DIVMOD,@_niNU_   ; U/MOD
   XOR DX,DX
