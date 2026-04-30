@@ -97,14 +97,14 @@ Start   Label byte
 
   value MEMp,@_final
 
-xat 	key,@dovar-2
+xat 	key,@dovar2
   vector key,_MEMK
 	value CNTC,0
 	value HIRES,0
 
-xat 	emit,@dovar-2
-xto 	emit,@_setvar
-  XT emit,@_deferI
+xat 	emit,@dovar2
+xto 	emit,@setvar
+  XT emit,@deferI
 			DW _DROP     ;_de
 
 	defer accept,_Dacpt
@@ -238,7 +238,7 @@ Xt SCANb,@_SCAN_
 
 	scasw
 	scasw
-@_doconst:
+@doconst:
 	mov   ax,[di]
 	jmp   @_ph
 	
@@ -246,7 +246,7 @@ Xt SCANb,@_SCAN_
 	mov   di,[di+2]
 	skipA
 	scasw
-@_setvar:
+@setvar:
 	scasw
 	mov   [di],bx
 	jmp   @_drop
@@ -320,7 +320,7 @@ lbl nop
 	pop	ax
 	xchg ax,bx
 	skipa
-@_dopoint:
+@dopoint:
 	mov ax,[di]
 	jmps @_pcpush
 	
@@ -423,8 +423,6 @@ lbl nop
 	inc bp
 	jmps @_ph
 
-;@_DROPDUP:
-;	POP BX
 @_?dup:
   or   BX,BX
   JE  @_DUP1
@@ -433,19 +431,21 @@ lbl nop
 @_dup1:
 	jmps @MAIN
 	
-@_setpoint:
+@setpoint:
 	mov [di+2],si
 	jmps @_rts
 	
+@dovar2:  
 	scasw
+@dovar1:  
 	scasw
 @dovar:  
 	xchg ax,di
 	jmps @_ph
 	
-@_DEFERI:
+@deferI:
   INC   PW [@_CNTC]
-@_defer: 
+@defer: 
 	push  bx
 	mov	  bx,di
 @_@exec:
@@ -511,32 +511,29 @@ lbl nop
 ; MEMORY
 
 XT PARSE,@_SOURCE_
-  PUSH SI
-  XCHG  AX,SI
-	;mov	  AL,' '
+  XCHG  AX,DI
+	mov	  AL,' '
 	inc   CX
 @@P1:
 	DEC	  CX
 	JZ    @@PSKIPX
-	LODSB
-  CMP   AL,'!'
-	JC   @@P1       	  ;{ SPACE IS ABOVE OR EQUAL TO }
-	DEC   SI
+	SCASB
+	JAE   @@P1       	  ;{ SPACE IS ABOVE OR EQUAL TO }
+	DEC   DI
 @@PSKIPX:
-	push Si  		        ;{;  START OF THE WORD}
+	push di  		        ;{;  START OF THE WORD}
 	JCXZ  @@PWEX
 	inc   CX
 @@P3:
 	DEC	  CX
 	JZ    @@PWEX		    ; END OF THE WORD  IN DI
-	LODSB
-  CMP   AL,'!'
-	JAE  @@P3
-	DEC     SI
+	SCASB               ;{ SPACE IS BELOW THEN}
+	JB    @@P3
+	DEC     DI
 @@PWEX:               ;{; END OF THE WORD  IN DI}
 	mov		@_ltib,cx
-	mov		cx,Si
-	pop   ax SI
+	pop   ax
+	mov		cx,di
 	sub		cx,ax		      ; LENGTH OF THE WORD
   SKIPA
 
@@ -987,7 +984,7 @@ col token
 ;---------------------------------------
 ; IO
 
-XT SCRN,@DOVAR-2
+XT SCRN,@DOVAR2
 XT WBLK,@_WBLK
 XT RBLK,@_RBLK
   DW -1 
@@ -1145,7 +1142,7 @@ COL TICK
 
 
 ;xt constant,@_defcomm
-;	dw @_doconst,_comma
+;	dw @doconst,_comma
 ;	
 ;xt CREATE,@_defcomm
 ;	dw @_doVAR,_NOP
