@@ -532,7 +532,7 @@ col  COMMA                 ; ,
   JMPS  @_PUSH_DC
 
   XT  num,@_PARAM           ;= (ATOI
-  POP   SI Cx
+  POP   Cx SI 
   MOV   AL,10   ; BASE 10
   CALL  @_NUM
 @_Push_DC:

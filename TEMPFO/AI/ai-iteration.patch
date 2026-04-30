@@ -1,0 +1,682 @@
+diff --git a/CLAUDE.md b/CLAUDE.md
+new file mode 100644
+index 0000000..f2c0435
+--- /dev/null
++++ b/CLAUDE.md
+@@ -0,0 +1,53 @@
++# Nano-Forth
++
++A cross-platform, minimalistic Forth-based environment targeting DOS/16-bit x86.
++
++## Project Overview
++
++- **Language**: x86 assembly (NASM/TASM syntax) + Forth source
++- **Target**: DOS COM programs (16-bit real mode, CP/M-style `.COM` format, `org 0100h`)
++- **Forth dialect**: F83-based with custom extensions
++- **Architecture**: Indirect-threaded code (ITC), register `SI` as instruction pointer, `BX` as top-of-stack, `BP` as return stack pointer
++
++## Key Files
++
++| File | Purpose |
++|---|---|
++| `itsy.asm` | Minimal Forth kernel in x86 assembly (primitives, inner interpreter) |
++| `mini/FRT.SCR` | Main Forth source — compiler, editor, target compiler (Forth screens, 1024-byte blocks) |
++| `mini/TCOMP2.SCR` | Target/cross compiler screens |
++| `mini/MINI.COM` | Compiled minimal Forth system |
++| `F.EXE` / `F.INI` | Host Forth interpreter |
++| `TASM.EXE` / `TLINK.EXE` | Turbo Assembler + Linker (build tools) |
++| `PE2.EXE` | Screen/block editor |
++| `4TH.SCR`, `4TH3.SCR` | Additional Forth screens |
++
++## Build
++
++Assembly is done with Turbo Assembler:
++```
++TASM itsy.asm
++TLINK itsy.obj /t   (produces .COM)
++```
++
++Forth source is loaded via screen blocks (1024-byte fixed-width files, classic Forth block format). Use `THRU` and `LOAD` to compile screens.
++
++## Forth Screen Format
++
++`.SCR` files are raw binary, 1024 bytes per screen (block), 16 lines × 64 chars each. Not line-terminated — fixed width padding with spaces.
++
++## Architecture Notes
++
++- **Inner interpreter** (`next`): `lodsw` / `xchg di,ax` / `jmp word[di]` — classic ITC
++- **Return stack**: grows down from `SP=-256`, pointer in `BP`
++- **Data stack**: x86 hardware stack; TOS in `BX`
++- **Dictionary**: linked list, last entry in `last` variable
++- **Macros**: `primitive`, `colon`, `variable`, `constant` defined in `macros.asm`
++- **Vocabularies**: F83-style `ALSO`/`PREVIOUS`/`DEFINITIONS`
++
++## Conventions
++
++- Forth words use lowercase labels with underscores internally (e.g., `xt_abort`, `val_state`)
++- Immediate words flagged with high bit (0x80) in name length byte
++- `(;code)` / `do_semi_code` used for `DOES>` and defining words
++- Target compiler (`TCOMP`) aliases host Forth words with `T-` prefix for cross-compilation
+diff --git a/docks/plan-v1.md b/docks/plan-v1.md
+new file mode 100644
+index 0000000..9695b39
+--- /dev/null
++++ b/docks/plan-v1.md
+@@ -0,0 +1,252 @@
++Plan: Build a Forth Parser on top of Nano-Forth
++
++     Context
++
++     itsy.asm has a working kernel with primitives and a basic INTERPRET loop, but the outer interpreter is incomplete:
++     - No negative number parsing (-10 triggers ABORT)
++     - No base-prefix numbers ($FF, %1010)
++     - No comments (( and \ undefined)
++     - No base-switching words (HEX, DECIMAL)
++     - No string output (TYPE, .()
++     - Error just ABORTs with no message
++     - Several primitives needed for Forth-level parser code are missing (c@, -, and, over, >r, r>, etc.)
++
++     Goal: Add ~10 small primitives to itsy.asm, then write a PARSER.SCR screen file that defines the full text interpreter in Forth.
++
++     ---
++     Step 1 — Add Primitives to itsy.asm
++
++     Where: Insert between line 371 (constant definition ends) and line 376 (final: label).
++     The final: label must remain at the interpret colon word header — it seeds variable 'last',last,final.
++
++     Note: The primitive macro chains dictionary links in assembly order; inserting before final: correctly puts new entries into the linked list.
++
++     ; -----------------------
++     ; Parser Extension Primitives
++     ; -----------------------
++
++             primitive 'negate',negate
++             neg bx
++             jmp next
++
++             primitive '-',minus
++             pop ax
++             sub ax,bx
++             xchg ax,bx
++             jmp next
++
++             primitive 'and',and_op
++             pop ax
++             and bx,ax
++             jmp next
++
++             primitive 'or',or_op
++             pop ax
++             or bx,ax
++             jmp next
++
++             primitive '0<',zero_less
++             xchg ax,bx          ; move TOS to AX for CWD
++             cwd                  ; sign-extend AX into DX
++             xchg bx,dx           ; BX = 0xFFFF (-1) if negative, 0 if not
++             jmp next
++
++             primitive 'c@',c_fetch
++             mov bl,byte[bx]
++             mov bh,0
++             jmp next
++
++             primitive 'c!',c_store
++             pop ax
++             mov byte[bx],al
++             pop bx
++             jmp next
++
++             primitive 'over',over
++             push bx
++             mov bx,word[sp+2]    ; second item (after push, sp moved by 2)
++             jmp next
++
++             primitive '>r',to_r
++             dec bp
++             dec bp
++             mov word[bp],bx
++             pop bx
++             jmp next
++
++             primitive 'r>',r_from
++             push bx
++             mov bx,word[bp]
++             inc bp
++             inc bp
++             jmp next
++
++             variable "'interpret",tick_interpret,xt_interpret+2
++
++     Also patch abort (line 34): replace the hardcoded interpreter jump with the new vector:
++
++     ; old:  mov si,xt_interpret+2
++             mov si,word[val_tick_interpret]   ; use vector so Forth can replace interpret
++
++     xt_interpret+2 is a valid forward reference for TASM (2-pass). The variable initialises to the kernel interpret's thread start address.
++
++     ---
++     Step 2 — Create mini/PARSER.SCR (4 screens × 1024 bytes)
++
++     Classic Forth block format: 16 lines × 64 chars, space-padded, NO line terminators.
++
++     Screen 0 — Bootstrap: Compilation Helpers + Arithmetic
++
++     These words MUST come first because later screens use if/then/else.
++
++     ( PARSER.SCR  scr 0 - bootstrap                 )
++     : here  dp @ ;
++     : [']   32 word find drop ; immediate
++     : if    ['] 0branch ,  here  0 , ; immediate
++     : then  here swap ! ; immediate
++     : else  ['] branch ,  here  0 ,  swap here swap ! ; immediate
++     : begin  here ; immediate
++     : until  ['] 0branch , ; immediate
++     : again  ['] branch  , ; immediate
++     : 1+  1 + ;
++     : 1-  1 - ;
++     : 2dup  over over ;
++     : nip   swap drop ;
++     : 0=  0 = ;
++     : 0>  negate 0< ;
++     : <   - 0< ;
++     : >   swap < ;
++     : max  2dup < if swap then drop ;
++     : min  2dup > if swap then drop ;
++     : ?dup  dup if dup then ;
++     : +!  dup @ rot + swap ! ;
++     : true  -1 ;
++     : false  0 ;
++     : cr  13 emit  10 emit ;
++     : space  32 emit ;
++     : bl  32 ;
++
++     Screen 1 — Number Parsing: NUMBER?
++
++     NUMBER? wraps the kernel >number primitive and adds:
++     - Leading - sign handling
++     - Single-char base prefix: $=hex, %=binary, #=decimal
++
++     ( PARSER.SCR  scr 1 - number parsing            )
++     variable #sign   variable #base2
++     : +str  swap 1+ swap 1- ;    ( advance c-addr/len by 1 )
++     : sign?   over c@ 45 = ;     ( '-' = 45 )
++     : pfx?    over c@             ( base-prefix char? )
++         dup 36 = if drop 16 true exit then   ( $ hex )
++         dup 37 = if drop  2 true exit then   ( % binary )
++         dup 35 = if drop 10 true exit then   ( # decimal )
++         drop false ;
++     : number? ( addr -- n true | addr false )
++         dup >r
++         count                    ( c-addr len )
++         dup 0= if drop r> false exit then
++         false #sign !
++         sign? if  true #sign !  +str  dup 0= if drop r> false exit then  then
++         pfx? if  base @ #base2 !  base !  +str
++                   dup 0= if #base2 @ base !  drop r> false  exit then
++              else  0 #base2 !  then
++         0 0 rot rot              ( ud_lo=0 ud_hi=0 c-addr len )
++         >number                  ( ud_lo ud_hi c-addr' len' )
++         0= if                    ( len'=0: full parse )
++             drop drop drop       ( -- ud_lo )
++             #sign @ if negate then
++             #base2 @ if #base2 @ base ! then
++             r> drop  true
++         else
++             drop drop drop drop
++             #base2 @ if #base2 @ base ! then
++             r>  false
++         then ;
++
++     Screen 2 — Output Words + Comments
++
++     ( PARSER.SCR  scr 2 - output + comments         )
++     : type ( c-addr n -- )
++         begin dup while
++             over c@ emit  swap 1+ swap 1-
++         repeat  drop drop ;
++     : .( ( print to ) )
++         41 word  count  type ; immediate
++     : (   41 word drop ; immediate
++     : \   #tib @ >in ! ; immediate
++     : hex      16 base ! ;
++     : decimal  10 base ! ;
++     : binary    2 base ! ;
++     : octal     8 base ! ;
++     : char  32 word  count drop  c@ ;
++     : [char]  char  ['] lit ,  , ; immediate
++
++     Key insight: 41 WORD DROP for ( works for any multi-word comment — WORD with delimiter ) scans forward through the TIB to the next ) and advances >in past it.
++
++     Screen 3 — New INTERPRET + Setup
++
++     The new interpret extends the kernel version: uses NUMBER? instead of raw >NUMBER, prints the unknown token before ABORTing, and increases line length to 80.
++
++     ( PARSER.SCR  scr 3 - new interpret             )
++     : .err  ( c-addr n -- )
++         34 emit  type  34 emit  [char] ?  emit  cr ;
++     : interpret
++         begin
++             #tib @ >in @ = if
++                 tib 80 accept  #tib !  0 >in !
++             then
++             32 word
++             find dup if
++                 state @ = if , else execute then
++             else
++                 drop
++                 number? if
++                     state @ if  ['] lit ,  ,  then
++                 else
++                     count .err  abort
++                 then
++             then
++         again ;
++     : setup   ['] interpret  2+  'interpret ! ;
++     setup
++
++     ['] interpret 2+ gets the XT of the new interpret and adds 2 to skip past the code field to the thread body — this is what si must point to when entering a colon word.
++
++     ---
++     Step 3 — Loading Sequence
++
++     After assembling and running the new itsy.com, load the parser at the Forth prompt:
++
++     1 LOAD   ( bootstrap: if/then/else, arithmetic, control flow )
++     2 LOAD   ( number parsing: NUMBER? )
++     3 LOAD   ( output, comments )
++     4 LOAD   ( new interpret + setup )
++
++     Or if THRU is available: 1 4 THRU
++
++     After 4 LOAD, setup runs automatically, wiring the new interpret into the 'interpret vector so ABORT resets into the new interpreter.
++
++     ---
++     Critical Files
++
++     ┌─────────────────┬──────────────────────────────────────────────────────────────────────────────────────────┐
++     │      File       │                                          Change                                          │
++     ├─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
++     │ itsy.asm        │ Insert 10 primitives + 'interpret variable before final: (line 376); patch abort line 34 │
++     ├─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
++     │ mini/PARSER.SCR │ New file, 4 × 1024 bytes                                                                 │
++     └─────────────────┴──────────────────────────────────────────────────────────────────────────────────────────┘
++
++     ---
++     Verification
++
++     \ After 1 4 THRU:
++     5 3 - .          \ expect: 2
++     -10 .            \ expect: -10  (sign parsing)
++     $FF .            \ expect: 255  (hex prefix)
++     %1010 .          \ expect: 10   (binary prefix)
++     hex  FF .        \ expect: 255  (base switch)
++     decimal
++     ( this is a comment ) 1 2 + .   \ expect: 3
++     BADWORD          \ expect: "BADWORD" ? then abort (not silent crash)
++
+diff --git a/docs/parser-plan.md b/docs/parser-plan.md
+new file mode 100644
+index 0000000..b7384f1
+--- /dev/null
++++ b/docs/parser-plan.md
+@@ -0,0 +1,269 @@
++# Plan: Build a Forth Parser on top of Nano-Forth
++
++## Context
++
++`itsy.asm` has a working kernel with primitives and a basic `INTERPRET` loop, but the outer interpreter is incomplete:
++- No negative number parsing (`-10` triggers ABORT)
++- No base-prefix numbers (`$FF`, `%1010`)
++- No comments (`(` and `\` undefined)
++- No base-switching words (`HEX`, `DECIMAL`)
++- No string output (`TYPE`, `.(`)
++- Error just ABORTs with no message
++- Several primitives needed for Forth-level parser code are missing (`c@`, `-`, `and`, `over`, `>r`, `r>`, etc.)
++
++**Goal:** Add ~10 small primitives to `itsy.asm`, then write a `PARSER.SCR` screen file that defines the full text interpreter in Forth.
++
++---
++
++## Step 1 — Add Primitives to `itsy.asm`
++
++**Where:** Insert between line 371 (`constant` definition ends) and line 376 (`final:` label).
++The `final:` label must remain at the `interpret` colon word header — it seeds `variable 'last',last,final`.
++
++**Note:** The `primitive` macro chains dictionary links in assembly order; inserting before `final:` correctly puts new entries into the linked list.
++
++```asm
++; -----------------------
++; Parser Extension Primitives
++; -----------------------
++
++        primitive 'negate',negate
++        neg bx
++        jmp next
++
++        primitive '-',minus
++        pop ax
++        sub ax,bx
++        xchg ax,bx
++        jmp next
++
++        primitive 'and',and_op
++        pop ax
++        and bx,ax
++        jmp next
++
++        primitive 'or',or_op
++        pop ax
++        or bx,ax
++        jmp next
++
++        primitive '0<',zero_less
++        xchg ax,bx          ; move TOS to AX for CWD
++        cwd                  ; sign-extend AX into DX
++        xchg bx,dx           ; BX = 0xFFFF (-1) if negative, 0 if not
++        jmp next
++
++        primitive 'c@',c_fetch
++        mov bl,byte[bx]
++        mov bh,0
++        jmp next
++
++        primitive 'c!',c_store
++        pop ax
++        mov byte[bx],al
++        pop bx
++        jmp next
++
++        primitive 'over',over
++        push bx
++        mov bx,word[sp+2]    ; second item (after push, sp moved by 2)
++        jmp next
++
++        primitive '>r',to_r
++        dec bp
++        dec bp
++        mov word[bp],bx
++        pop bx
++        jmp next
++
++        primitive 'r>',r_from
++        push bx
++        mov bx,word[bp]
++        inc bp
++        inc bp
++        jmp next
++
++        variable "'interpret",tick_interpret,xt_interpret+2
++```
++
++Also patch `abort` (line 34): replace the hardcoded interpreter jump with the new vector:
++
++```asm
++; old:  mov si,xt_interpret+2
++        mov si,word[val_tick_interpret]   ; use vector so Forth can replace interpret
++```
++
++`xt_interpret+2` is a valid forward reference for TASM (2-pass). The variable initialises to the kernel `interpret`'s thread start address.
++
++---
++
++## Step 2 — Create `mini/PARSER.SCR` (4 screens × 1024 bytes)
++
++Classic Forth block format: 16 lines × 64 chars, space-padded, NO line terminators.
++
++### Screen 0 — Bootstrap: Compilation Helpers + Arithmetic
++
++These words MUST come first because later screens use `if/then/else`.
++
++```forth
++( PARSER.SCR  scr 0 - bootstrap                 )
++: here  dp @ ;
++: [']   32 word find drop ; immediate
++: if    ['] 0branch ,  here  0 , ; immediate
++: then  here swap ! ; immediate
++: else  ['] branch ,  here  0 ,  swap here swap ! ; immediate
++: begin  here ; immediate
++: until  ['] 0branch , ; immediate
++: again  ['] branch  , ; immediate
++: 1+  1 + ;
++: 1-  1 - ;
++: 2dup  over over ;
++: nip   swap drop ;
++: 0=  0 = ;
++: 0>  negate 0< ;
++: <   - 0< ;
++: >   swap < ;
++: max  2dup < if swap then drop ;
++: min  2dup > if swap then drop ;
++: ?dup  dup if dup then ;
++: +!  dup @ rot + swap ! ;
++: true  -1 ;
++: false  0 ;
++: cr  13 emit  10 emit ;
++: space  32 emit ;
++: bl  32 ;
++```
++
++### Screen 1 — Number Parsing: `NUMBER?`
++
++`NUMBER?` wraps the kernel `>number` primitive and adds:
++- Leading `-` sign handling
++- Single-char base prefix: `$`=hex, `%`=binary, `#`=decimal
++
++```forth
++( PARSER.SCR  scr 1 - number parsing            )
++variable #sign   variable #base2
++: +str  swap 1+ swap 1- ;    ( advance c-addr/len by 1 )
++: sign?   over c@ 45 = ;     ( '-' = 45 )
++: pfx?    over c@             ( base-prefix char? )
++    dup 36 = if drop 16 true exit then   ( $ hex )
++    dup 37 = if drop  2 true exit then   ( % binary )
++    dup 35 = if drop 10 true exit then   ( # decimal )
++    drop false ;
++: number? ( addr -- n true | addr false )
++    dup >r
++    count                    ( c-addr len )
++    dup 0= if drop r> false exit then
++    false #sign !
++    sign? if  true #sign !  +str  dup 0= if drop r> false exit then  then
++    pfx? if  base @ #base2 !  base !  +str
++              dup 0= if #base2 @ base !  drop r> false  exit then
++         else  0 #base2 !  then
++    0 0 rot rot              ( ud_lo=0 ud_hi=0 c-addr len )
++    >number                  ( ud_lo ud_hi c-addr' len' )
++    0= if                    ( len'=0: full parse )
++        drop drop drop       ( -- ud_lo )
++        #sign @ if negate then
++        #base2 @ if #base2 @ base ! then
++        r> drop  true
++    else
++        drop drop drop drop
++        #base2 @ if #base2 @ base ! then
++        r>  false
++    then ;
++```
++
++### Screen 2 — Output Words + Comments
++
++```forth
++( PARSER.SCR  scr 2 - output + comments         )
++: type ( c-addr n -- )
++    begin dup while
++        over c@ emit  swap 1+ swap 1-
++    repeat  drop drop ;
++: .( ( print to ) )
++    41 word  count  type ; immediate
++: (   41 word drop ; immediate
++: \   #tib @ >in ! ; immediate
++: hex      16 base ! ;
++: decimal  10 base ! ;
++: binary    2 base ! ;
++: octal     8 base ! ;
++: char  32 word  count drop  c@ ;
++: [char]  char  ['] lit ,  , ; immediate
++```
++
++Key insight: `41 WORD DROP` for `(` works for any multi-word comment — `WORD` with delimiter `)` scans forward through the TIB to the next `)` and advances `>in` past it.
++
++### Screen 3 — New `INTERPRET` + Setup
++
++The new `interpret` extends the kernel version: uses `NUMBER?` instead of raw `>NUMBER`, prints the unknown token before ABORTing, and increases line length to 80.
++
++```forth
++( PARSER.SCR  scr 3 - new interpret             )
++: .err  ( c-addr n -- )
++    34 emit  type  34 emit  [char] ?  emit  cr ;
++: interpret
++    begin
++        #tib @ >in @ = if
++            tib 80 accept  #tib !  0 >in !
++        then
++        32 word
++        find dup if
++            state @ = if , else execute then
++        else
++            drop
++            number? if
++                state @ if  ['] lit ,  ,  then
++            else
++                count .err  abort
++            then
++        then
++    again ;
++: setup   ['] interpret  2+  'interpret ! ;
++setup
++```
++
++`['] interpret 2+` gets the XT of the new `interpret` and adds 2 to skip past the code field to the thread body — this is what `si` must point to when entering a colon word.
++
++---
++
++## Step 3 — Loading Sequence
++
++After assembling and running the new `itsy.com`, load the parser at the Forth prompt:
++
++```
++1 LOAD   ( bootstrap: if/then/else, arithmetic, control flow )
++2 LOAD   ( number parsing: NUMBER? )
++3 LOAD   ( output, comments )
++4 LOAD   ( new interpret + setup )
++```
++
++Or if `THRU` is available: `1 4 THRU`
++
++After `4 LOAD`, `setup` runs automatically, wiring the new `interpret` into the `'interpret` vector so `ABORT` resets into the new interpreter.
++
++---
++
++## Critical Files
++
++| File | Change |
++|---|---|
++| `itsy.asm` | Insert 10 primitives + `'interpret` variable before `final:` (line 376); patch `abort` line 34 |
++| `mini/PARSER.SCR` | New file, 4 × 1024 bytes |
++
++---
++
++## Verification
++
++```forth
++\ After 1 4 THRU:
++5 3 - .          \ expect: 2
++-10 .            \ expect: -10  (sign parsing)
++$FF .            \ expect: 255  (hex prefix)
++%1010 .          \ expect: 10   (binary prefix)
++hex  FF .        \ expect: 255  (base switch)
++decimal
++( this is a comment ) 1 2 + .   \ expect: 3
++BADWORD          \ expect: "BADWORD" ? then abort (not silent crash)
++```
+diff --git a/itsy.asm b/itsy.asm
+index dd33d23..ca8fb8a 100644
+--- a/itsy.asm
++++ b/itsy.asm
+@@ -31,7 +31,7 @@
+         xor bp,bp
+         mov word[val_state],bp
+         mov sp,-256
+-        mov si,xt_interpret+2
++        mov si,word[val_tick_interpret]  ; vector: Forth can replace interpret
+         jmp next
+ 
+ ; -------------------
+@@ -369,6 +369,68 @@ doconst push bx
+         mov bx,word[di+2]
+         jmp next
+ 
++; -----------------------
++; Parser Extension Primitives
++; -----------------------
++
++        primitive 'negate',negate
++        neg bx
++        jmp next
++
++        primitive '-',minus
++        pop ax
++        sub ax,bx
++        xchg ax,bx
++        jmp next
++
++        primitive 'and',and_op
++        pop ax
++        and bx,ax
++        jmp next
++
++        primitive 'or',or_op
++        pop ax
++        or bx,ax
++        jmp next
++
++        primitive '0<',zero_less
++        xchg ax,bx          ; move TOS to AX for CWD
++        cwd                  ; sign-extend AX into DX
++        xchg bx,dx           ; BX = 0xFFFF (-1) if negative, 0 if not
++        jmp next
++
++        primitive 'c@',c_fetch
++        mov bl,byte[bx]
++        mov bh,0
++        jmp next
++
++        primitive 'c!',c_store
++        pop ax
++        mov byte[bx],al
++        pop bx
++        jmp next
++
++        primitive 'over',over
++        push bx
++        mov bx,word[sp+2]    ; second item (sp moved by 2 after push)
++        jmp next
++
++        primitive '>r',to_r
++        dec bp
++        dec bp
++        mov word[bp],bx
++        pop bx
++        jmp next
++
++        primitive 'r>',r_from
++        push bx
++        mov bx,word[bp]
++        inc bp
++        inc bp
++        jmp next
++
++        variable "'interpret",tick_interpret,xt_interpret+2
++
+ ; -----------------------
+ ; Outer Interpreter
+ ; -----------------------
+diff --git a/mini/PARSER.SCR b/mini/PARSER.SCR
+new file mode 100644
+index 0000000..88fd391
+--- /dev/null
++++ b/mini/PARSER.SCR
+@@ -0,0 +1 @@
++( PARSER.SCR  scr 0 - bootstrap                 )               : here  dp @ ;                                                  : [']   32 word find drop ; immediate                           : if    ['] 0branch ,  here  0 , ; immediate                    : then  here swap ! ; immediate                                 : else  ['] branch ,  here  0 ,  swap here swap ! ; immediate   : begin  here ; immediate                                       : until  ['] 0branch , ; immediate                              : again  ['] branch  , ; immediate                              : while  ['] 0branch ,  here  0 , ; immediate                   : repeat  swap  ['] branch ,  ,  here swap ! ; immediate        : 1+  1 + ;   : 1-  1 - ;   : 2dup  over over ;                 : nip  swap drop ;  : 0=  0 = ;  : <  - 0< ;  : >  swap < ;     : max  2dup < if swap then drop ;                               : min  2dup > if swap then drop ;   : ?dup  dup if dup then ;   : true  -1 ;   : false  0 ;   : cr  13 emit 10 emit ;           ( PARSER.SCR  scr 1 - number parsing            )               variable #sign                                                  : +str  swap 1+ swap 1- ;                                       : number?                                                         dup >r  count  dup 0= if  drop r> false  exit  then             over c@ 45 = dup >r if  +str  then                              base @ >r                                                       over c@  dup 36 = if  drop  16 base !  +str  else               dup 37 = if  drop   2 base !  +str  else                        dup 35 = if  drop  10 base !  +str  else  drop                  then then then                                                  0 0 rot rot  >number  dup 0= if  drop drop drop                 r> base !  r> if negate then  r> drop  true  exit  then         drop drop drop drop  r> base !  r> drop  r>  false ;          : space  32 emit ;   : bl  32 ;                                                                                                 ( PARSER.SCR  scr 2 - output + comments         )               : type  begin dup while  over c@ emit  swap 1+ swap 1-  repeat          drop drop ;                                             : .(  41 word  count  type ; immediate                          : (   41 word  drop ; immediate                                 : \   #tib @ >in ! ; immediate                                  : hex      16 base ! ;   : decimal  10 base ! ;                 : binary    2 base ! ;   : octal     8 base ! ;                 : char  32 word  count  drop  c@ ;                              : [char]  char  ['] lit ,  , ; immediate                                                                                                                                                                                                                                                                                                                                                                                                                        ( PARSER.SCR  scr 3 - new interpret             )               : .err  34 emit  type  34 emit  [char] ?  emit  cr ;            : interpret                                                       begin                                                             #tib @ >in @ = if                                                 tib 80 accept  #tib !  0 >in !                                then                                                            32 word  find  dup if                                             state @ = if  ,  else  execute  then                          else                                                              drop  number? if                                                  state @ if  ['] lit ,  ,  then                                else  count  .err  abort  then                                then                                                          again ;                                                       : setup  ['] interpret  2 +  'interpret !  ; setup              
+\ No newline at end of file

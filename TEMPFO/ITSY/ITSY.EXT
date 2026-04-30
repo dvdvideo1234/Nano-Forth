@@ -1,297 +1,53 @@
-$317 =: \`
-$317 =: \
-\	NOW WE HAVE COMMENTS
-
-\ CURRENT LIST OF WORDS
-
-$177 =: `BARY
-$138 =: `C@
-$1CF =: `CALDR_
-$1FE =: `CONT
-$1F3 =: `DINU_
-$19B =: `DOES
-$28A =: `DOS
-$213 =: `DOVAR
-$1E5 =: `DROP
-$141 =: `DUP
-$1AF =: `DUP_
-$21B =: `EXEC
-$204 =: `EXECUTE
-$20B =: `FOR
-$159 =: `GETWATCH
-$22A =: `IFM
-$18D =: `J
-$13A =: `LOBYTE
-$229 =: `MIF
-$1E8 =: `NIPX
-$1A9 =: `NOP_
-$1B1 =: `PH
-$1F7 =: `PHAX
-$192 =: `POP
-$20D =: `PUSH
-$1EE =: `RDROP
-$165 =: `RSLD_
-$169 =: `RSST_
-$1D3 =: `SETWATCH
-$226 =: `SKIP
-$1B2 =: `SW
-$1AD =: `SWAPC_
-$1AE =: `SWAP_
-$1B9 =: `TODBG
-$1FD =: `TRAP
-$3FF =: `TROFF
-$200 =: `TWICE
-$1BC =: `ULESS
-$175 =: `WARY
-$160 =: `XA
-$4D0 =: `XEVAL
-$188 =: `XR
-$1C5 =: `ZLESS
-$3C4 =: 0;
-$343 =: 1-
-$2A9 =: ACCEPT
-$434 =: `(ACPT
-$347 =: AND
-$30D =: BEGIN`
-$305 =: <RELS`
-$3BA =: (JMP
-$2D7 =: CDICT
-$279 =: CMOVE
-$275 =: CMOVE<
-$398 =: :`
-$398 =: :
-$305 =: ,
-$3F9 =: CSTR
-$26D =: CPUSHU
-$377 =: DC@
-$286 =: (DE
-$2D1 =: T
-$2EB =: T|
-$27D =: (DK
-$2C5 =: H
-$2F5 =: H|
-$3C2 =: DROP;
-$2A5 =: EMIT
-$42C =: ??
-$2BF =: ERRA
-$418 =: ERROR?
-$29D =: ERRV
-$2B9 =: ETIB
-$4B6 =: EVAL
-$3BE =: EX
-$3BC =: (;
-$375 =: @
-$462 =: FIND
-$483 =: FINDC
-$293 =: FOUND
-$49C =: =H
-$4A0 =: `=:
-$30D =: HERE
-$299 =: INIT
-$4E0 =: (INIT
-$2E3 =: 1L
-$2A1 =: KEY
-$383 =: @+
-$31F =: LIT
-$32E =: LIT,
-$3A4 =: ,<`
-$2B3 =: LTIB
-$254 =: S>"
-$367 =: -/
-$183 =: NOP
-$40E =: NUMC
-$428 =: NZ?
-$2CB =: OFST
-$11F =: OPER[
-$436 =: (PARS
-$446 =: PARSE
-$4D8 =: S>T
-$4D2 =: ">T
-$351 =: +2/
-$35A =: +*
-$33F =: POP
-$341 =: PUSH
-$38D =: @R+
-$3AE =: >,
-$392 =: !R+
-$39E =: ;`
-$2AD =: SOURCE
-$37F =: !-
-$37B =: !
-$381 =: !+
-$379 =: STR
-$3FB =: S1+
-$385 =: ("+
-$2E7 =: TBUF
-$2DF =: TIB
-$43C =: TOKEN
-$438 =: TOKEN?
-$400 =: >NUM
-$404 =: `TO_NUM2
-$3C6 =: (NUM
-$442 =: WORD
-$2FF =: ;,
-$4CE =: ;DROP
-$4B4 =: ;(EVL
-$34C =: XOR
-$424 =: XTOK?
-$452 =: ;(>"
-$3B8 =: (IF
-$345 =: 0=
-$2DB =: 0
-
-\ SOME VOCABULARY
-\ "STRING" -- LIST OF CHARS
-\ DLM 	-- DELIMITER
-\ CF 	-- CODE FIELD
-\ ACF	-- ADDRESS OF CODE FIELD
-\ ADR   -- ADDRESS ( LOBYTE HIBYTE )
-\ LSTR  -- ( BYTE "STRING" ) 
-\ DTR   -- DICTIONARY TOKEN RECORD  ( ADR LSTR )
-\ ADT   -- ADDRESS OF DTR 
-\ TOKEN -- "STRING" WITHOUT SPACES
-
-\ MAKE THE SEARCHERS  - NEEDS -- TOKEN? FIND DICT ;` @ NZ? ;,
-: LOCATE
- TOKEN? DICT FIND NZ? ;	\ RETURNS ADDRES  OF DICTIONARY TOKEN 
-: ', ;, 				\ COMPILES FOUND WORD
-: ' LOCATE @ ;			\ RETURMS ADDRES OF CODE FIELD OF WORD
-: LIKE ' @ ;			\ RETURMS CODE FIELD OF THE WORD
-: CODE, ;, =H ;			\ CREATES WORD ( ADR /NAME/  -- H:=H+2 )
-
-\ MINIMAL COMPILER 
-: -ALLOT NEG  : ALLOT H| + ;	\ DE/ALLOCATE SPACE
-' `J        CODE, J     		' `RDROP    CODE, RDROP        
-'  `IFM  	CODE, (IF-			'  `FOR     CODE, (FOR
-' `DUP      CODE, DUP      	' `DROP     CODE, DROP       
-=H CSWAP`		' `SWAP_ CODE, SWAP $C3 C,
-: MARK>` H : Z, 0 , ;   		       : COMPILE @R+ , ;
-: FOR` COMPILE (FOR MARK>` BEGIN` COMPILE PUSH ;
-: NEXT` COMPILE POP SWAP THEN` COMPILE (IF- <RELS` RDROP ;
-: NEG 1-	: NOT -1 XOR ;   : - NEG		: + 2/ DROP;  ,<
-LIKE 1- 1-   CODE, 2-
-LIKE STP 3 + 	CODE 1+			LIKE 1+ 1- 		CODE, 2+
-: C, DP| 	: C!+ PUSH C!R+ POP ;
-LIKE 0  LIKE : CODE, CONST , ', ,			\ WE HAVE CONSTS
-$FFFF CONST -1								\ CONSTANT -1
-'  `DOES    CONST @DOES 
-: (CODE; POP T @ ! ;
-: DOES>` COMPILE (CODE; 0 
-: `(DZ @DOES +
-: CALL, $E8 C,   : REL, HERE 2+ - , ;
-: `DZ#  NEG CONST DOES> @ HERE SWAP >, `(DZ ;
-0 `DZ# DZ0>   1 `DZ# DZ1>   2 `DZ# DZ2>
-\ ADR CNT BYTE --
-: FILL 
-DZ0> @
-\	PUSH  FOR J C, NEXT RDROP DROP; ,<
- CODE, ERASE 0 ,
- 
-
-
 \ DEFINING WORDS
-' DP 2- @ LIKE ;` CODE, VALUE , ', CONST	\ WE HAVE VALUES
-' `DOVAR  LIKE :  CODE, VAR , ', ,			\ WE HAVE VARS
-' ERRV @  LIKE :  CODE, DEFER , ', ,		\ WE HAVE DEFERS
-' DP 2- @ LIKE ;` CODE, VECTOR , ', DEFER	\ WE HAVE VECTORS
-' `DOVAR 2- LIKE ;` CODE, QUAN , ', VALUE	\ WE HAVE QUANS
-' `DOVAR 2- LIKE ;` CODE, VQUAN , ', VECTOR	\ WE HAVE QUANS
+: ,' ;, ' ;				\ COMPILES FOUND WORD
+: LIKE ' @ ; 			\ RETURNS CODE FIELD OF THE WORD
+: QUAN COMPILE ,< ' `DOVAR 2- , >,  \ WE HAVE QUANS
+: VALUE COMPILE ,< ' H 2- @ , >,    \ WE HAVE VALUES
+: CONST  =H COMPILE ,< LIKE H , >, , ; 	
+: CREATE =H COMPILE `DOVAR ; 
+: VAR CREATE , ;                  	  \ WE HAVE VARS
+: VQUAN COMPILE ,< ' `DOVAR 2- , >, 	\ WE HAVE VQUANS
+: VECTOR COMPILE ,< ' H 2- @ , >,     \ WE HAVE VECTORS
+: DEFER  =H COMPILE ,< LIKE ERRV , >, , ; \ WE HAVE DEFERS
 : WATCH COMPILE ,< ' `DOVAR 2- , >, COMPILE `SETWATCH 
 	LIT `GETWATCH  CODE, , ;
 
-\ ERROR CHECKERS & INITIALIZERS
-\ ?? ERRA ERROR? ERRV NZ? INIT (INIT
+$FFFF CONST -1								\ CONSTANT -1
 
-\ PEEKS , POKES  & MEMORY
-\ `C@ CMOVE CMOVE< CSTR CPUSHU DC@ S>" @R+ !R+ !- STR
-\ SWAP! S>T ">T C@R+ C!R+ @+ @   
-' `C@  CODE, C@ 
-: C@+ PUSH C@R+ POP ;
+'  `DOES    CONST @DOES 
 
+\ MINIMAL COMPILER 
+: -ALLOT NEG    \ DEALLOCATE SPACE
+: ALLOT H| + ;	\ ALLOCATE SPACE
+: WHILE`
+: IF` COMPILE (IF
+: MARK>` H 
+: Z, 0 , ;   	
+: IF- COMPILE (IF- MARK>` ;	
+: I J ;     
+: FOR` COMPILE (FOR MARK>` BEGIN` ; 
+: NEXT` SWAP THEN` COMPILE (NEXT <RELS` ;
+: C, H| 	
+: C!+ PUSH C!R+ POP ;
+: (CODE; POP T CSTR + @ ! ;
+: DOES>` COMPILE (CODE; 0 
+: `(DZ @DOES +
+: CALL, $E8 C,   
+: REL, HERE 2+ - , ;
 
-\ PARSING WORDS
-\ TOKEN?	( -- LSTR/ERROR)
-\ EVAL		GENERAL PARSER/INTERPRETER/COMPILER
-\ TOKEN		( DLM -- LSTR )
-\ ;(EVL		EVALUATE MEMORY ON INITIALIZING
-\ (NUM		( ADR LEN -- NUM/ERROR 0/<>0 )
-\ >NUM      ( LSTR -- NUM )
-\ NUMC      ( LSTR -- NUM, )
-\ OPER[]    [ >NUM @EXEC NUMC @, ]
-\ (PARS		( DLM ADR LEN -- ADR1 LEN1 ) 
-\ WORD      ( DLM -- LSTR )
-\ PARSE     ( DLM -- ADR LEN )
-\ LTIB      LENGTH OF REMAINING TEXT BUFFER
-\ ETIB      END OF TEXT BUFFER
-\ FOUND     POINTS STATE OF FORTH MASHINE INTERPRET/COMPILE
-\ SOURCE    KEEPS PROCEDURE OF FINDING END TEXT BUFFER 
-\ TBUF      ADDRESS WHITCH HOLDS THE LAST PARSED WORD/LSTR
-\ FINDC     SEARCH METHOD ON COMPILING
-\ FIND		( LSTR DICT -- ADT/LSTR 1/0 )
-\ =H		CREATES WORD POINTED TO HERE
-\ T			VALUE -- DICTIOMARY POINTER -     
+HERE @DOES CALL, >, @ HERE SWAP >, `(DZ ;
+DUP CODE, DZ0>  0 , 
+DUP CODE, DZ1> -1 , 
+    CODE, DZ2> -2 , 
 
-\ COMPILER WORDS
-\ ;,		COMPILES WORD ON EXITTING OF CALLER
-\ ("+		SKIPS LSTR
-\ H|		MAKES PARENTISIS FROM  H| ( BODY ) TO ;
-\ T|		MAKES PARENTISIS FROM  H| ( BODY ) TO ;
-\ BEGIN`	MARK START OF LOOP
-\ <RELS`	BACK RELEASE OF LOOPS & IFS
-\ THEN`		FORWARD RELEASE OF LOOPS & IFS
-\ CDICT		DICTIONARY POINTER OF LIST OF WORDS ON COMPILING
-\ ;(>"		ON EXIT CREATES LSTR ( ADR LEN -- TBUF )
-\ ;DROP		ON EXIT DOES DROP
-\ ;THEN		ON EXIT DOES (THEN)
-\ (;		PRIMITIVE OF EXIT
-\ (JMP		PRIMITIVE OF BRANCH
-\ DROP;		DOES -- DROP EXIT
-\ (IF		( NUM -- IF NUM=0 THEN BRANCH / ELSE SKIP BRANCH )
-\ 0;		( NUM -- IF NUM=0 THEN EXIT )
-\ LIT		SENDS NEXT CEIL TO DATA STACK
-\ LIT,		COMPILES NUMBER ( NUM -- LIT LIT , , )
-\ NOP		DOES NOTHING
-\ HERE		OBJECT ADDRESS OF COMPILING
-\ OFST		OFFSET TO ORIGINAL ADDRES  OF COMPILING
-\
-\  `CONT  `DOES  `DOVAR  `GETWATCH  `SETWATCH  `IFM  `MIF
-\  `NIPX  `EXEC  `EXECUTE  `FOR  `TWICE  `SKIP  `TODBG
-\  `TRAP  `WARY  `BARY
-'  `CONT  	CODE, LOOP;
-'  `MIF     CODE, (-IF
-'  `NIPX    CODE, NIP;
-'  `EXEC    CODE, EXEC
-'  `EXECUTE CODE, EXECUTE
-'  `TWICE   CODE, TWICE|
-'  `SKIP    CODE, (SKIP
-'  `TODBG   CONST @DBG 
-'  `TRAP    CONST @TRAP 
-'  `WARY    CODE, (WARY
-'  `BARY    CODE, (BARY
-
-
-\ SKIPPED WORDS
-\ `TO_NUM2 `(ACPT `=: XTOK? `PHAX `SW `TROFF `XEVAL `PH  `DOVAR  
-
-\ FACTORY FOR WORDS & SPECIAL ADDRESSES
-\ `DINU_  `CALDR_  `DUP_  `NOP_  `RSLD_  `RSST_  `SWAPC_  `SWAP_
-
-\  IO WORDS 
-\ ACCEPT  (DE  (DK  EMIT KEY  TIB 
-
-\ MATH , CONSTANTS , LOGIC & STACK
-\ AND 1L -/ +2/ +* S1+ 0=     
-' `LOBYTE   CODE, W>B         
-' `XA       CODE, XA       
-' `XR       CODE, XR         ' `ULESS    CODE, U<       
-' `ZLESS    CODE, 0<       
-
+DZ0> @ FILL ;
+DUP CODE, ERASE 0 ,
+    CODE, BLANK BL ,
 
 \ PRIMITIVES  
-
-: 2LIT @R+ 
-: LIT @R+ ;  \ Pushes a constant value onto the top of the data stack. 
-: XOR PUSH DUP PUSH J NAND DUP  POP NAND XR NAND POP NAND ;	\ Pops two values, performs XOR, and pushes the result.
+: 2LIT @R+ @R+ ;  \ Pushes a constant value onto the top of the data stack. 
+\ : XOR PUSH DUP PUSH J NAND DUP  POP NAND XR NAND POP NAND ;	
+\ Pops two values, performs XOR, and pushes the result.
 : (& @R+ rdrop
 : AND NAND \ Pops two bitwise values, performs a bitwise AND, and pushes the result.
 : NOT not ; \ Pops one value, performs bitwise NOT, and pushes the result.

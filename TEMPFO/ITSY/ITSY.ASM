@@ -97,12 +97,12 @@ Start   Label byte
 
   value MEMp,@_final
 
-xat 	key,@_dovar-2
+xat 	key,@dovar-2
   vector key,_MEMK
 	value CNTC,0
 	value HIRES,0
 
-xat 	emit,@_dovar-2
+xat 	emit,@dovar-2
 xto 	emit,@_setvar
   XT emit,@_deferI
 			DW _DROP     ;_de
@@ -129,7 +129,7 @@ col DPx
 	value base,10
 
 @_setbase:
-  call  @_does
+  call  @does
   dw _c@,to_base,_EXIT
 
 xt hex,@_setbase
@@ -166,10 +166,8 @@ _bye DW 0
     DW _DPX,_STP,_EXIT
   
   LBL BACKMARK		; BEGIN
-  col HERE
-    dw _dp,_ofst
-  col _plus
-    dw _pl2div,_dropx
+  col HER
+    dw _dp,_ofst,_pl2div,_dropx
   
   LBL COMMENT
   COL COMMENTI
@@ -234,7 +232,7 @@ Xt SCANb,@_SCAN_
 	mov   bx,[bx]
 	jmp   @MAIN	
 
-@_getwatch:
+@getwatch:
 	mov	  di,[di]
   SKIPA
 
@@ -244,7 +242,7 @@ Xt SCANb,@_SCAN_
 	mov   ax,[di]
 	jmp   @_ph
 	
-@_setwatch:
+@setwatch:
 	mov   di,[di+2]
 	skipA
 	scasw
@@ -282,7 +280,7 @@ lbl nop
 	
 	scasw
 	scasw
-@_does:
+@does:
 	pop ax
 	push bx
 	mov	 bx,di
@@ -427,8 +425,12 @@ lbl nop
 
 ;@_DROPDUP:
 ;	POP BX
+@_?dup:
+  or   BX,BX
+  JE  @_DUP1
 @_dup:
 	push bx
+@_dup1:
 	jmps @MAIN
 	
 @_setpoint:
@@ -437,7 +439,7 @@ lbl nop
 	
 	scasw
 	scasw
-@_dovar:  
+@dovar:  
 	xchg ax,di
 	jmps @_ph
 	
@@ -509,29 +511,32 @@ lbl nop
 ; MEMORY
 
 XT PARSE,@_SOURCE_
-  XCHG  AX,DI
-	mov	  AL,' '
+  PUSH SI
+  XCHG  AX,SI
+	;mov	  AL,' '
 	inc   CX
 @@P1:
 	DEC	  CX
 	JZ    @@PSKIPX
-	SCASB
-	JAE   @@P1       	  ;{ SPACE IS ABOVE OR EQUAL TO }
-	DEC   DI
+	LODSB
+  CMP   AL,'!'
+	JC   @@P1       	  ;{ SPACE IS ABOVE OR EQUAL TO }
+	DEC   SI
 @@PSKIPX:
-	push di  		        ;{;  START OF THE WORD}
+	push Si  		        ;{;  START OF THE WORD}
 	JCXZ  @@PWEX
 	inc   CX
 @@P3:
 	DEC	  CX
 	JZ    @@PWEX		    ; END OF THE WORD  IN DI
-	SCASB               ;{ SPACE IS BELOW THEN}
-	JB    @@P3
-	DEC     DI
+	LODSB
+  CMP   AL,'!'
+	JAE  @@P3
+	DEC     SI
 @@PWEX:               ;{; END OF THE WORD  IN DI}
 	mov		@_ltib,cx
-	pop   ax
-	mov		cx,di
+	mov		cx,Si
+	pop   ax SI
 	sub		cx,ax		      ; LENGTH OF THE WORD
   SKIPA
 
@@ -590,22 +595,22 @@ xt FILLW,@_DROP_3
 
   trap1 xthen
   col THEN
-    dw _here,_swap,_storE,_exit
+    dw _her,_swap,_storE,_exit
 
   xt lit,@_DUSWA_
     lodsw
     RET
 		
-@_commaer:
-		call @_DOES
-@_COMM   dw _str,_comma,_@exec,_exit
-				
-  xt litc,@_commaer
-	dw _lit,_comma
-		
-@_defcomm:
-		call @_DOES
-		dw _head,_bran,@_comm
+;@_commaer:
+;		call @does
+;@_COMM   dw _str,_comma,_@exec,_exit
+;				
+;  xt litc,@_commaer
+;	dw _lit,_comma
+;		
+;@_defcomm:
+;		call @does
+;		dw _head,_bran,@_comm
 
 ; -------------------
 ; Stack
@@ -613,6 +618,7 @@ xt FILLW,@_DROP_3
 
 xt drop,@_drop
 xt dup,@_dup
+xt ?dup,@_?dup
 XT SWPSTK,_SWPSTK
 
 lbl cswap
@@ -787,7 +793,7 @@ col lpar							; interpretter is on
 lbl col
 COL colI
   DW _HEAD
-  DW _LASTOK,_dumpstr,_DROP
+  ; DW _LASTOK,_dumpstr,_DROP
   
   DW _COMPILE,@_DOCOLON
 col rpar							; compiler is on
@@ -934,8 +940,10 @@ COL @TO_NUM2
   dw _to_number   ;  bpnt "after-num"
   dw _err?,_exit
 	
-  col NUMC				; NOPS RESERVED PLACE FOR STRING FUNCTIONS
-    dw _NOP,_@to_num2,_litc,_exit
+col NUMC				; NOPS RESERVED PLACE FOR STRING FUNCTIONS
+    dw _NOP,_@to_num2
+COL litc
+  DW _COMPILE,_LIT,_COMMA,_exit
 		
 ; -----------------------
 ; errors prompt
@@ -979,7 +987,7 @@ col token
 ;---------------------------------------
 ; IO
 
-XT SCRN,@_DOVAR-2
+XT SCRN,@DOVAR-2
 XT WBLK,@_WBLK
 XT RBLK,@_RBLK
   DW -1 
@@ -1113,7 +1121,7 @@ xt find,@_NINU_
 COL CODECOMMA
   DW _XCOMMA
 col head		; =h
-	dw _HERE    ;_DP ; 
+	dw _HER    ;_DP ; 
 col header	; =:			NOP IS PLACE FOR THE (SAME) FUNCTION 
 	dw _nop,_token?   ;  DW _dumpstr
   DW _dup,to_dict,_COUNT,_PLUS,_store,_exit
@@ -1136,16 +1144,16 @@ COL TICK
 ; -----------------------
 
 
-xt constant,@_defcomm
-	dw @_doconst,_comma
-	
-xt CREATE,@_defcomm
-	dw @_doVAR,_NOP
-	
-  XT GETWATCH,@_GETWATCH
-  XT SETWATCH,@_SETWATCH
-  XT LARY,@_LARY
-  XT WARY,@_WARY
+;xt constant,@_defcomm
+;	dw @_doconst,_comma
+;	
+;xt CREATE,@_defcomm
+;	dw @_doVAR,_NOP
+;	
+;  XT GETWATCH,@_GETWATCH
+;  XT SETWATCH,@_SETWATCH
+;  XT LARY,@_LARY
+;  XT WARY,@_WARY
 
 
 ; -----------------------
@@ -1221,7 +1229,7 @@ XT _STD,@_DCONST
   DW _DK,_dE
 
 @_SETIO:
-  CALL @_DOES
+  CALL @does
   DW _Dfetch,_SETIO,_EXIT
 
 XT BIO,@_SETIO
@@ -1315,6 +1323,8 @@ xt DACPT,@_NINU_
 @_ACCEPTN:
   CMP   AL,13
   JE    @_ACCEPTZ
+  CMP   AL,9
+  JE    @_ACCEPTS
   CMP   AL,32
   JB    @_ACCEPTB
 
@@ -1436,10 +1446,6 @@ XT W_TO_BB,@_NUP_
   xchg  AH,BL
   RET
   
-
-;COL W_TO_BB
-;  DW _DUP,_LOBYTE,_SWAP,_HIbyte,_EXIT
-
 XT B_TO_NN,@_NUP_
   XOR   AX,AX
   xchg  AX,bx
@@ -1447,17 +1453,88 @@ XT B_TO_NN,@_NUP_
   xchg  AH,BL
   RET
 
-;@_T1 EQU  < Ok>
-;@_T2 EQU  %13
-;@_T3 EQU  %10
-;@_T4 EQU  < >
-;@_OK CATSTR @_T1,@_T2 ;,@_T3,@_T4 
-
 COL OK
   DW _STRTYPE
   DB  8
   db ' Ok',13,10,'>> ' 
   dw _EXIT
+
+@_pkbyte:
+    dec  cx
+    je   @@wave
+    mov  ah,255
+    cmp  al,'"'
+    jne  @@chav
+@@store:
+    lodsb
+    and  al,ah
+    dec  cx
+    stosb
+    ret
+@@chav:
+    mov  ah,31
+    cmp  al,'^'
+    je   @@store
+@@wave:
+    cmp  al,'~'
+    jne  @@end_
+    mov  al,80H
+    xor  [di-1],al
+    ret
+@@end_:
+    cmp  al,'_'
+    jne  @@end
+    mov  al,' '
+@@end:
+    stosb
+  RET
+
+XT ascPk,@_CLnip_
+    push  SI
+    xchg ax,Si
+    mov  di,BX
+    STOSB
+    push  DI
+@@loop:
+    jcxz @@res
+    lodsb
+    call @_pkbyte
+    jmp  @@loop
+@@res:
+    xchg ax,di
+    POP   CX
+    sub  Ax,CX
+    POP SI
+    mov [BX],AL
+  RET
+
+xt unpk?,@_DUSWA_
+  XOR   ax,ax
+  mov   al,[bx]
+  mov   di,ax
+  CMP   al,2
+  JB    @_notok
+  mov   al,[bx+di]
+  CMP   al,'"'
+  jNe   @_notok
+  call  @@search
+  db '"', ',', '.', '!','?'
+@@search:
+  POP   di
+  mov   al,[bx+1]
+  mov   cx,5
+  repne scasb
+  jNe   @_notok
+  inc   cx
+  mov   AL,[BX]
+  dec   AX
+  inc   bx
+  mov   [BX],AL
+  mov   al,CL
+  skipa
+@_notok:
+  mov   al,ah
+  ret
 
 @_freemem:
   dw @_final-@_freemem-2
