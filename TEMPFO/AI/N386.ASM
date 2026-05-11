@@ -30,13 +30,28 @@ ALIG1 MACRO
   ENDIF
 ENDM
 
+DEFW MACRO NAM
+  DW  N_&NAM
+I_&NAM = CNT
+  CNT = CNT+1
+ENDM
+
+PACKW MACRO N3,N2,N1,N0
+  LOCAL ACC
+  IF (N0) AND 1
+    CAN'T PACK  NIBBLE_&N0
+  ENDIF
+  ACC = ((N3)*1000H)+((N2)*100H) + ((N1)*10H) + (N0) + 1
+  DW ACC
+ENDM
+
 _NANO_ MACRO
   ALIG1
   CALL  _NANO
 ENDM
 
-AREG = di
-
+AREG  = di
+CNT   = 0
 ;----------------------------------------------------------------------
 ; SEGMENT (COM)
 ;----------------------------------------------------------------------
@@ -58,24 +73,35 @@ _NANO:
 ; Dispatch table
 ;----------------------------------------------------------------------
 
-align 2
-@_NANO label word
-  dw N_JMP
-  dw N_P2DIV
-  dw N_XOR
-  dw N_NAND
-  dw N_IF
-  dw N_J
-  dw N_DUP
-  dw N_POP
-  dw N_IFM
-  dw N_RSTORE
-  dw N_PUSH
-  dw N_RFETCH
-  dw N_RET
-  dw N_XR
-  dw N_XA
-  dw N_ESC
+align 2                    ; INDEX (CODE) OF NIBBLE
+@_NANO label word          ; DEC  HEX NAME   SOME_EXTRAS
+  DEFW    JMP              ;  0    0  (JMP   (EFECTIVE NOP/NOPS)
+  DEFW    P2DIV            ;  1    1  (+2/   (EFECTIVE SUM & AVERIGE)
+  DEFW    RDROP            ;  2    2  (RDROP
+  DEFW    NAND             ;  3    3  (NAND
+  DEFW    IF               ;  4    4  (IF    (EFECTIVE DROP)
+  DEFW    J                ;  5    5  (J
+  DEFW    DUP              ;  6    6  (DUP
+  DEFW    POP              ;  7    7  (POP
+  DEFW    IFM              ;  8    8  (IF-   (EFECTIVE 1-)
+  DEFW    RSTORE           ;  9    9  (!R+
+  DEFW    PUSH             ; 10    A  (PUSH       
+  DEFW    RFETCH           ; 11    B  (@R+        
+  DEFW    RET              ; 12    C  (;          
+  DEFW    XR               ; 13    D  (XR         
+  DEFW    XA               ; 14    E  (XA
+  DEFW    ESC              ; 15    F  (4TH> TRANSFER CONTROL FROM NANO TO REAL MASHINE
+  
+_END_ = 0F001H
+
+;-------------------------------------------------------------
+;     INSTRUCTION MATRIX
+;
+;           JMP     +2/     RDROP   NAND   
+;           IF      J       DUP     POP    
+;           IF-     !R+     PUSH    @R+    
+;           ;       XR      XA      4TH>   
+;
 
 ;----------------------------------------------------------------------
 ; DATA
@@ -85,15 +111,41 @@ align 2
 @_NIBI    dB 0,0        ; NIBBLE INDEX IN BITS
 
 ;----------------------------------------------------------------------
-; ESC
-;----------------------------------------------------------------------
-
-N_ESC:
-  jmp si
+@_NEST:
+  xchg ax,si
+  RPUSH ax
+  jmp short @MAIN
 
 ;======================================================================
 ; PRIMITIVES
 ;======================================================================
+
+N_ESC:          ; TRANSFER CONTROL FROM NANO TO REAL MASHINE 
+  jmp si
+
+;----------------------------------------------------------------------
+align 2
+_XOR:           ; NOT NIBBBLE BUT WORD
+  dw  _END_    ; N_ESC  TRANSFER CONTROL FROM NANO TO REAL MASHINE 
+  pop ax
+  pop cx
+  xor ax,cx
+  push ax
+
+;----------------------------------------------------------------------
+N_RET:
+  MOV si,[BP]
+N_RDROP:
+  INC   BP
+  INC   BP
+  jmp short @MAIN
+
+;----------------------------------------------------------------------
+N_IF:
+  pop Ax
+  or  AX,AX
+  jz  N_JMP
+  jmp short @MAIN
 
 N_IFM:
   pop ax
@@ -110,24 +162,6 @@ N_JMP:
   shl ax,cl
   sar ax,cl
   add si,ax
-  jmp short @MAIN
-
-;----------------------------------------------------------------------
-N_IF:
-  pop Ax
-  or  AX,AX
-  jz  N_JMP
-  jmp short @MAIN
-
-;----------------------------------------------------------------------
-N_RET:
-  RPOP si
-  jmp short @MAIN
-
-;----------------------------------------------------------------------
-@_NEST:
-  xchg ax,si
-  RPUSH ax
 
 @MAIN:
   lodsw
@@ -145,6 +179,7 @@ N_RET:
   AND BX,15
   shl BX,1
   jmp @_NANO[bx]
+@_NIBDISP = $-2
 
 ;======================================================================
 ; EXEC
@@ -172,13 +207,6 @@ N_NAND:
   pop cx
   and ax,cx
   not ax
-  jmp @PHAX
-
-;----------------------------------------------------------------------
-N_XOR:
-  pop ax
-  pop cx
-  xor ax,cx
   jmp @PHAX
 
 ;----------------------------------------------------------------------
@@ -213,11 +241,11 @@ N_RFETCH:
 ;----------------------------------------------------------------------
 N_RSTORE:
   pop ax
-  xchg AREG,[bp]
+  xchg DI,[bp]    ; AREG = DI
   stosw
 
 N_XA:
-  xchg AREG,[bp]
+  xchg DI,[bp]
   jmp @_NIBDONE
 
 ;----------------------------------------------------------------------
@@ -232,12 +260,33 @@ N_XR:
 
 @_NANO_INIT:
         cld
-        xor AREG,AREG
-        mov sp,0FFFEh
-        mov bp,0EFFEh
+        ;mov AREG,0
+        mov bp,0FFFEh
+        mov sp,0EFFEh
+        MOV AX,OFFSET @_NANO
+        MOV WORD PTR @_NIBDISP,AX
 
-  _NANO_
-;  dw 6C01h
+  _NANO_    ; TEST
+  dw  _LIT,1,_NOT,_DUP,_1M,_SWAP,_XOR
+  DW  _END_
+  INT   20H
+
+_LIT:
+  ;DW  0BC01H     ; (@R+ (;
+  PACKW   I_RFETCH,I_RET,0,0
+_NEG:
+  PACKW   I_IFM,0,0,0
+_NOT:
+  ;dw  63C1H     ; (DUP (NAND (;
+  PACKW   I_DUP,I_NAND,I_RET,0
+_DUP:
+  PACKW   I_DUP,I_RET,0,0
+_SWAP:
+  PACKW   I_PUSH,I_XR,I_POP,I_RET
+_1M:
+  PACKW   I_IFM,0,0,0
+_NOP:
+  PACKW   I_RET,0,0,0
 
 MyCseg ends
 end @_START
