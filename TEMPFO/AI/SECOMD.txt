@@ -1,0 +1,43 @@
+
+
+Пропускане към съдържанието
+Използване на Gmail с екранни четци
+3 от 123
+Version 2
+Вх. поща
+Nikolai Dobromirov <ndobromirov@gmail.com>
+	
+Прикачени файлове30.04.2026 г., 9:29 (преди 12 дни)
+	
+	
+до мен
+Изглежда, че това съобщение е на английски
+The 2 new files after the feedback...
+
+Summary of changes:
+
+  Header (lines 6–37)
+  - CX description updated: "nibble work: extraction (CL), table index, relative offset"
+  - DX description updated: "nibble word during dispatch: DH=bits15:8, DL=bits7:0 (untouched by all primitives)"
+  - DI description updated: "dispatch address scratch; free temp in inline jump handlers"
+  - Memory section: NIBTMP DW line removed
+  - Primitive encoding updated to MSB-first order with relative jump semantics documented
+
+  Data section (line 99)
+  - NIBTMP DW 0 removed — only AREG DW 0 remains
+
+  _next body (lines 112–388)
+  Complete replacement:
+  - MOV DX,CX after DEC CX — DX becomes the non-destructive nibble holder
+  - Nibble 0 (bits 15:12): MOV CL,DH; SHR CL,1?4 — 4 shifts
+  - Nibble 1 (bits 11:8): MOV CL,DH; AND CL,0Fh — 0 shifts
+  - Nibble 2 (bits 7:4): MOV CL,DL; SHR CL,1?4 — 4 shifts
+  - Nibble 3 (bits 3:0): MOV CL,DL; AND CL,0Fh — 0 shifts, no jump check
+  - Positions 0–2: inline jump detection (CL in [9,11]), offset extraction from DX, sign-extend, SHL CX,1, ADD BX,CX, JMP _next; zero-offset path re-dispatches through table for absolute fallback
+
+  Test thread (lines 588–593)
+  - DW 0083H > DW 2801H
+  - Comment updated: cell-1 = (2<<12)|(8<<8) = $2800, cell = $2801
+
+ 2 прикачени файла
+  •  Сканирано от Gmail

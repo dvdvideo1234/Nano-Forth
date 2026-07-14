@@ -1,0 +1,237 @@
+
+locals  @@
+
+pd  equ dword ptr
+pw  equ word  ptr
+pb  equ byte  ptr
+
+IMMEDIATE = 80H
+
+ppp = 0
+qqq = 0
+
+SKIPA   MACRO		; change the carry
+  DB    03DH
+  ENDM
+
+SKIPB   MACRO		; change the carry
+  DB    03CH
+  ENDM
+
+
+PushReg  MACRO  
+  jmp  @_Ph
+  ENDM
+
+SWAPREG MACRO
+  JMP @_sw
+  ENDM
+
+DROPREG MACRO
+  JMP @_DROP
+  ENDM
+
+NEXT MACRO
+  JMP @_MAIN
+  ENDM
+
+goforth MACRO
+  call  @_to4th
+  endm
+
+SKIPR   MACRO reg	; does not change the carry
+  local diff
+diff = $
+  mov   reg,0
+  if $-diff-2 
+    org $-2
+  ELSE 
+    org  $-1
+  endIf
+  ENDM
+
+aname macro cnam,IMM
+  local len,end
+  db end-len+IMM
+len:
+  db cnam
+end:
+  endm
+  
+MSG MACRO CNAM
+  ANAME CNAM,0
+ENDM
+
+header macro cnam,anam
+qqq = $
+  dw ppp
+ppp = qqq
+  aname cnam,0
+_&anam:
+  endm
+
+headerI macro cnam,anam
+qqq = $
+  dw ppp
+ppp = qqq
+  aname cnam,IMMEDIATE
+_&anam:
+  endm
+
+variable macro cnam,anam,data
+  header cnam,anam
+  dw dovar
+VAL_&anam dw  data
+  endm
+  
+constant macro cnam,anam,data
+  header cnam,anam,0
+  dw doconst
+VAL_&anam dw data
+  endm
+  
+xtname macro cnam,anam,adr
+  header cnam,anam,0
+  dw adr
+  endm
+		
+primitive macro cnam,anam
+  xtname cnam,anam,$+2
+  endm
+		
+colon macro cnam,anam
+  header cnam,anam
+  dw DOCOLON
+  endm
+
+;colonI macro cnam,anam
+;  headerI cnam,anam
+;  dw DOCOLON
+;  endm
+
+defern macro cnam, anam,data
+  header cnam,anam
+  xt 	anam,@_defer
+  dat 	anam,data
+  endm
+  
+deferni macro cnam, anam,data
+  header cnam,anam
+  xt 	anam,@_deferi
+  dat 	anam,data
+  endm
+  
+jmps macro adr
+  jmp short adr
+  endm
+
+lbl macro anam
+_&anam:
+ENDM
+
+dat macro anam,adr	;define data field
+VAL_&anam dw adr
+ENDM
+
+xto macro anam,adr	;define second code field
+to_&anam: dw adr
+ENDM
+
+xat macro anam,adr	;define third code field
+at_&anam: dw adr
+ENDM
+
+xt macro anam,adr	;define code field
+  lbl anam
+  dw adr
+  endm
+
+cnst macro anam,data
+  xt 	anam,@_doconst
+  dat 	anam,data
+  endm
+  
+defer macro anam,data
+  xt 	anam,@_defer
+  dat 	anam,data
+  endm
+  
+var macro anam,data
+  xt 	anam,@dovar
+  dat 	anam,data
+  endm
+  
+value macro anam,data
+  xto  	anam,@_setvar
+  cnst 	anam,data
+  endm
+  
+WATCH macro anam,data
+  xto 	anam,@_setwatch
+  xt  	anam,@_getwatch
+  dat 	anam,data
+  endm
+  
+QWATCH macro anam,data
+  xat 	anam,@_dovar-2
+  WATCH anam,data
+  endm
+  
+vector macro anam,data
+  xto 	anam,@_setvar
+  defer anam,@_defer
+  endm
+  
+point  macro anam,data
+  xto 	anam,@_setpoint
+  xt 	anam,@_dopoint
+  dat 	anam,data
+  endm
+
+trap3 macro anam
+  xt anam,@_trap-3
+endm
+
+trap2 macro anam
+  xt anam,@_trap-2
+endm
+
+trap1 macro anam
+  xt anam,@_trap-1
+endm
+
+trap macro anam
+  xt anam,@_TWICE
+endm
+
+twice macro anam
+  dw @_TWICE
+endm
+
+prim macro anam
+  xt anam,$+2
+  endm
+		
+col macro anam
+  xt anam,DOCOLON
+  endm
+
+DSP = SP
+RSP = BP
+
+X MACRO
+  XCHG  RSP,DSP
+ENDM
+
+RPOP MACRO REG
+  X
+  POP   REG
+  X
+ENDM
+
+RPUSH MACRO REG
+  X
+  PUSH   REG
+  X
+ENDM
+
