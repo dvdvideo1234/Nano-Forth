@@ -51,6 +51,9 @@ _NANO_ MACRO
 ENDM
 
 AREG  = di
+NIBTMP= DX
+NIBI  = CX
+
 CNT   = 0
 ;----------------------------------------------------------------------
 ; SEGMENT (COM)
@@ -107,8 +110,8 @@ _END_ = 0F001H
 ; DATA
 ;----------------------------------------------------------------------
 
-@_NIBTMP  dw 0
-@_NIBI    dB 0,0        ; NIBBLE INDEX IN BITS
+;@_NIBTMP  dw 0
+;@_NIBI    dB 0,0        ; NIBBLE INDEX IN BITS
 
 ;----------------------------------------------------------------------
 @_NEST:
@@ -125,17 +128,17 @@ N_ESC:          ; TRANSFER CONTROL FROM NANO TO REAL MASHINE
 
 ;----------------------------------------------------------------------
 align 2
-_XOR:           ; NOT NIBBBLE BUT WORD
+_XOR:           ; NOT NIBBLE BUT WORD
   dw  _END_    ; N_ESC  TRANSFER CONTROL FROM NANO TO REAL MASHINE 
   pop ax
   pop cx
   xor ax,cx
+
   push ax
 
 ;----------------------------------------------------------------------
 N_RET:
   MOV si,[BP]
-N_RDROP:
   INC   BP
   INC   BP
   jmp short @MAIN
@@ -156,29 +159,29 @@ N_IFM:
 ;----------------------------------------------------------------------
 N_JMP:
   jcxz @MAIN
-  mov ax,@_NIBTMP
+;  mov ax,@_NIBTMP
   SUB CL,4
   xor cl,12
-  shl ax,cl
-  sar ax,cl
-  add si,ax
+  shl Dx,cl
+  sar Dx,cl
+  add si,Dx
 
 @MAIN:
   lodsw
   test al,1
   je @_NEST
   dec ax
-  mov @_NIBTMP,ax
-  mov @_NIBI,12
+  mov NIBTMP,ax
+  mov NIBI,12
 
 ;----------------------------------------------------------------------
 @_NIBDISPATCH:    ; --- nibble decode (386 optimized) ---
-  mov CX,WORD PTR @_NIBI
-  mov bX,@_NIBTMP
+;  mov CX,WORD PTR @_NIBI
+  mov bX,NIBTMP
   SHR BX,CL
   AND BX,15
   shl BX,1
-  jmp @_NANO[bx]
+  jmp [bx+@_NANO]
 @_NIBDISP = $-2
 
 ;======================================================================
@@ -186,26 +189,32 @@ N_JMP:
 ;======================================================================
 
 N_P2DIV:
-  pop cx
+  pop Bx
   pop ax
-  add ax,cx
-  mov cx,ax
+  add ax,Bx
+  mov Bx,ax
   rcr ax,1
-@PHCX:
-  push cx
+@PHBX:
+  push Bx
 @PHAX:
   push ax
 
 @_NIBDONE:
-  SUB @_NIBI,4
+  SUB CL,4
   jns @_NIBDISPATCH
   jmp @MAIN
 
 ;----------------------------------------------------------------------
+N_RDROP:
+  INC   BP
+  INC   BP
+  jmp short @_NIBDONE
+
+;----------------------------------------------------------------------
 N_NAND:
   pop ax
-  pop cx
-  and ax,cx
+  pop Bx
+  and ax,Bx
   not ax
   jmp @PHAX
 
@@ -259,12 +268,12 @@ N_XR:
 ;======================================================================
 
 @_NANO_INIT:
-        cld
-        ;mov AREG,0
-        mov bp,0FFFEh
-        mov sp,0EFFEh
-        MOV AX,OFFSET @_NANO
-        MOV WORD PTR @_NIBDISP,AX
+  cld
+  ;mov AREG,0
+  mov bp,0FFFEh
+  mov sp,0EFFEh
+  ;MOV AX,OFFSET @_NANO
+  ;MOV WORD PTR @_NIBDISP,AX
 
   _NANO_    ; TEST
   dw  _LIT,1,_NOT,_DUP,_1M,_SWAP,_XOR
