@@ -195,10 +195,6 @@ xtname 'C,',BCOMMA,@COMPBX_
   STOSB
   RET
 
-PRIMITIVE 'LIT',LIT
-  LODSW
-  pushREG
-
 COLON '''ADR',TICKADR
   DW _NULSTR?,_MODE,_ZERR?,_FETCH,_EXIT
 
@@ -208,6 +204,18 @@ COLON '''',TICK
 ; -------------------
 ; MATHS / LOGIC
 ; -------------------
+
+xtname 'LIT',LIT,@_PUSHAX
+  LODSW
+  RET
+
+xtname 'I',@R,@_PUSHAX
+  mov  ax,[BP]
+  RET
+
+xtname 'J',J,@_PUSHAX
+  mov  ax,[BP+2]
+  RET
 
 xtname '1+',P1,@_P1
 xtname '2+',P2,@_P2
@@ -349,8 +357,6 @@ xtname '@R',	RLD, @_RSLD_       ; @R
   scasw
   pop bx
 	jmps @_MAINZ
-
-XTNAME '@EXEC',PERFORM,@_EXEC@
 
 DOCOLON:
 ;@_NOP:
@@ -558,6 +564,8 @@ XT ZSKIP,@_TESTJMP
   LODSW
 @_ZSKIP:
   NEXT  
+
+XTNAME '@EXEC',PERFORM,@_EXEC@
 
 xtname 'EXEC',EXEC,@_EXEC
 

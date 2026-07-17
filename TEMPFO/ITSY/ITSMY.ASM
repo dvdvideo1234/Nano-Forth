@@ -91,6 +91,7 @@ VARIABLE 'BASE',BASE,10
 
 VARIABLE 'LAST',LAST,FINAL
 
+CONSTANT '@NAME',@NAME,0
 CONSTANT '0',ZERO,0
 CONSTANT '-1',MONE,-1
 CONSTANT 'BL',BL_,32
@@ -148,7 +149,7 @@ XT ZERR?,DOCOLON
 
 XT ERR?,DOCOLON
   DW _SKIPSTR,_SWAP
-  DW _ZERO_BRANCH,@DROPX  ; DROPX
+  DW _ZERO_BRANCH,@_DROPX  ; DROPX
   DW _ERR,_ABORT
 
 XTNAME 'ERR.',ERR1,DOCOLON
@@ -157,18 +158,13 @@ XTNAME 'ERR.',ERR1,DOCOLON
 COLON 'NUMC',NUMC
   DW _NUM,_COMPILE,_LIT,_COMMA,_EXIT
 
-xtname ',',COMMA,@USEBX_
-  MOV DI,PW [VAL_DP]
-  STOSB
-  mov   AL,AH
-@_COMMA:
-  STOSB
-  MOV PW [VAL_DP],DI
+xtname ',',COMMA,@COMPBX_
+  STOSW
   RET
 
-xtname 'C,',BCOMMA,@USEBX_
-  MOV DI,PW [VAL_DP]
-  JMPS  @_COMMA
+xtname 'C,',BCOMMA,@COMPBX_
+  STOSB
+  RET
 
 PRIMITIVE 'LIT',LIT
   LODSW
@@ -233,7 +229,7 @@ xtname 'DC@',DC@,@_DC@
 
 xtname 'C@',CFETCH,@_C@
 
-xtname 'C!',CSTORE,@DROP2_
+xtname 'C!',CSTORE,@_DROP2_
   STOSB
   RET
 
@@ -243,7 +239,7 @@ PRIMITIVE 'D@',FETCH2
   MOV BX,PW [BX]
   NEXT
 
-xtname 'D!',2STORE,@DROP3_
+xtname 'D!',2STORE,@_DROP3_
   XCHG  AX,CX
   STOSW
   XCHG  AX,CX
@@ -252,16 +248,16 @@ xtname 'D!',2STORE,@DROP3_
 
 xtname '@',FETCH,@FETCH
 
-xtname '!',STORE,@DROP2_
+xtname '!',STORE,@_DROP2_
   STOSW
   RET
 
-xtname 'SWAP!',SWPSTORE,@DROP2_
+xtname 'SWAP!',SWPSTORE,@_DROP2_
   XCHG  AX,DI
   STOSW
   RET
 
-xtname '+!',PSTORE,@DROP2_
+xtname '+!',PSTORE,@_DROP2_
   ADD   PW [DI],AX
   RET
 
@@ -425,22 +421,30 @@ XTNAME 'POP',POP,$+2
   CALL  DI
   JMPS  @_Ph
 
-@DROP4_:
+@_DROP4_:
   POP   DX
-@DROP3_:
+@_DROP3_:
   POP   CX
-@DROP2_:
+@_DROP2_:
   POP   AX
-@DROP1_:
+@_DROP1_:
   XCHG  BX,DI
   CALL  BX
-@DROP:
+@_DROP:
   POP BX
   NEXT
 
 @USEBX_:
   XCHG  AX,BX
-  JMPS  @DROP1_
+  JMPS  @_DROP1_
+
+@COMPBX_:
+  MOV   AX,PW [VAL_DP]
+  XCHG  AX,BX
+  XCHG  BX,DI
+  call  BX
+  MOV PW [VAL_DP],DI
+  DROPREG
 
 PRIMITIVE '-ROT',MROT  ; DX AX BX  - BX DX AX  ; BX DX AX
   POP AX DX
@@ -457,7 +461,7 @@ PRIMITIVE 'ROT',ROTE    ; AX DX BX  - DX BX AX
   PUSH DX
   PUSHREG
 
-xtname 'DROP',DROP,@DROP
+xtname 'DROP',DROP,@_DROP
 
 xtname 'DUP',DUPE,$+2
   MOV   AX,BX
@@ -562,25 +566,25 @@ TO_NUML:
   DEC BX
   INC DI
   JMP TO_NUML
-TO_NUMZ: 
-  
+TO_NUMZ:   
   PUSH AX
 TO_NUMH:
   PUSH CX
   PUSH DI
   NEXT
 
-
 ; -----------------------
 ; TERMINAL INPUT / OUTPUT
+; -----------------------
+
 xtname 'COUNT',COUNT,@_count
 
-xtname 'WORD',WORD,@WORD
-xtname 'BLWORD',BLWORD,@BLWORD
-@BLWORD:
+xtname 'WORD',WORD,@_WORD
+xtname 'BLWORD',BLWORD,@_BLWORD
+@_BLWORD:
   push  BX
   mov   BL,32
-@WORD:
+@_WORD:
   MOV   AH,BL
   MOV   CX,PW [VAL_LTIB]
   MOV   BX,PW [VAL_ETIB]
@@ -693,6 +697,7 @@ xtname 'FIND',FIND,@NUP1_
   JNE   @_FINDLP
   INC   CX
   XCHG  AX,DI
+  mov   VAL_@NAME,BX
 @_ENDF:  
   POP DI SI
   MOV BX,CX
@@ -780,7 +785,7 @@ XT OPERATIONS, @_WARY
 	NEXT
 
 XTNAME 'EVAL',EVAL,@EVAL
-@_EVAL  DW _BLWORD,_DC@,_ZERO_BRANCH,@DROPX
+@_EVAL  DW _BLWORD,_DC@,_ZERO_BRANCH,@_DROPX
   DW _FOUND,_OPERATIONS,_PERFORM,_BRANCH,@_EVAL	
 
 ;-----------------------------------------
@@ -794,7 +799,7 @@ XT TYPE,DOCOLON
   DW _FOR,@TP2
 @TP1  DW _COUNT,_EMIT
 @TP2  DW _NEXT,@TP1
-@DROPX: DW _DROP,_EXIT
+@_DROPX: DW _DROP,_EXIT
 
 XT GETLINE,DOCOLON
   DW _TIB,_LIT,50,_ACCEPT,_SPC,_EXIT 
