@@ -1,0 +1,196 @@
+locals  @@
+
+pd  equ dword ptr
+pw  equ word  ptr
+pb  equ byte  ptr
+
+ppp = 0
+qqq = 0
+
+SKIPA   MACRO		; change FLAGS - does not change REGISTERS
+  DB    03DH
+  ENDM
+
+SKIPB   MACRO		; change FLAGS - does not change REGISTERS
+  DB    03CH
+  ENDM
+
+
+PushReg  MACRO  
+  jmp  @_Ph
+  ENDM
+
+SWAPREG MACRO
+  JMP @_sw
+  ENDM
+
+DROPREG MACRO
+  JMP @_DROP
+  ENDM
+
+NEXT MACRO
+  JMP @_MAIN
+  ENDM
+
+SKIPR   MACRO reg	; does not change the FLAGS
+  local diff
+diff = $
+  mov   reg,0
+  if $-diff-2 
+    org $-2
+  ELSE 
+    org  $-1
+  endIf
+  ENDM
+
+bpnt macro msg
+  dw _amih
+  aname msg
+endm
+
+aname macro cnam
+  local len,end
+  db end-len
+len:
+  db cnam
+end:
+  endm
+  
+jmps macro adr
+  jmp short adr
+  endm
+
+ALIG1 MACRO
+  IF ($-@_AZERO+1) AND 1
+    NOP
+  ENDIF
+ENDM
+
+ALIG0 MACRO
+  IF ($-@_AZERO) AND 1
+    NOP
+  ENDIF
+ENDM
+
+dat macro anam,adr	;define data field
+@_&anam:
+ dw adr
+ENDM
+
+Albl macro anam
+  local TEMPADR
+TEMPADR = $
+  ORG ((TEMPADR - @_AZERO) / 2 ) 
+_&anam:
+  ORG TEMPADR
+ENDM
+
+Clbl macro anam
+  local TEMPADR
+TEMPADR = $
+  ORG ((TEMPADR - @_AZERO) / 2 ) + 08000H
+_&anam:
+  ORG TEMPADR
+ENDM
+
+XAT macro anam,ADR    ;define third code field
+  local TEMPADR
+TEMPADR = $
+  ORG ((TEMPADR - @_AZERO) / 2 ) + 08000H
+AT_&anam:
+  ORG TEMPADR
+  DW ADR
+ENDM
+
+xto macro anam,ADR    ;define second code field
+  local TEMPADR
+TEMPADR = $
+  ORG ((TEMPADR - @_AZERO) / 2 ) + 08000H
+TO_&anam:
+  ORG TEMPADR
+  DW ADR
+ENDM
+
+prim macro anam
+  ALIG0
+  Albl anam
+@_&anam:
+  endm
+		
+col macro anam
+  ALIG0
+  Clbl ANAM
+  endm
+
+XT MACRO ANAM,ADR
+  COL ANAM
+  DW ADR
+  ENDM
+
+cnst macro anam,data
+  xt 	anam,_@doconst
+  dat 	anam,data
+  endm
+  
+defer macro anam,data
+  xt 	anam,_@defer
+  dat 	anam,data
+  endm
+  
+var macro anam,data
+  xt 	anam,_@dovar
+  dat 	anam,data
+  endm
+  
+value macro anam,data
+  ALIG0
+  xto  	anam,_@setvar
+  cnst 	anam,data
+  endm
+  
+WATCH macro anam,data
+  ALIG0
+  xto 	anam,_@setwatch
+  xt  	anam,_@getwatch
+  dat 	anam,data
+  endm
+  
+QWATCH macro anam,data
+  ALIG0
+  xat 	anam,_@dovar2
+  WATCH anam,data
+  endm
+  
+vector macro anam,data
+  ALIG0
+  xto 	anam,_@setvar
+  defer anam,data
+  endm
+  
+point  macro anam,data
+  ALIG0
+  xto 	anam,_@setpoint
+  xt 	anam,_@dopoint
+  dat 	anam,data
+  endm
+
+
+X MACRO
+  XCHG  RSP,DSP
+ENDM
+
+RPOP MACRO REG
+  X
+  POP   REG
+  X
+ENDM
+
+RPUSH MACRO REG
+  X
+  PUSH   REG
+  X
+ENDM
+
+DSP = SP
+RSP = BP
+
