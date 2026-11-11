@@ -48,10 +48,7 @@ PRIM ABORT
 
   vector key,_BK
 
-COL HIRES
-  DW _@dovar2
-value RES,0
-    DW 0
+value LASTOK,0
 
 xto 	emit,_@setvar
   XT emit,_@deferI
@@ -68,17 +65,18 @@ value CNTC,0
 COL Xltib
   DW  _ltib,_EX
   value ltib,0
+
   value etib,0
 	defer source,_etib
 
 
 COL XDP
   DW  _DP,_EX
-  value dp,@_FINAL
+  value dp,@_freemem
 
 COL XDICT
   DW  _DICT,_EX
-  value dict,0E000h
+  value dict,0E800h
 
   vector cdict,_dict
 
@@ -221,7 +219,7 @@ col lpar							; interpretter is on
 	dw to_found
 COL INDICT
   DW  _dict
-XT find,_NINU_
+XT find,_NINU
 @_FIND:
   push  SI
 	xor   cx,cx		  ; ch = 0   search from start dea
@@ -252,7 +250,7 @@ COL colI
   ; DW _LASTOK,_dumpstr,_DROP  ;DW _COMPILE,@_DOCOLON
 col rpar							; compiler is on
 	dw to_found,_TOCdict
-xt findc,@_NINU_
+xt findc,_NINU
 	MOV   Di,ax
 	inc   pb [Di]
   push  DI
@@ -317,13 +315,13 @@ XT    CPUSHU,_cnip_
 COL TOKEN?
   DW _xtok?
 COL TOKEN
-  DW _PARSE,_MAKESTR,_dUP,TO_RES
+  DW _PARSE,_MAKESTR,_dUP,TO_LASTOK
 COL DC@
   DW _dUP,_c@,_EXIT
 COL PARSE
   DW _SOURCE,_XLTIB
 XT  PARS,_NIP_
-  POP   DX
+  POP   DX      ; RETURN ADDRESS
   mov   CX,bx
   XCHG  AX,DI
 	SUB   DI,CX
@@ -353,19 +351,15 @@ XT  PARS,_NIP_
   JMP   DX
 
 COL MAKESTR
-  DW _LIT,'`'
-COL MSTRZ
-  DW _ZERO,_DICT,_STM,_STM
+  DW _LIT,'`',_ZERO,_DICT,_STM,_STM
 
-XT	PUSHSTR,_Cnip_
-  XOR   CH,CH
+XT	PUSHSTR,_CLnip_
   SUB   BX,CX         ; MAKE ROOM FOR CHARS
   dec   BX            ; MAKE ROOM FOR COUNTER
   ALIG1
   SKIPA
 
-XT  movESTR,_cnip_ ; S!
-  XOR   CH,CH
+XT  movESTR,_CLnip_ ; S!
   MOV   [BX],CL       ; STORE LENGTH OF THE NAME
   LEA   DI,[BX+1]
   JMPS  @_CMOVE
@@ -413,12 +407,12 @@ PRIM D2SGN
   STC
   JMPS  @_DIV2
 
-xt dplus,@_dINU_    ; bx dx cx ax
+xt dplus,_dINU    ; bx dx cx ax
 	ADD     ax,dx
 	ADc     bx,cx
 	RET
 
-xt dminus,@_dINU_    ; bx dx cx ax
+xt dminus,_dINU    ; bx dx cx ax
 	sub     ax,dx
 	sbb     cx,bx
   mov     bx,cx
@@ -537,7 +531,7 @@ XT ascPk,_Cnip_
   POP   DI
   RET
 
-xt unpk?,_NOP_
+xt unpk?,_NINU
   mov   al,[bx]
   CMP   al,2
   JB    SHORT @_notok
@@ -559,11 +553,8 @@ xt unpk?,_NOP_
   skipa
 @_notok:
   mov   al,ah
-@_DUSWA_:
-  POP   DI
-  push  BX
   xchg  AX,BX
-  jmp   DI
+  RET
 
 col to_num			; NOPS RESERVED PLACE FOR STRING FUNCTIONS
   dw _NOP
@@ -576,7 +567,7 @@ col err?
 	
 COL  LSTR_to_number
   DW  _COUNT
-XT  to_number,_NINU_
+XT  to_number,_NINU
   mov   CX,BX
   XOR   EBX,EBX ; CLEAR BASE
   xchg 	ax,SI  	; START ADR
@@ -682,8 +673,8 @@ COL litc
 ; IO
 
 XT SCRN,_@DOVAR2
-XT WBLK,_@_WBLK
-XT RBLK,_@_RBLK
+XT WBLK,_@WBLK
+XT RBLK,_@RBLK
   DW -1 
 
 	value AX,0
@@ -692,11 +683,11 @@ XT RBLK,_@_RBLK
 	value DX,0
 	value DERR,0
 
-PRIM @_WBLK
+PRIM @WBLK
   MOV   CH,40H
   LODSW
   SKIPA
-PRIM @_RBLK
+PRIM @RBLK
   MOV   CH,3FH
   MOV   AX,1024
   push  AX CX
@@ -733,7 +724,7 @@ PRIM DOS5
   mov   AX,[SI]
   jmps  @_DOS0
 
-XT UmMUL,_NINU_
+XT UmMUL,_NINU
   mul   bx
   mov   BX,DX
   RET
@@ -812,13 +803,13 @@ PRIM exec
   XCHG  AX,BX
   JMPS @_MAIN1
 
-PRIM NINU_
-  JMPS  @_NINU
-PRIM DINU_
+PRIM NINU
+  JMPS  @_NINU_
+PRIM DINU
 	POP   DX
-PRIM CINU_
+PRIM CINU
 	POP   CX
-@_NINU:
+@_NINU_:
 	POP   AX
 PRIM NUP_
   CALL  SI
@@ -901,10 +892,14 @@ PRIM DROPX
 ; Control
 
 PRIM nip_
-  JMPS @_nip
+  JMPS @__nip
+PRIM cLnip_
+	POP   cX
+  XOR   CH,CH
+  SKIPB
 PRIM cnip_
 	POP   cX
-@_nip:  
+@__nip:  
 	POP   AX
 PRIM nop_
 	CALL  SI
@@ -1143,7 +1138,7 @@ COL XEMIT
   DW _DOES1,_FETCH,_EMIT,_EXIT
 
 COL ?err
-  DW _RES,_IDSP
+  DW _LASTOK,_IDSP
 COL IDSP
   DW _TRAP,_SPC
 COL ID
