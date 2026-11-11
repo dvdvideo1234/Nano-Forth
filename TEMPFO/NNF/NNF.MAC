@@ -61,13 +61,13 @@ jmps macro adr
   endm
 
 ALIG1 MACRO
-  IF ($-@_AZERO+1) AND 1
+  IF ($-@_Z+1) AND 1
     NOP
   ENDIF
 ENDM
 
 ALIG0 MACRO
-  IF ($-@_AZERO) AND 1
+  IF ($-@_Z) AND 1
     NOP
   ENDIF
 ENDM
@@ -80,7 +80,7 @@ ENDM
 Albl macro anam
   local TEMPADR
 TEMPADR = $
-  ORG ((TEMPADR - @_AZERO) / 2 ) 
+  ORG ((TEMPADR - @_Z) / 2 ) 
 _&anam:
   ORG TEMPADR
 ENDM
@@ -88,7 +88,7 @@ ENDM
 Clbl macro anam
   local TEMPADR
 TEMPADR = $
-  ORG ((TEMPADR - @_AZERO) / 2 ) + 08000H
+  ORG ((TEMPADR - @_Z) / 2 ) + 08000H
 _&anam:
   ORG TEMPADR
 ENDM
@@ -96,7 +96,7 @@ ENDM
 XAT macro anam,ADR    ;define third code field
   local TEMPADR
 TEMPADR = $
-  ORG ((TEMPADR - @_AZERO) / 2 ) + 08000H
+  ORG ((TEMPADR - @_Z) / 2 ) + 08000H
 AT_&anam:
   ORG TEMPADR
   DW ADR
@@ -105,7 +105,7 @@ ENDM
 xto macro anam,ADR    ;define second code field
   local TEMPADR
 TEMPADR = $
-  ORG ((TEMPADR - @_AZERO) / 2 ) + 08000H
+  ORG ((TEMPADR - @_Z) / 2 ) + 08000H
 TO_&anam:
   ORG TEMPADR
   DW ADR
